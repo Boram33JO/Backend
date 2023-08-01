@@ -1,6 +1,6 @@
 package com.sparta.i_mu.global.responseResource;
 
-import com.sparta.imu.global.errorCode.ErrorCode;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
