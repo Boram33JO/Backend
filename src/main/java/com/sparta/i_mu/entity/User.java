@@ -30,6 +30,9 @@ public class User {
     private String nickname;
 
 
-
-
+    public User(String nickname, String password, String email) {
+        this.nickname = nickname;
+        this.password = password;
+        this.email = email;
+    }
 }
