@@ -12,7 +12,7 @@ import lombok.*;
 public class PostSongLink {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long playListId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
