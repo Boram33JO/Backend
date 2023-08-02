@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostRequestDto {
+public class PostSaveRequestDto {
     private Location location;
     private List<SongSaveRequestDto> songs;
     private String content;
