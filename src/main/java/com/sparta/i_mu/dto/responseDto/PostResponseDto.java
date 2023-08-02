@@ -16,10 +16,11 @@ public class PostResponseDto {
     private Long userId;
     private String nickname;
     private String content;
+    private String category;
     private LocalDateTime createdAt;
     private Boolean wishlist;
     private Long wishlistCount;
     private List<Comment> comments;
-    private List<Song> songs;
-    private List <Location> address;
+    private List<SongResponseDto> songs;
+    private Location location;
 }
