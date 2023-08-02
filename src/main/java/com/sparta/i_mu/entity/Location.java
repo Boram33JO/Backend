@@ -19,11 +19,9 @@ public class Location {
     @Id
     private Long id;
     @Column
-    private String address;
+    private Double latitude; //위도 y
     @Column
-    private Double x;
-    @Column
-    private Double y;
+    private Double longitude; //경도 x
 
     @OneToOne
     @JoinColumn(name = "post_id")
