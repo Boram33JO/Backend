@@ -11,6 +11,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @Builder
+@Table
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class Song {
@@ -24,6 +25,9 @@ public class Song {
 
     @Column
     private String artist;
+
+    @Column
+    private String album;
 
     @Column
     private String thumbnailImage;
