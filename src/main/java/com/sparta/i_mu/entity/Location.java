@@ -1,9 +1,6 @@
 package com.sparta.i_mu.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +18,15 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
+    @Column
+    private String address;
+    @Column
+    private Double x;
+    @Column
+    private Double y;
+
+    @OneToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
+
 }
