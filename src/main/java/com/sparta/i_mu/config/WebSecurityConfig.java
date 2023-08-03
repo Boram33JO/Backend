@@ -69,7 +69,8 @@ public class WebSecurityConfig {
                     authorizationRequest
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
                             .requestMatchers(GET, "/api/posts").permitAll()
-
+                            .requestMatchers(GET, "/api/search").permitAll()
+                            
                             .anyRequest().authenticated();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling
