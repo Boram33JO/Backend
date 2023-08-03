@@ -3,27 +3,38 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+
+import static org.springframework.boot.web.servlet.filter.ApplicationContextHeaderFilter.HEADER_NAME;
+
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtUtil {
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
     public final String HEADER_ACCESS_TOKEN = "AccessToken";
     private final String BEARER = "Bearer ";
     private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 3000L; // 1시간
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
+    public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
     private Key key;
     @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
     private String secretKey;
@@ -119,6 +130,28 @@ public class JwtUtil {
             log.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
         return false;
+    }
+
+    public Cookie tokenToCookie(String token){
+        try {
+            token = URLEncoder.encode(token, "UTF-8").replaceAll("\\+","%20"); // CookieValue 빈 공간(공백)이 있으면 안 됨;
+
+            Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token);
+            cookie.setPath("/"); // 내 홈페이지 전부에 보내기
+            cookie.setMaxAge(60 * 60); // 1시간 뒤 자동 삭제
+            return cookie;
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
+
+    public String getTokenFromRequest(HttpServletRequest req){
+        return req.getHeader(HEADER_NAME);
+    }
+
+    public Claims getUserInfoFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody(); //body부분의 claims를 가지고 올 수 잇음
     }
 
 
