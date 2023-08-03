@@ -9,7 +9,6 @@ import com.sparta.i_mu.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -63,32 +62,23 @@ public class PostController {
         return postService.deletePost(postId,user);
     }
 
-    // 4. 상세 게시글 조회
+    // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
     public PostResponseDto getDetailPost(@PathVariable Long postId){
         return postService.getDetailPost(postId);
     }
 
-//위치 서비스에 따른 전체 게시글 조회
+    // 메인페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
-    public List<PostResponseDto> getAllPost(@RequestBody PostSearchRequestDto postSearchRequestDto){
-        return postService.getAllPost(postSearchRequestDto);
+    public List<PostResponseDto> getAllPost(){
+        return postService.getAllPost();
     }
 
-    // 5. 위치 서비스에 따른 카테고리별 게시글 조회
-
+    // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
     @GetMapping("/category")
     public List<?> getPostByCategory(
             @RequestBody PostSearchRequestDto postSearchRequestDto){
         return postService.getPostByCategory(postSearchRequestDto);
     }
-
-    // 전국 기준 좋아요 순 인기 게시글 조회
-    @GetMapping("/wishlist")
-    public List<PostResponseDto> getPostByWishlist(){
-        return postService.getPostByWishlist();
-    }
-
-
 
 }

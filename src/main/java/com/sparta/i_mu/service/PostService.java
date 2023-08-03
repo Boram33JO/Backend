@@ -7,6 +7,8 @@ import com.sparta.i_mu.entity.Location;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.entity.Song;
 import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.mapper.LocationMapper;
+import com.sparta.i_mu.mapper.SongMapper;
 import com.sparta.i_mu.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,15 +22,13 @@ import java.util.stream.Collectors;
 
 import static com.sparta.i_mu.mapper.PostMapper.POST_INSTANCE;
 
-// 주변 게시글 카테고리별 전체 조회 -> O
+// 전체 게시글 카테고리별 전체 조회 -> O
 // 지도페이지에서 검색시 주변 게시글 조회
 // 상세 게시글 조회 -> O
 // 게시글 작성 -> O
 // 게시글 수정 -> O
 // 게시글 삭제 -> O
-// 좋아요 순 게시글 조회 -> O
-// 좋아요 순 반대 게시글 조회
-// 최근 순 게시글 조회
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -41,25 +41,20 @@ public class PostService {
     private LocationRepository locationRepository;
     private static final Double DISTANCE_IN_METERS = 500.0;
 
-    /**
-     * post 생성 메서드
-     * @param postRequestDto
-     * @return 완료 응답 메세지
-     */
-    public ResponseEntity<?> createPost(PostSaveRequestDto postRequestDto, User user) {
-        // user가 null이 아닐 경우에만 게시글을 작성
+    //게시글 생성
+    public ResponseEntity<?> createPost(PostSaveRequestDto postSaveRequestDto, User user) {
         if(user == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
         }
 
-        // 위치 post에 저장
-        Location location = postRequestDto.getLocation();
+        // post안의 위치값을 Mapper로 entity로 변환 후 저장
+        Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
         locationRepository.save(location);
 
         // post 생성
         Post post = Post.builder()
-                .content(postRequestDto.getContent())
-                .category(postRequestDto.getCategory())
+                .content(postSaveRequestDto.getContent())
+                .category(postSaveRequestDto.getCategory())
                 .user(user)
                 .location(location)
                 .build();
@@ -67,15 +62,10 @@ public class PostService {
         postRepository.save(post);
 
         // 노래 list Song에 저장 후 각 PostSongLink 생성
-        postRequestDto.getSongs().stream()
+        postSaveRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> {
-                    Song song = Song.builder()
-                            .artist(songSaveRequestDto.getArtist())
-                            .title(songSaveRequestDto.getTitle())
-                            .thumbnailImage(songSaveRequestDto.getThumbnail())
-                            .build();
+                    Song song = SongMapper.SONG_INSTANCE.responseDtoToEntity(songSaveRequestDto);
                     return songRepository.save(song);
-
                 }).forEach(post::addPostSongLink);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
@@ -99,14 +89,8 @@ public class PostService {
 
         postRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> {
-                    Song song = Song.builder()
-                            .artist(songSaveRequestDto.getArtist())
-                            .title(songSaveRequestDto.getTitle())
-                            .thumbnailImage(songSaveRequestDto.getThumbnail())
-                            .build();
-
+                    Song song = SongMapper.SONG_INSTANCE.responseDtoToEntity(songSaveRequestDto);
                     return songRepository.save(song);
-
                 }).forEach(post::addPostSongLink);
 
         post.update(postRequestDto);
@@ -134,11 +118,27 @@ public class PostService {
         Post post = findPost(postId);
         return mapToPostResponseDto(post);
     }
+
     @Transactional(readOnly = true)
-    //위치 서비스에 따른 전체 게시글 조회
-    public List<PostResponseDto> getAllPost(PostSearchRequestDto postSearchRequestDto) {
-        Double longitude = postSearchRequestDto.getLocation().getLongitude();
-        Double latitude = postSearchRequestDto.getLocation().getLatitude();
+    // 카테고리 별 전체 게시글 조회
+    public List<PostResponseDto> getAllPost() {
+
+        List<Post> posts = postRepository.findAllByCategoryWishlistCountDesc();
+        return posts.stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 위치 정보를 동의 여부에 따른 게시물 조회서비스
+     * @param postSearchRequestDto
+     * @return 근처에 해당하는 카테고리별 게시물들
+     */
+    @Transactional(readOnly = true)
+    public List<?> getPostByCategory(PostSearchRequestDto postSearchRequestDto) {
+
+        Double longitude = postSearchRequestDto.getLongitude();
+        Double latitude = postSearchRequestDto.getLatitude();
 
         List<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS);
         return posts.stream()
@@ -146,37 +146,8 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 위치 정보를 동의 여부에 따른 카테고리 별 게시물 조회서비스
-     * @param postSearchRequestDto
-     * @return 근처에 해당하는 카테고리별 게시물들
-     */
-    @Transactional(readOnly = true)
-    public List<?> getPostByCategory(PostSearchRequestDto postSearchRequestDto) {
 
-        String category = postSearchRequestDto.getCategory();
-        Double longitude = postSearchRequestDto.getLocation().getLongitude();
-        Double latitude = postSearchRequestDto.getLocation().getLatitude();
-//        if(!postSearchRequestDto.getLocationAgreed()) {
-//            return Collections.singletonList(ResponseEntity.status(HttpStatus.FORBIDDEN).body("위치정보에 동의하신다면 더 많은 서비스를 이용하실 수 있습니다."));
-//        }
-        List<Post> posts = postRepository.findAllByCategoryAndLocationNear(category, latitude, longitude, DISTANCE_IN_METERS);
-        return posts.stream()
-                .map(this::mapToPostResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    // 좋아요 순 인기 게시글 내림차순 조회
-    public List<PostResponseDto> getPostByWishlist() {
-
-        return wishlistRepository.findPostsByWishlistCountDesc().stream()
-                .map(this::mapToPostResponseDto)
-                .collect(Collectors.toList());
-
-    }
-
-
-    // stream.map 안에서 Dto로 변경하는 메서드
+    // stream.map 안에서 wishlistCount값을 추가시켜 Dto로 변경하는 메서드
     private PostResponseDto mapToPostResponseDto(Post post){
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         return POST_INSTANCE.entityToResponseDto(post, wishlistCount);
@@ -191,18 +162,14 @@ public class PostService {
 
     // 수정, 삭제 할 게시물의 권한을 확인하는 메서드
     public void checkAuthority(Post post, User user) throws AccessDeniedException {
-//        // admin 확인
+        // admin 확인
 //        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {
-//            // userId 확인
-//            if (post.getUser().getId() != user.getId()) {
-//                throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
-//            }
-//        }
-
-        if (post.getUser().getId().equals(user.getId())){
-            throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
+            // userId 확인
+            if (post.getUser().getId().equals(user.getId())) {
+                throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
+            }
         }
-    }
+//    }
 
 
 }
