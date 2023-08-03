@@ -7,7 +7,6 @@ import com.sparta.i_mu.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +36,12 @@ public class PostController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return postService.createPost(postRequestDto,user);
+    }
+
+    // 상세 게시글 조회
+    @GetMapping("/{postId}")
+    public PostResponseDto getDetailPost(@PathVariable Long postId){
+        return postService.getDetailPost(postId);
     }
 
 

@@ -14,6 +14,6 @@ public interface PostMapper {
     @Mapping(source = "post.user.id", target = "userId")
     @Mapping(source = "post.user.nickname", target = "nickname")
     @Mapping(source = "post.postSongLink", target = "songs") // PostSongLink 리스트를 SongResponseDto 리스트로 변환해야 함
-    PostResponseDto entityToDto(Post post);
+    PostResponseDto entityToResponseDto(Post post, Long wishlistCount);
 
 }

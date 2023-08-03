@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,6 +78,12 @@ public class PostService {
                 }).forEach(post::addPostSongLink);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
+    }
+
+    //상세 게시글 조회
+    public PostResponseDto getDetailPost(Long postId) {
+        Post post = findPost(postId);
+        return mapToPostResponseDto(post);
     }
 
     /**
@@ -147,6 +152,12 @@ public class PostService {
         checkAuthority(post,user);
         postRepository.delete(post);
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
+    }
+
+    // stream.map 안에서 Dto로 변경하는 메서드
+    private PostResponseDto mapToPostResponseDto(Post post){
+        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
+        return POST_INSTANCE.entityToResponseDto(post, wishlistCount);
     }
 
 
