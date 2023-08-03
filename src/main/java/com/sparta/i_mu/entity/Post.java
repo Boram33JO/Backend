@@ -34,7 +34,7 @@ public class Post extends Timestamped{
     private Location location;
 
     //post에 연결된 song 리스트
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<PostSongLink> postSongLink = new ArrayList<>();
 
     // user와의 관계
@@ -67,6 +67,7 @@ public class Post extends Timestamped{
      * @param postSaveRequestDto
      */
     public void update(PostSaveRequestDto postSaveRequestDto) {
+        this.location = postSaveRequestDto.getLocation();
         this.content = postSaveRequestDto.getContent();
         this.category = postSaveRequestDto.getCategory();
     }

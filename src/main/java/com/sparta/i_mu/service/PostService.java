@@ -85,6 +85,7 @@ public class PostService {
 
     /**
      * 위치 정보를 동의 여부에 따른 카테고리 별 게시물 조회서비스
+     * TODO 동의하지 않았을 경우 기본위치에 관한 카테고리를 보여주게 수정필요
      * @param postSearchRequestDto
      * @return 근처에 해당하는 카테고리별 게시물들
      */
@@ -102,6 +103,44 @@ public class PostService {
         return posts.stream()
                 .map(POST_INSTANCE::entityToDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 게시글 수정
+     * @param postId
+     * @param postRequestDto
+     * @return 수정된 게시글
+     */
+    @Transactional
+    public ResponseEntity<?> updatePost(Long postId, PostSaveRequestDto postRequestDto, User user) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 게시물이 없습니다."));
+
+        // 사용자 확인
+        if(!post.getUser().getId().equals(user.getId())){
+            throw new IllegalArgumentException("해당 게시물의 작성자만 수정이 가능합니다.");
+        }
+
+        // post의 song의 연결 주체인 postSongLink 삭제
+        post.removeSongs();
+
+        postRequestDto.getSongs().stream()
+                .map(songSaveRequestDto -> {
+                    Song song = Song.builder()
+                            .artist(songSaveRequestDto.getArtist())
+                            .title(songSaveRequestDto.getTitle())
+                            .thumbnailImage(songSaveRequestDto.getThumbnail())
+                            .build();
+
+                    return songRepository.save(song);
+
+                }).forEach(post::addPostSongLink);
+
+        post.update(postRequestDto);
+        postRepository.save(post);
+
+        return ResponseEntity.status(HttpStatus.OK).body("게시물이 업데이트 되었습니다.");
     }
 
 }
