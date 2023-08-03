@@ -29,6 +29,9 @@ public class Post extends Timestamped{
     @Column
     private String category;
 
+    @Column
+    private Long wishlistCount;
+
     @OneToOne
     @JoinColumn(name = "location_id")
     private Location location;
@@ -41,7 +44,6 @@ public class Post extends Timestamped{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
 
     /**
      * 먼저 생성된 post에 location 추가
@@ -63,19 +65,23 @@ public class Post extends Timestamped{
     }
 
     /**
-     * update 메서드
-     * @param postSaveRequestDto
-     */
-    public void update(PostSaveRequestDto postSaveRequestDto) {
-        this.location = postSaveRequestDto.getLocation();
-        this.content = postSaveRequestDto.getContent();
-        this.category = postSaveRequestDto.getCategory();
-    }
-
-    /**
      * Post와 Song을 연결한 postSongLink 해지
      */
     public void removeSongs() {
         this.postSongLink.clear();
+    }
+
+    /**
+     * update 메서드
+     * @param postSaveRequestDto
+     */
+    public void update(PostSaveRequestDto postSaveRequestDto) {
+        this.location = Location.builder()
+                .latitude(postSaveRequestDto.getLatitude())
+                .longitude(postSaveRequestDto.getLongitude())
+                .address(postSaveRequestDto.getAddress())
+                .build();
+        this.content = postSaveRequestDto.getContent();
+        this.category = postSaveRequestDto.getCategory();
     }
 }

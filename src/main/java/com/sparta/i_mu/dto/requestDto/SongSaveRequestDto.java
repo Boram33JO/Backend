@@ -6,5 +6,6 @@ import lombok.Getter;
 public class SongSaveRequestDto {
     private String artist;
     private String title;
+    private String album;
     private String thumbnail;
 }

@@ -10,7 +10,10 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostSaveRequestDto {
-    private Location location;
+
+    private Double latitude;
+    private Double longitude;
+    private String address;
     private List<SongSaveRequestDto> songs;
     private String content;
     private String category;

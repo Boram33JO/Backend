@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class PostSearchRequestDto {
-    private Location location;
-    private Boolean locationAgreed;
-    private String category;
+    private Double latitude;
+    private Double longitude;
 }

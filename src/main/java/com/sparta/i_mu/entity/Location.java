@@ -14,7 +14,6 @@ import static lombok.AccessLevel.PROTECTED;
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class Location {
-
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
@@ -22,4 +21,6 @@ public class Location {
     private Double latitude; //위도 y
     @Column
     private Double longitude; //경도 x
+    @Column
+    private String address;
 }
