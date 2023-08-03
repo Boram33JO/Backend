@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 public class SignUpRequestDto {
 
-    @Pattern(regexp = "[a-zA-Z0-9]{2,10}")
-    private String nickname;
+    @Pattern(regexp = "[a-zA-Z0-9ㄱ-ㅎ가-힣]{2,10}")
+    private String nickname;  //loginId
 
     @Pattern(regexp = "[a-zA-Z0-9'~!@#$%^&*()-_=+]{8,15}")  // 특수문자 포함되도록 변경
     private String password;

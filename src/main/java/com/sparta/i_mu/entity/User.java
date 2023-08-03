@@ -1,11 +1,13 @@
 package com.sparta.i_mu.entity;
 
+import com.nimbusds.oauth2.sdk.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import static jakarta.persistence.EnumType.STRING;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -29,10 +31,7 @@ public class User {
     @Column(unique = true)
     private String nickname;
 
+//    @Enumerated(STRING)
+//    private Role role;
 
-    public User(String nickname, String password, String email) {
-        this.nickname = nickname;
-        this.password = password;
-        this.email = email;
-    }
 }
