@@ -5,6 +5,7 @@ import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
 import com.sparta.i_mu.entity.Location;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.entity.Song;
+import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.repository.LocationRepository;
 import com.sparta.i_mu.repository.PostRepository;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
@@ -47,19 +48,25 @@ public class PostService {
      * @param postRequestDto
      * @return 완료 메세지
      */
-    public ResponseEntity<?> createPost(PostSaveRequestDto postRequestDto) {
-        // post 생성
-        Post post = Post.builder()
-                .content(postRequestDto.getContent())
-                .category(postRequestDto.getCategory())
-                .build();
-
-        postRepository.save(post);
+    public ResponseEntity<?> createPost(PostSaveRequestDto postRequestDto, User user) {
+        // user가 null이 아닐 경우에만 게시글을 작성
+        if(user == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
+        }
 
         // 위치 post에 저장
         Location location = postRequestDto.getLocation();
         locationRepository.save(location);
-        post.addLocation(location);
+
+        // post 생성
+        Post post = Post.builder()
+                .content(postRequestDto.getContent())
+                .category(postRequestDto.getCategory())
+                .user(user)
+                .location(location)
+                .build();
+
+        postRepository.save(post);
 
         // 노래 list Song에 저장 후 각 PostSongLink 생성
         postRequestDto.getSongs().stream()

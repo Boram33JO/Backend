@@ -22,9 +22,4 @@ public class Location {
     private Double latitude; //위도 y
     @Column
     private Double longitude; //경도 x
-
-    @OneToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
-
 }

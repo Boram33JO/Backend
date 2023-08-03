@@ -1,6 +1,6 @@
 package com.sparta.i_mu.entity;
 
-import com.sparta.i_mu.dto.responseDto.SongResponseDto;
+import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,8 @@ public class Post extends Timestamped{
     @Column
     private String category;
 
-    @OneToOne(mappedBy = "post")
+    @OneToOne
+    @JoinColumn(name = "location_id")
     private Location location;
 
     //post에 연결된 song 리스트
@@ -50,7 +51,6 @@ public class Post extends Timestamped{
         this.location = location;
     }
 
-
     /**
      * 먼저 생성된 post에 song 추가
      * @param song
@@ -60,5 +60,21 @@ public class Post extends Timestamped{
                 .song(song)
                 .post(this)
                 .build();
+    }
+
+    /**
+     * update 메서드
+     * @param postSaveRequestDto
+     */
+    public void update(PostSaveRequestDto postSaveRequestDto) {
+        this.content = postSaveRequestDto.getContent();
+        this.category = postSaveRequestDto.getCategory();
+    }
+
+    /**
+     * Post와 Song을 연결한 postSongLink 해지
+     */
+    public void removeSongs() {
+        this.postSongLink.clear();
     }
 }
