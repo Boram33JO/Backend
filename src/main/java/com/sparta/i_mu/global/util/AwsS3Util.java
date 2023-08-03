@@ -41,6 +41,16 @@ public class AwsS3Util {
         return amazonS3.getUrl(bucket, fileName).toString();
     }
 
+    public void deleteImage(String profileImageUrl) {
+        if (profileImageUrl == null) {
+            return;
+        }
+
+        String deleteImageUrl = profileImageUrl.substring(profileImageUrl.lastIndexOf("/")+1);
+
+        amazonS3.deleteObject(bucket, deleteImageUrl);
+    }
+
     private String createFileName(String fileName) {
         return UUID.randomUUID().toString().concat(getFileExtension(fileName));
     }
