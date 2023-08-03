@@ -19,7 +19,7 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @PutMapping
-    public ResponseResource<?> updateProfile(@RequestPart(value = "image", required = false) MultipartFile multipartFile, @RequestPart(required = false) ProfileRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseResource<?> updateProfile(@RequestPart(value = "userImage", required = false) MultipartFile multipartFile, @RequestPart(required = false) ProfileRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return profileService.updateProfile(multipartFile, requestDto, userDetails.getUser().getId());
     }
 

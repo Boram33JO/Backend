@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProfileRequestDto {
@@ -14,5 +13,7 @@ public class ProfileRequestDto {
     private String password;
 
     private String nickname;
+
+    private String introduce;
 
 }

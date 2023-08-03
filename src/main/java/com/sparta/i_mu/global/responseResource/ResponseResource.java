@@ -9,7 +9,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Getter
 @Builder
-@AllArgsConstructor(access = PROTECTED)
+@AllArgsConstructor
 public class ResponseResource<T> {
     private final boolean success;
     private final T data;

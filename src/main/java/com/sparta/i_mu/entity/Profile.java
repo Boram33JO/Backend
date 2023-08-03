@@ -30,13 +30,17 @@ public class Profile {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @Column(nullable = false)
-    private String profileImageUrl = "http://example.image";
+    @Column
+    private String introduce;
+
+    @Column
+    private String userImage;
 
 
     public void update(Profile profile) {
         this.password = profile.getPassword();
         this.nickname = profile.getNickname();
-        this.profileImageUrl = profile.getProfileImageUrl();
+        this.introduce = profile.getIntroduce();
+        this.userImage = profile.getUserImage();
     }
 }
