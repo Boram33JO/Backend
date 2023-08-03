@@ -7,13 +7,11 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 
-@Mapper(uses = {PostSongLinkMapper.class})
+@Mapper(uses = {PostSongLinkMapper.class})// PostSongLink 리스트를 SongResponseDto 리스트로 변환해야 함
 public interface PostMapper {
     PostMapper POST_INSTANCE = Mappers.getMapper(PostMapper.class);
 
-    @Mapping(source = "post.user.id", target = "userId")
-    @Mapping(source = "post.user.nickname", target = "nickname")
-    @Mapping(source = "post.postSongLink", target = "songs") // PostSongLink 리스트를 SongResponseDto 리스트로 변환해야 함
+    @Mapping(source = "post.postSongLink", target = "songs")
     PostResponseDto entityToResponseDto(Post post, Long wishlistCount);
 
 }
