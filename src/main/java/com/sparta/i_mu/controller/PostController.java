@@ -44,7 +44,11 @@ public class PostController {
         return postService.getDetailPost(postId);
     }
 
-
+    // 전국 기준 좋아요 순 인기 게시글 조회
+    @GetMapping("/wishlist")
+    public List<PostResponseDto> getPostByWishlist(){
+        return postService.getPostByWishlist();
+    }
 
     @GetMapping("/")
     // 게시글 수정

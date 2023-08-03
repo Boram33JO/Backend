@@ -86,6 +86,14 @@ public class PostService {
         return mapToPostResponseDto(post);
     }
 
+    // 좋아요 순 인기 게시글 내림차순 조회
+    public List<PostResponseDto> getPostByWishlist() {
+
+        return wishlistRepository.findPostsByWishlistCountDesc().stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+
+    }
     /**
      * 위치 정보를 동의 여부에 따른 카테고리 별 게시물 조회서비스
      * @param postSearchRequestDto
