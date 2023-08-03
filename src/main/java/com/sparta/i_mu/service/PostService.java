@@ -21,11 +21,12 @@ import java.util.stream.Collectors;
 import static com.sparta.i_mu.mapper.PostMapper.POST_INSTANCE;
 
 // 주변 게시글 카테고리별 전체 조회 -> O
+// 지도페이지에서 검색시 주변 게시글 조회
 // 상세 게시글 조회 -> O
 // 게시글 작성 -> O
 // 게시글 수정 -> O
 // 게시글 삭제 -> O
-// 좋아요 순 게시글 조회
+// 좋아요 순 게시글 조회 -> O
 // 좋아요 순 반대 게시글 조회
 // 최근 순 게시글 조회
 @Service
@@ -80,40 +81,6 @@ public class PostService {
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
     }
 
-    //상세 게시글 조회
-    public PostResponseDto getDetailPost(Long postId) {
-        Post post = findPost(postId);
-        return mapToPostResponseDto(post);
-    }
-
-    // 좋아요 순 인기 게시글 내림차순 조회
-    public List<PostResponseDto> getPostByWishlist() {
-
-        return wishlistRepository.findPostsByWishlistCountDesc().stream()
-                .map(this::mapToPostResponseDto)
-                .collect(Collectors.toList());
-
-    }
-    /**
-     * 위치 정보를 동의 여부에 따른 카테고리 별 게시물 조회서비스
-     * @param postSearchRequestDto
-     * @return 근처에 해당하는 카테고리별 게시물들
-     */
-    @Transactional(readOnly = true)
-    public List<?> getPostByCategory(PostSearchRequestDto postSearchRequestDto) {
-
-        String category = postSearchRequestDto.getCategory();
-        Double longitude = postSearchRequestDto.getLocation().getLongitude();
-        Double latitude = postSearchRequestDto.getLocation().getLatitude();
-//        if(!postSearchRequestDto.getLocationAgreed()) {
-//            return Collections.singletonList(ResponseEntity.status(HttpStatus.FORBIDDEN).body("위치정보에 동의하신다면 더 많은 서비스를 이용하실 수 있습니다."));
-//        }
-        List<Post> posts = postRepository.findAllByCategoryAndLocationNear(category, latitude, longitude, DISTANCE_IN_METERS);
-        return posts.stream()
-                .map(this::mapToPostResponseDto)
-                .collect(Collectors.toList());
-    }
-
     /**
      * 게시글 수정
      * @param postId
@@ -162,6 +129,53 @@ public class PostService {
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
     }
 
+    //상세 게시글 조회
+    public PostResponseDto getDetailPost(Long postId) {
+        Post post = findPost(postId);
+        return mapToPostResponseDto(post);
+    }
+    @Transactional(readOnly = true)
+    //위치 서비스에 따른 전체 게시글 조회
+    public List<PostResponseDto> getAllPost(PostSearchRequestDto postSearchRequestDto) {
+        Double longitude = postSearchRequestDto.getLocation().getLongitude();
+        Double latitude = postSearchRequestDto.getLocation().getLatitude();
+
+        List<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS);
+        return posts.stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 위치 정보를 동의 여부에 따른 카테고리 별 게시물 조회서비스
+     * @param postSearchRequestDto
+     * @return 근처에 해당하는 카테고리별 게시물들
+     */
+    @Transactional(readOnly = true)
+    public List<?> getPostByCategory(PostSearchRequestDto postSearchRequestDto) {
+
+        String category = postSearchRequestDto.getCategory();
+        Double longitude = postSearchRequestDto.getLocation().getLongitude();
+        Double latitude = postSearchRequestDto.getLocation().getLatitude();
+//        if(!postSearchRequestDto.getLocationAgreed()) {
+//            return Collections.singletonList(ResponseEntity.status(HttpStatus.FORBIDDEN).body("위치정보에 동의하신다면 더 많은 서비스를 이용하실 수 있습니다."));
+//        }
+        List<Post> posts = postRepository.findAllByCategoryAndLocationNear(category, latitude, longitude, DISTANCE_IN_METERS);
+        return posts.stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    // 좋아요 순 인기 게시글 내림차순 조회
+    public List<PostResponseDto> getPostByWishlist() {
+
+        return wishlistRepository.findPostsByWishlistCountDesc().stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+
+    }
+
+
     // stream.map 안에서 Dto로 변경하는 메서드
     private PostResponseDto mapToPostResponseDto(Post post){
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
@@ -176,7 +190,6 @@ public class PostService {
     }
 
     // 수정, 삭제 할 게시물의 권한을 확인하는 메서드
-
     public void checkAuthority(Post post, User user) throws AccessDeniedException {
 //        // admin 확인
 //        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {
@@ -190,4 +203,6 @@ public class PostService {
             throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
         }
     }
+
+
 }
