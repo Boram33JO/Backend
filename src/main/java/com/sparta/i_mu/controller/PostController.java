@@ -4,6 +4,7 @@ import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +26,16 @@ import java.util.List;
 // . 최신 순 게시글 조회
 // . 작성 순 게시글 조회
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
     private PostService postService;
 
-
     // 게시물 등록
     @PostMapping
     public ResponseEntity<?> createPost(
-            @RequestBody PostSaveRequestDto postRequestDto
+            @RequestBody PostSaveRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return postService.createPost(postRequestDto,user);
@@ -46,7 +46,7 @@ public class PostController {
     @PutMapping("/{postId}")
     public ResponseEntity<?> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostSaveRequestDto postRequestDto
+            @RequestBody PostSaveRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws AccessDeniedException {
 
         User user = userDetails.getUser();
@@ -77,7 +77,7 @@ public class PostController {
 
     // 5. 위치 서비스에 따른 카테고리별 게시글 조회
 
-    @GetMapping
+    @GetMapping("/category")
     public List<?> getPostByCategory(
             @RequestBody PostSearchRequestDto postSearchRequestDto){
         return postService.getPostByCategory(postSearchRequestDto);
