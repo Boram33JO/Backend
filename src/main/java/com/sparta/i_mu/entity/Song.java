@@ -22,16 +22,14 @@ public class Song {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
-
+    @Column
+    private String songId;
     @Column
     private String title;
-
     @Column
     private String artist;
-
     @Column
     private String album;
-
     @Column
     private String thumbnailImage;
 

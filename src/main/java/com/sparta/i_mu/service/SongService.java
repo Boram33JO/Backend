@@ -41,6 +41,7 @@ public class SongService {
 
             return Arrays.stream(tracks)
                     .map(track -> {
+                        String songId = track.getId();
                         String title = track.getName();
                         AlbumSimplified album = track.getAlbum();
                         ArtistSimplified[] artists = album.getArtists();
