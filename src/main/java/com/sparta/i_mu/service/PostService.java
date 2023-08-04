@@ -132,10 +132,10 @@ public class PostService {
     /**
      * 위치 정보를 동의 여부에 따른 게시물 조회서비스
      * @param postSearchRequestDto
-     * @return 근처에 해당하는 카테고리별 게시물들
+     * @return 근처에 해당하는 카테고리별 게시물들 -> 작성순? 좋아요순?
      */
     @Transactional(readOnly = true)
-    public List<?> getPostByCategory(PostSearchRequestDto postSearchRequestDto) {
+    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto) {
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
@@ -146,13 +146,21 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    //상세리스트 페이지 - 카테고리 별 전체 조회 기본(최신순)
+    public List<PostResponseDto> getPostByCategory(String category) {
+
+        List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
+        return posts.stream()
+                .map(this::mapToPostResponseDto)
+                .collect(Collectors.toList());
+    }
 
     // stream.map 안에서 wishlistCount값을 추가시켜 Dto로 변경하는 메서드
+
     private PostResponseDto mapToPostResponseDto(Post post){
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         return POST_INSTANCE.entityToResponseDto(post, wishlistCount);
     }
-
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
     public Post findPost(Long postId) {
@@ -161,6 +169,7 @@ public class PostService {
     }
 
     // 수정, 삭제 할 게시물의 권한을 확인하는 메서드
+
     public void checkAuthority(Post post, User user) throws AccessDeniedException {
         // admin 확인
 //        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {

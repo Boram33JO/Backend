@@ -62,23 +62,30 @@ public class PostController {
         return postService.deletePost(postId,user);
     }
 
+    // 메인페이지 - 카테고리 별 전체 게시글 조회
+    @GetMapping
+    public List<PostResponseDto> getAllPost(){
+        return postService.getAllPost();
+    }
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
     public PostResponseDto getDetailPost(@PathVariable Long postId){
         return postService.getDetailPost(postId);
     }
 
-    // 메인페이지 - 카테고리 별 전체 게시글 조회
-    @GetMapping
-    public List<PostResponseDto> getAllPost(){
-        return postService.getAllPost();
+    // 상세 리스트 페이지 - 내주변
+    @GetMapping("/area")
+    public List<PostResponseDto> getAllAreaPost(@RequestBody PostSearchRequestDto postSearchRequestDto){
+        return postService.getAllAreaPost(postSearchRequestDto);
     }
-
+    // 상세 리스트 페이지 - 카테고리별
+    @GetMapping("")
+    public List<PostResponseDto> getPostByCategory(
+            @RequestParam String category){
+        return postService.getPostByCategory(category);
+    }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
-    @GetMapping("/category")
-    public List<?> getPostByCategory(
-            @RequestBody PostSearchRequestDto postSearchRequestDto){
-        return postService.getPostByCategory(postSearchRequestDto);
-    }
+
+
 
 }

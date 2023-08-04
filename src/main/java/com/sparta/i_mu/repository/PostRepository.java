@@ -11,4 +11,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByLocationNear(Double latitude, Double longitude, Double DISTANCE_IN_METERS);
     @Query("SELECT p FROM Post p WHERE p.category = :category ORDER BY p.wishlistCount DESC")
     List<Post> findAllByCategoryWishlistCountDesc();
+
+    List<Post> findAllByCategoryOrderByCreatedAtDesc(String category);
 }
