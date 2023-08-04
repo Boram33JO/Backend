@@ -1,11 +1,13 @@
 package com.sparta.i_mu.dto.responseDto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @Builder
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SongResponseDto {
+    private String songId;
     private String artistName;
     private String title;
     private String album;
