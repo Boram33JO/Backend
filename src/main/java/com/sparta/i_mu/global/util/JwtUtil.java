@@ -29,7 +29,6 @@ import static org.springframework.boot.web.servlet.filter.ApplicationContextHead
 public class JwtUtil {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public final String HEADER_ACCESS_TOKEN = "AccessToken";
     private final String BEARER = "Bearer ";
     private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 3000L; // 1시간
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -63,28 +62,6 @@ public class JwtUtil {
 
 
     /**
-     * 헤더에 토큰을 추가 합니다
-     * @param accessToken
-     * @param response
-     */
-    public void addTokenToHeader(String accessToken, HttpServletResponse response) {
-        response.setHeader(HEADER_ACCESS_TOKEN, accessToken);
-    }
-
-    /**
-     * 헤더에서 AccessToken 추출
-     * @param request
-     * @return subString으로 추출된 token
-     */
-    public String getAccessTokenFromHeader(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_ACCESS_TOKEN);
-        if (StringUtils.hasText(token)) {
-            return substringToken(token);
-        }
-        return null;
-    }
-
-    /**
      *JWT Bearer Substirng 메서드
      * @param token
      * @return subString으로 추출된 token 값
@@ -96,19 +73,6 @@ public class JwtUtil {
         throw new NullPointerException("토큰의 값이 존재하지 않습니다.");
     }
 
-
-    /**
-     * JWT 토큰의 사용자 정보 가져오는 메서드
-     * @param tokenValue
-     * @return 추출된 사용자 정보
-     */
-    public Claims getUserInfo(String tokenValue) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(tokenValue)
-                .getBody();
-    }
 
 
     /**
@@ -134,7 +98,7 @@ public class JwtUtil {
 
 
     public String getTokenFromRequest(HttpServletRequest req){
-        return req.getHeader(HEADER_NAME);
+        return req.getHeader(AUTHORIZATION_HEADER);
     }
 
     public Claims getUserInfoFromToken(String token) {
