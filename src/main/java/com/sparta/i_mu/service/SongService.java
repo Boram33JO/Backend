@@ -51,6 +51,7 @@ public class SongService {
                         String albumName = album.getName();
 
                         return SongResponseDto.builder()
+                                .songId(songId)
                                 .artistName(artistName)
                                 .album(albumName)
                                 .thumbnail(thumbnail)
