@@ -32,12 +32,12 @@ import static com.sparta.i_mu.mapper.PostMapper.POST_INSTANCE;
 @Transactional
 public class PostService {
 
-    private PostRepository postRepository;
-    private SongRepository songRepository;
-    private PostSongLinkRepository postSongLinkRepository;
-    private WishlistRepository wishlistRepository;
-    private LocationRepository locationRepository;
-    private CategoryRepository categoryRepository;
+    private final PostRepository postRepository;
+    private final SongRepository songRepository;
+    private final PostSongLinkRepository postSongLinkRepository;
+    private final WishlistRepository wishlistRepository;
+    private final LocationRepository locationRepository;
+    private final CategoryRepository categoryRepository;
     private static final Double DISTANCE_IN_METERS = 500.0;
 
     //게시글 생성
@@ -46,12 +46,11 @@ public class PostService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
         }
 
-        // post안의 위치값을 Mapper로 entity로 변환 후 저장
         Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
-        locationRepository.save(location);
-
         Category category = categoryRepository.findByName(postSaveRequestDto.getCategory()).orElseThrow(
                 ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+
+        locationRepository.save(location);
         // post 생성
         Post post = Post.builder()
                 .content(postSaveRequestDto.getContent())

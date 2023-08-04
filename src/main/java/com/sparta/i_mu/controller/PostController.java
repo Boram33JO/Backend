@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
-    private PostService postService;
+    private final PostService postService;
 
     // 게시물 등록
     @PostMapping
