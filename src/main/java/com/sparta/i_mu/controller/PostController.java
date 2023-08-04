@@ -2,6 +2,7 @@ package com.sparta.i_mu.controller;
 
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
+import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -64,28 +65,54 @@ public class PostController {
 
     // 메인페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
-    public List<PostResponseDto> getAllPost(){
+    public List<PostByCategoryResponseDto> getAllPost(){
         return postService.getAllPost();
     }
+
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
-    public PostResponseDto getDetailPost(@PathVariable Long postId){
-        return postService.getDetailPost(postId);
+    public PostResponseDto getDetailPost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
+        User user = userDetails.getUser();
+        return postService.getDetailPost(postId,user);
     }
 
     // 상세 리스트 페이지 - 내주변
-    @GetMapping("/area")
-    public List<PostResponseDto> getAllAreaPost(@RequestBody PostSearchRequestDto postSearchRequestDto){
-        return postService.getAllAreaPost(postSearchRequestDto);
+    @GetMapping("/details")
+    public List<PostResponseDto> getAllAreaPost(
+            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
+        User user = userDetails.getUser();
+        return postService.getAllAreaPost(postSearchRequestDto, user);
     }
+
     // 상세 리스트 페이지 - 카테고리별
-    @GetMapping("")
+    @GetMapping("/category")
     public List<PostResponseDto> getPostByCategory(
-            @RequestParam String category){
-        return postService.getPostByCategory(category);
+            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
+        User user = userDetails.getUser();
+        String category = postSearchRequestDto.getCategory();
+        return postService.getPostByCategory(category,user);
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
 
+    @GetMapping("/map")
+    public List<PostByCategoryResponseDto> getMapPostByCategory(
+            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        User user = userDetails.getUser();
+        return postService.getMapPostByCategory(postSearchRequestDto,user);
+
+    }
+
+    // 전국 기준 좋아요 순 인기 게시글 조회
+    @GetMapping("/wishlist")
+    public List<PostResponseDto> getPostByWishlist(){
+        return postService.getPostByWishlist();
+    }
 
 
 }

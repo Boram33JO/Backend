@@ -2,11 +2,9 @@ package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
+import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
-import com.sparta.i_mu.entity.Location;
-import com.sparta.i_mu.entity.Post;
-import com.sparta.i_mu.entity.Song;
-import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.SongMapper;
 import com.sparta.i_mu.repository.*;
@@ -39,6 +37,7 @@ public class PostService {
     private PostSongLinkRepository postSongLinkRepository;
     private WishlistRepository wishlistRepository;
     private LocationRepository locationRepository;
+    private CategoryRepository categoryRepository;
     private static final Double DISTANCE_IN_METERS = 500.0;
 
     //게시글 생성
@@ -51,10 +50,12 @@ public class PostService {
         Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
         locationRepository.save(location);
 
+        Category category = categoryRepository.findByName(postSaveRequestDto.getCategory()).orElseThrow(
+                ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
         // post 생성
         Post post = Post.builder()
                 .content(postSaveRequestDto.getContent())
-                .category(postSaveRequestDto.getCategory())
+                .category(category)
                 .user(user)
                 .location(location)
                 .build();
@@ -113,29 +114,44 @@ public class PostService {
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
     }
 
-    //상세 게시글 조회
-    public PostResponseDto getDetailPost(Long postId) {
-        Post post = findPost(postId);
-        return mapToPostResponseDto(post);
+
+    // 메인페이지 관련
+    @Transactional(readOnly = true)
+    // 카테고리 별 전체 게시글 조회 3개 최신순
+    public List<PostByCategoryResponseDto> getAllPost() {
+
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream()
+                .map(category ->{
+                    List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
+                    List<PostResponseDto> postResponseDtoList = posts.stream()
+                            .map(this::mapToPostResponseDto)
+                            .limit(3)
+                            .collect(Collectors.toList());
+
+                    return PostByCategoryResponseDto.builder()
+                            .category(category.getName()) // check 현재는 객체로
+                            .postByCategoryResponseDtoList(postResponseDtoList)
+                            .build();
+
+                }).collect(Collectors.toList());
+
     }
 
-    @Transactional(readOnly = true)
-    // 카테고리 별 전체 게시글 조회
-    public List<PostResponseDto> getAllPost() {
-
-        List<Post> posts = postRepository.findAllByCategoryWishlistCountDesc();
-        return posts.stream()
+    // 좋아요 순 인기 게시글 내림차순 조회
+    public List<PostResponseDto> getPostByWishlist() {
+        return postRepository.findAllByOrderByWishlistCountDesc().stream()
                 .map(this::mapToPostResponseDto)
+                .limit(5)
                 .collect(Collectors.toList());
+
     }
 
-    /**
-     * 위치 정보를 동의 여부에 따른 게시물 조회서비스
-     * @param postSearchRequestDto
-     * @return 근처에 해당하는 카테고리별 게시물들 -> 작성순? 좋아요순?
-     */
+    // 서브게시물 페이지
+
+    // 서브 게시글 조회 - 내 주변
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto) {
+    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto, User user) {
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
@@ -146,17 +162,48 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    //상세리스트 페이지 - 카테고리 별 전체 조회 기본(최신순)
-    public List<PostResponseDto> getPostByCategory(String category) {
+    //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
+    public List<PostResponseDto> getPostByCategory(String category, User user) {
 
-        List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
+        List<Post> posts = postRepository.findAllPostByCategoryNameOrderByCreatedAtDesc(category);
         return posts.stream()
                 .map(this::mapToPostResponseDto)
                 .collect(Collectors.toList());
+
     }
 
-    // stream.map 안에서 wishlistCount값을 추가시켜 Dto로 변경하는 메서드
+    //상세페이지 게시글 조회
+    public PostResponseDto getDetailPost(Long postId, User user) {
+        Post post = findPost(postId);
+        return mapToPostResponseDto(post);
+    }
 
+    //지도 페이지
+    public List<PostByCategoryResponseDto> getMapPostByCategory(PostSearchRequestDto postSearchRequestDto, User user) {
+
+        Double longitude = postSearchRequestDto.getLongitude();
+        Double latitude = postSearchRequestDto.getLatitude();
+
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream()
+                .map(category ->{
+                    String name = category.getName();
+                    List<Post> posts = postRepository.findAllByCategoryAndLocationNear(name,latitude, longitude, DISTANCE_IN_METERS);
+                    List<PostResponseDto> postResponseDtoList = posts.stream()
+                            .map(this::mapToPostResponseDto)
+                            .collect(Collectors.toList());
+
+                    return PostByCategoryResponseDto.builder()
+                            .category(category.getName()) // check 현재는 객체로
+                            .postByCategoryResponseDtoList(postResponseDtoList)
+                            .build();
+
+                }).collect(Collectors.toList());
+
+    }
+
+
+    // stream.map 안에서 wishlistCount값을 추가시켜 Dto로 변경하는 메서드
     private PostResponseDto mapToPostResponseDto(Post post){
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         return POST_INSTANCE.entityToResponseDto(post, wishlistCount);
