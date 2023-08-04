@@ -11,6 +11,7 @@ import org.mapstruct.factory.Mappers;
 public interface PostMapper {
     PostMapper POST_INSTANCE = Mappers.getMapper(PostMapper.class);
 
+    @Mapping(source = "post.category.name", target = "category")
     @Mapping(source = "post.postSongLink", target = "songs")
     PostResponseDto entityToResponseDto(Post post, Long wishlistCount);
 

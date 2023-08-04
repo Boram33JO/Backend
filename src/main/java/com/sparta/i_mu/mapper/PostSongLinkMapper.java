@@ -9,6 +9,6 @@ import org.mapstruct.factory.Mappers;
 @Mapper
 public interface PostSongLinkMapper {
     PostSongLinkMapper POST_SONG_LINK_INSTANCE = Mappers.getMapper(PostSongLinkMapper.class);
-    @Mapping(source = "postSongLink.song", target = "song")
+    @Mapping(source = "postSongLink.song.id", target = "id")
     SongResponseDto postSongListEntityToSongResponseDto(PostSongLink postSongLink);
 }
