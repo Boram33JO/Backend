@@ -26,11 +26,15 @@ public class Post extends Timestamped{
     @Column
     private String content;
 
-    @Column
-    private String category;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Column
     private Long wishlistCount;
+
+    @Column
+    private Boolean wishlist;
 
     @OneToOne
     @JoinColumn(name = "location_id")
@@ -82,6 +86,8 @@ public class Post extends Timestamped{
                 .address(postSaveRequestDto.getAddress())
                 .build();
         this.content = postSaveRequestDto.getContent();
-        this.category = postSaveRequestDto.getCategory();
+        this.category = Category.builder()
+                .Name(postSaveRequestDto.getCategory())
+                .build();
     }
 }
