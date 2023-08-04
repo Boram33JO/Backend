@@ -132,19 +132,6 @@ public class JwtUtil {
         return false;
     }
 
-    public Cookie tokenToCookie(String token){
-        try {
-            token = URLEncoder.encode(token, "UTF-8").replaceAll("\\+","%20"); // CookieValue 빈 공간(공백)이 있으면 안 됨;
-
-            Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token);
-            cookie.setPath("/"); // 내 홈페이지 전부에 보내기
-            cookie.setMaxAge(60 * 60); // 1시간 뒤 자동 삭제
-            return cookie;
-        } catch (UnsupportedEncodingException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
-    }
 
     public String getTokenFromRequest(HttpServletRequest req){
         return req.getHeader(HEADER_NAME);
