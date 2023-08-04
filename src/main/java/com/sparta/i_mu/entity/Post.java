@@ -87,7 +87,7 @@ public class Post extends Timestamped{
                 .build();
         this.content = postSaveRequestDto.getContent();
         this.category = Category.builder()
-                .Name(postSaveRequestDto.getCategory())
+                .name(postSaveRequestDto.getCategory())
                 .build();
     }
 }

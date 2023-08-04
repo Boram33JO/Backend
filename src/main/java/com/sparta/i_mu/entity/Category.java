@@ -20,6 +20,6 @@ public class Category {
     private Long id;
 
     @Column
-    private String Name;
+    private String name;
 
 }
