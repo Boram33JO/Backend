@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.sparta.i_mu.mapper.PostMapper.POST_INSTANCE;
@@ -220,7 +221,7 @@ public class PostService {
         // admin 확인
 //        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {
             // userId 확인
-            if (post.getUser().getId().equals(user.getId())) {
+            if (!post.getUser().getId().equals(user.getId())) {
                 throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
             }
         }
