@@ -1,10 +1,14 @@
 package com.sparta.i_mu.entity;
 
+import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -22,11 +26,56 @@ public class Post extends Timestamped{
     @Column
     private String content;
 
-    //노래
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column
+    private Long wishlistCount;
+
+    @Column
+    private Boolean wishlist;
+
+    @OneToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
+
+    //post에 연결된 song 리스트
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<PostSongLink> postSongLink = new ArrayList<>();
 
     // user와의 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    /**
+     * 먼저 생성된 post에 song 추가
+     * @param song
+     */
+    public PostSongLink addPostSongLink (Song song) {
+        return PostSongLink.builder()
+                .song(song)
+                .post(this)
+                .build();
+    }
+
+    /**
+     * Post와 Song을 연결한 postSongLink 해지
+     */
+    public void removeSongs() {
+        this.postSongLink.clear();
+    }
+
+    /**
+     * update 메서드
+     * @param postSaveRequestDto
+     */
+    public void update(PostSaveRequestDto postSaveRequestDto , Category newCategory) {
+        this.location.updateCoordinates(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude());
+        this.location.updateAddress(postSaveRequestDto.getAddress());
+        this.category = newCategory;
+        this.content = postSaveRequestDto.getContent();
+    }
 
 }

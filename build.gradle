@@ -21,8 +21,16 @@ repositories {
     mavenCentral()
 }
 
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
 dependencies {
-    //spring web
+    // spotify api
+    implementation 'com.github.thelinmichael:spotify-web-api-java:master-SNAPSHOT'
+    // spring web
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // social login
@@ -31,15 +39,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'    // mapper
+    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
     // JWT
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
     // Mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }
