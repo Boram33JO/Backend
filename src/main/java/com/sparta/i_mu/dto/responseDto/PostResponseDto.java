@@ -16,7 +16,7 @@ public class PostResponseDto {
     private Long userId;
     private String nickname;
     private String content;
-    private String category;
+    private Long category;
     private LocalDateTime createdAt;
     private Boolean wishlist;
     private Long wishlistCount;

@@ -50,19 +50,11 @@ public class Post extends Timestamped{
     private User user;
 
     /**
-     * 먼저 생성된 post에 location 추가
-     * @param location
-     */
-    public void addLocation(Location location) {
-        this.location = location;
-    }
-
-    /**
      * 먼저 생성된 post에 song 추가
      * @param song
      */
-    public void addPostSongLink (Song song) {
-        PostSongLink postSongLink = PostSongLink.builder()
+    public PostSongLink addPostSongLink (Song song) {
+        return PostSongLink.builder()
                 .song(song)
                 .post(this)
                 .build();
@@ -79,15 +71,11 @@ public class Post extends Timestamped{
      * update 메서드
      * @param postSaveRequestDto
      */
-    public void update(PostSaveRequestDto postSaveRequestDto) {
-        this.location = Location.builder()
-                .latitude(postSaveRequestDto.getLatitude())
-                .longitude(postSaveRequestDto.getLongitude())
-                .address(postSaveRequestDto.getAddress())
-                .build();
+    public void update(PostSaveRequestDto postSaveRequestDto , Category newCategory) {
+        this.location.updateCoordinates(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude());
+        this.location.updateAddress(postSaveRequestDto.getAddress());
+        this.category = newCategory;
         this.content = postSaveRequestDto.getContent();
-        this.category = Category.builder()
-                .name(postSaveRequestDto.getCategory())
-                .build();
     }
+
 }

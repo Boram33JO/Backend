@@ -16,5 +16,5 @@ public class PostSaveRequestDto {
     private String address;
     private List<SongSaveRequestDto> songs;
     private String content;
-    private String category;
+    private Long category;
 }
