@@ -8,6 +8,7 @@ import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
+import com.sparta.i_mu.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
@@ -164,7 +166,7 @@ public class PostService {
 
     // 서브 게시글 조회 - 내 주변
 
-    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto, User user) {
+    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto) {
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
@@ -176,7 +178,7 @@ public class PostService {
     }
 
     //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
-    public List<PostResponseDto> getPostByCategory(String category, User user) {
+    public List<PostResponseDto> getPostByCategory(String category) {
 
         List<Post> posts = postRepository.findAllPostByCategoryNameOrderByCreatedAtDesc(category);
         return posts.stream()
@@ -186,13 +188,14 @@ public class PostService {
     }
 
     //상세페이지 게시글 조회
-    public PostResponseDto getDetailPost(Long postId) {
+    public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails) {
         Post post = findPost(postId);
-        return postMapper.mapToPostResponseDto(post);
+
+        return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
     //지도 페이지
-    public List<PostByCategoryResponseDto> getMapPostByCategory(PostSearchRequestDto postSearchRequestDto, User user) {
+    public List<PostByCategoryResponseDto> getMapPostByCategory(PostSearchRequestDto postSearchRequestDto) {
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
@@ -232,6 +235,7 @@ public class PostService {
         }
     }
 //    }
+
 
 
 }
