@@ -44,14 +44,13 @@ public class SongService {
                         String songId = track.getId();
                         String title = track.getName();
                         AlbumSimplified album = track.getAlbum();
+                        String albumName = album.getName();
                         ArtistSimplified[] artists = album.getArtists();
                         String artistName = artists[0].getName();
+                        String thumbnail = track.getAlbum().getUri();
+
                         ExternalUrl external_url = track.getExternalUrls();
-
-                        Image[] images = album.getImages();
-                        String thumbnail = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
-
-                        String albumName = album.getName();
+                        String url = external_url.get("spotify");
 
                         return SongResponseDto.builder()
                                 .songId(songId)
@@ -59,7 +58,7 @@ public class SongService {
                                 .album(albumName)
                                 .thumbnail(thumbnail)
                                 .title(title)
-                                .external_url(external_url.toString())
+                                .external_url(url)
                                 .build();
                     })
                     .collect(Collectors.toList());
