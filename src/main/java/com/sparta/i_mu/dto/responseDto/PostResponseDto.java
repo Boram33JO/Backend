@@ -20,7 +20,7 @@ public class PostResponseDto {
     private LocalDateTime createdAt;
     private Boolean wishlist;
     private Long wishlistCount;
-    private List<Comment> comments;
+    private List<CommentResponseDto> comments;
     private List<SongResponseDto> songs;
     private Location location;
 }

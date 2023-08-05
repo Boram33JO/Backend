@@ -1,8 +1,11 @@
 package com.sparta.i_mu.mapper;
 
+import com.sparta.i_mu.dto.responseDto.CommentResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
+import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Post;
+import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
 import com.sparta.i_mu.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +18,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostMapper {
     private final WishlistRepository wishlistRepository;
-//    private final CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
     private final PostSongLinkRepository postSongLinkRepository;
     private final SongMapper songMapper;
 
     public PostResponseDto mapToPostResponseDto(Post post) {
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
-//        List<Comment> comments = commentRepository.findAllByPostId(post.getId());
+        List<CommentResponseDto> comments = commentRepository.findAllByPostId(post.getId())
+                .stream()
+                .map(CommentResponseDto::new)
+                .toList();
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong())) // SongResponseDto로의 매핑 로직이 필요합니다
@@ -33,9 +39,9 @@ public class PostMapper {
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
-                //.wishlist(post.getWishlist())
+                .wishlist(post.getWishlist())
                 .wishlistCount(wishlistCount)
-                //.comments(comments)
+                .comments(comments)
                 .songs(songs)
                 .location(post.getLocation())
                 .build();
