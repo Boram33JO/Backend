@@ -6,7 +6,7 @@ import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.mapper.LocationMapper;
-import com.sparta.i_mu.mapper.SongMapper;
+import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.sparta.i_mu.mapper.PostMapper.POST_INSTANCE;
+import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
+
 
 // 전체 게시글 카테고리별 전체 조회 -> O
 // 지도페이지에서 검색시 주변 게시글 조회
@@ -39,6 +39,7 @@ public class PostService {
     private final WishlistRepository wishlistRepository;
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
+    private final PostMapper postMapper;
     private static final Double DISTANCE_IN_METERS = 500.0;
 
     //게시글 생성
@@ -48,7 +49,7 @@ public class PostService {
         }
 
         Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
-        Category category = categoryRepository.findByName(postSaveRequestDto.getCategory()).orElseThrow(
+        Category category = categoryRepository.findById(postSaveRequestDto.getCategory()).orElseThrow(
                 ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
         locationRepository.save(location);
@@ -65,9 +66,10 @@ public class PostService {
         // 노래 list Song에 저장 후 각 PostSongLink 생성
         postSaveRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> {
-                    Song song = SongMapper.SONG_INSTANCE.responseDtoToEntity(songSaveRequestDto);
+                    Song song = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
                     return songRepository.save(song);
-                }).forEach(post::addPostSongLink);
+                }).map(post::addPostSongLink)
+                .forEach(postSongLinkRepository::save);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
     }
@@ -85,18 +87,23 @@ public class PostService {
         // 사용자 확인
         checkAuthority(post, user);
 
+        Category newCategory = categoryRepository.findById(postRequestDto.getCategory())
+                .orElseThrow(()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+
         // post의 song의 연결 주체인 postSongLink 삭제
         post.removeSongs();
-
+        //TODO 현재 게시물에서 노래 목록을 가져와 새로 업데이트 될 목록과 비교해서 각각 추가 삭제 하기
         postRequestDto.getSongs().stream()
-                .map(songSaveRequestDto -> {
-                    Song song = SongMapper.SONG_INSTANCE.responseDtoToEntity(songSaveRequestDto);
-                    return songRepository.save(song);
-                }).forEach(post::addPostSongLink);
+                .map(songSaveRequestDto -> songRepository.findBySongId(songSaveRequestDto.getSongId())
+                            .orElseGet(()->{
+                                Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
+                                songRepository.save(newSong);
+                                return newSong;
+                            })
+                ).forEach(post::addPostSongLink);
 
-        post.update(postRequestDto);
+        post.update(postRequestDto, newCategory);
         postRepository.save(post);
-
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 업데이트 되었습니다.");
     }
     /**
@@ -125,7 +132,7 @@ public class PostService {
                 .map(category ->{
                     List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
-                            .map(this::mapToPostResponseDto)
+                            .map(postMapper::mapToPostResponseDto)
                             .limit(3)
                             .collect(Collectors.toList());
 
@@ -138,10 +145,11 @@ public class PostService {
 
     }
 
+
     // 좋아요 순 인기 게시글 내림차순 조회
     public List<PostResponseDto> getPostByWishlist() {
         return postRepository.findAllByOrderByWishlistCountDesc().stream()
-                .map(this::mapToPostResponseDto)
+                .map(postMapper::mapToPostResponseDto)
                 .limit(5)
                 .collect(Collectors.toList());
 
@@ -158,7 +166,7 @@ public class PostService {
 
         List<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS);
         return posts.stream()
-                .map(this::mapToPostResponseDto)
+                .map(postMapper::mapToPostResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -167,15 +175,15 @@ public class PostService {
 
         List<Post> posts = postRepository.findAllPostByCategoryNameOrderByCreatedAtDesc(category);
         return posts.stream()
-                .map(this::mapToPostResponseDto)
+                .map(postMapper::mapToPostResponseDto)
                 .collect(Collectors.toList());
 
     }
 
     //상세페이지 게시글 조회
-    public PostResponseDto getDetailPost(Long postId, User user) {
+    public PostResponseDto getDetailPost(Long postId) {
         Post post = findPost(postId);
-        return mapToPostResponseDto(post);
+        return postMapper.mapToPostResponseDto(post);
     }
 
     //지도 페이지
@@ -190,9 +198,8 @@ public class PostService {
                     String name = category.getName();
                     List<Post> posts = postRepository.findAllByCategoryAndLocationNear(name,latitude, longitude, DISTANCE_IN_METERS);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
-                            .map(this::mapToPostResponseDto)
+                            .map(postMapper::mapToPostResponseDto)
                             .collect(Collectors.toList());
-
                     return PostByCategoryResponseDto.builder()
                             .category(category.getName()) // check 현재는 객체로
                             .postByCategoryResponseDtoList(postResponseDtoList)
@@ -202,12 +209,6 @@ public class PostService {
 
     }
 
-
-    // stream.map 안에서 wishlistCount값을 추가시켜 Dto로 변경하는 메서드
-    private PostResponseDto mapToPostResponseDto(Post post){
-        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
-        return POST_INSTANCE.entityToResponseDto(post, wishlistCount);
-    }
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
     public Post findPost(Long postId) {
@@ -220,11 +221,11 @@ public class PostService {
     public void checkAuthority(Post post, User user) throws AccessDeniedException {
         // admin 확인
 //        if (!user.getRole().getAuthority().equals("ROLE_ADMIN")) {
-            // userId 확인
-            if (!post.getUser().getId().equals(user.getId())) {
-                throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
-            }
+        // userId 확인
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("작성자만 수정, 삭제가 가능합니다.");
         }
+    }
 //    }
 
 

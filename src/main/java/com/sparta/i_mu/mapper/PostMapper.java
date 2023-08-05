@@ -1,18 +1,44 @@
 package com.sparta.i_mu.mapper;
 
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
+import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.entity.Post;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import com.sparta.i_mu.repository.PostSongLinkRepository;
+import com.sparta.i_mu.repository.WishlistRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(uses = {PostSongLinkMapper.class})// PostSongLink 리스트를 SongResponseDto 리스트로 변환해야 함
-public interface PostMapper {
-    PostMapper POST_INSTANCE = Mappers.getMapper(PostMapper.class);
+@Component
+@RequiredArgsConstructor
+public class PostMapper {
+    private final WishlistRepository wishlistRepository;
+//    private final CommentRepository commentRepository;
+    private final PostSongLinkRepository postSongLinkRepository;
+    private final SongMapper songMapper;
 
-    @Mapping(source = "post.category.name", target = "category")
-    @Mapping(source = "post.postSongLink", target = "songs")
-    PostResponseDto entityToResponseDto(Post post, Long wishlistCount);
+    public PostResponseDto mapToPostResponseDto(Post post) {
+        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
+//        List<Comment> comments = commentRepository.findAllByPostId(post.getId());
+        List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
+                .stream()
+                .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong())) // SongResponseDto로의 매핑 로직이 필요합니다
+                .collect(Collectors.toList());
+
+        return PostResponseDto.builder()
+                .userId(post.getUser().getId())
+                .nickname(post.getUser().getNickname())
+                .content(post.getContent())
+                .category(post.getCategory().getId())
+                .createdAt(post.getCreatedAt())
+                //.wishlist(post.getWishlist())
+                .wishlistCount(wishlistCount)
+                //.comments(comments)
+                .songs(songs)
+                .location(post.getLocation())
+                .build();
+    }
 
 }

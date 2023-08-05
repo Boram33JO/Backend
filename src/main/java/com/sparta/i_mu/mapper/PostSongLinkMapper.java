@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
-public interface PostSongLinkMapper {
-    PostSongLinkMapper POST_SONG_LINK_INSTANCE = Mappers.getMapper(PostSongLinkMapper.class);
-    @Mapping(source = "postSongLink.song.id", target = "id")
-    SongResponseDto postSongListEntityToSongResponseDto(PostSongLink postSongLink);
-}
+//@Mapper
+//public interface PostSongLinkMapper {
+//    PostSongLinkMapper POST_SONG_LINK_INSTANCE = Mappers.getMapper(PostSongLinkMapper.class);
+//    @Mapping(source = "postSongLink.song.id", target = "song")
+//    SongResponseDto postSongListEntityToSongResponseDto(PostSongLink postSongLink);
+//}
