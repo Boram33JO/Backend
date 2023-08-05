@@ -6,9 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -22,11 +19,11 @@ public class Song {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
-    @Column
-    private String songId;
-    @Column
+    @Column(nullable = false, unique = true)
+    private String songNum;
+    @Column(nullable = false)
     private String title;
-    @Column
+    @Column(nullable = false)
     private String artistName;
     @Column
     private String album;
@@ -34,8 +31,5 @@ public class Song {
     private String thumbnail;
     @Column
     private String external_url;
-
-    @OneToMany(mappedBy = "song", fetch = FetchType.LAZY)
-    private List<PostSongLink> postSongLink = new ArrayList<>();
 
 }

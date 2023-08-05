@@ -55,7 +55,7 @@ public class SongService {
                         String url = external_url.get("spotify");
 
                         return SongResponseDto.builder()
-                                .songId(songId)
+                                .songNum(songId)
                                 .artistName(artistName)
                                 .album(albumName)
                                 .thumbnail(thumbnail)
