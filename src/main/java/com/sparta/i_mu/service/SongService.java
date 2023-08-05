@@ -47,7 +47,9 @@ public class SongService {
                         String albumName = album.getName();
                         ArtistSimplified[] artists = album.getArtists();
                         String artistName = artists[0].getName();
-                        String thumbnail = track.getAlbum().getUri();
+
+                        Image[] images = album.getImages();
+                        String thumbnail = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
 
                         ExternalUrl external_url = track.getExternalUrls();
                         String url = external_url.get("spotify");
