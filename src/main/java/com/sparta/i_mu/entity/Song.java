@@ -27,11 +27,13 @@ public class Song {
     @Column
     private String title;
     @Column
-    private String artist;
+    private String artistName;
     @Column
     private String album;
     @Column
-    private String thumbnailImage;
+    private String thumbnail;
+    @Column
+    private String external_url;
 
     @OneToMany(mappedBy = "song", fetch = FetchType.LAZY)
     private List<PostSongLink> postSongLink = new ArrayList<>();
