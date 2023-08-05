@@ -2,6 +2,7 @@ package com.sparta.i_mu.controller;
 
 import com.sparta.i_mu.dto.responseDto.FollowResponseDto;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
+import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

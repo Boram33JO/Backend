@@ -1,12 +1,11 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.responseDto.CommentResponseDto;
 import com.sparta.i_mu.dto.responseDto.FollowResponseDto;
 import com.sparta.i_mu.entity.Follow;
 import com.sparta.i_mu.entity.User;
-import com.sparta.i_mu.entity.Wishlist;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.repository.FollowReporitory;
+import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
