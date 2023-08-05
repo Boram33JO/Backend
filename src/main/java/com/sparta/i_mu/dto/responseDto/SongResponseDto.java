@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SongResponseDto {
+    private Long id;
     private String songId;
     private String artistName;
     private String title;
