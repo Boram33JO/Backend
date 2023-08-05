@@ -47,7 +47,8 @@ public class SongService {
                         String albumName = album.getName();
                         ArtistSimplified[] artists = album.getArtists();
                         String artistName = artists[0].getName();
-
+                        String audio = track.getPreviewUrl();
+                        //앨범이미지
                         Image[] images = album.getImages();
                         String thumbnail = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
 
@@ -60,7 +61,10 @@ public class SongService {
                                 .album(albumName)
                                 .thumbnail(thumbnail)
                                 .title(title)
-                                .external_url(url)
+                                //미리 듣기
+                                .audioUrl(audio)
+                                // 스포티파이로 연결하는 url
+                                .externalUrl(url)
                                 .build();
                     })
                     .collect(Collectors.toList());
