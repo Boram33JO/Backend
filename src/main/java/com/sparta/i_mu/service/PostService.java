@@ -30,7 +30,7 @@ import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+
 public class PostService {
 
     private final PostRepository postRepository;
@@ -43,6 +43,7 @@ public class PostService {
     private static final Double DISTANCE_IN_METERS = 500.0;
 
     //게시글 생성
+    @Transactional
     public ResponseEntity<?> createPost(PostSaveRequestDto postSaveRequestDto, User user) {
         if(user == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
@@ -65,10 +66,12 @@ public class PostService {
 
         // 노래 list Song에 저장 후 각 PostSongLink 생성
         postSaveRequestDto.getSongs().stream()
-                .map(songSaveRequestDto -> {
-                    Song song = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
-                    return songRepository.save(song);
-                }).map(post::addPostSongLink)
+                .map(songSaveRequestDto -> songRepository.findBySongNum(songSaveRequestDto.getSongNum())
+                .orElseGet(()->{
+                    Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
+                    songRepository.save(newSong);
+                    return newSong;})
+                ).map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
@@ -94,13 +97,14 @@ public class PostService {
         post.removeSongs();
         //TODO 현재 게시물에서 노래 목록을 가져와 새로 업데이트 될 목록과 비교해서 각각 추가 삭제 하기
         postRequestDto.getSongs().stream()
-                .map(songSaveRequestDto -> songRepository.findBySongId(songSaveRequestDto.getSongId())
+                .map(songSaveRequestDto -> songRepository.findBySongNum(songSaveRequestDto.getSongNum())
                             .orElseGet(()->{
                                 Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
                                 songRepository.save(newSong);
                                 return newSong;
                             })
-                ).forEach(post::addPostSongLink);
+                ).map(post::addPostSongLink)
+                .forEach(postSongLinkRepository::save);
 
         post.update(postRequestDto, newCategory);
         postRepository.save(post);
@@ -113,7 +117,8 @@ public class PostService {
      * @return 게시글 삭제가 완료되었습니다 응답 메시지
      * @throws AccessDeniedException
      */
-    public ResponseEntity<?> deletePost(Long postId, User user) throws AccessDeniedException {
+    @Transactional
+    public ResponseEntity<String> deletePost(Long postId, User user) throws AccessDeniedException {
 
         Post post = findPost(postId);
         checkAuthority(post,user);
@@ -123,7 +128,7 @@ public class PostService {
 
 
     // 메인페이지 관련
-    @Transactional(readOnly = true)
+
     // 카테고리 별 전체 게시글 조회 3개 최신순
     public List<PostByCategoryResponseDto> getAllPost() {
 
@@ -158,7 +163,7 @@ public class PostService {
     // 서브게시물 페이지
 
     // 서브 게시글 조회 - 내 주변
-    @Transactional(readOnly = true)
+
     public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto, User user) {
 
         Double longitude = postSearchRequestDto.getLongitude();
