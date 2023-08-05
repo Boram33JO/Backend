@@ -72,10 +72,8 @@ public class PostController {
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
     public PostResponseDto getDetailPost(
-            @PathVariable Long postId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getDetailPost(postId,user);
+            @PathVariable Long postId){
+        return postService.getDetailPost(postId);
     }
 
     // 상세 리스트 페이지 - 내주변
