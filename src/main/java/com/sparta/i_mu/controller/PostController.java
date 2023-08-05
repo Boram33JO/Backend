@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 // 1. 게시글 작성 -> O
 // 2. 게시글 수정 -> O
@@ -72,37 +73,34 @@ public class PostController {
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
     public PostResponseDto getDetailPost(
-            @PathVariable Long postId){
-        return postService.getDetailPost(postId);
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
+
+        return postService.getDetailPost(postId, Optional.ofNullable(userDetails));
     }
 
     // 상세 리스트 페이지 - 내주변
     @GetMapping("/details")
     public List<PostResponseDto> getAllAreaPost(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getAllAreaPost(postSearchRequestDto, user);
+            @RequestBody PostSearchRequestDto postSearchRequestDto){
+
+        return postService.getAllAreaPost(postSearchRequestDto);
     }
 
     // 상세 리스트 페이지 - 카테고리별
     @GetMapping("/category")
     public List<PostResponseDto> getPostByCategory(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
+            @RequestBody PostSearchRequestDto postSearchRequestDto){
         String category = postSearchRequestDto.getCategory();
-        return postService.getPostByCategory(category,user);
+        return postService.getPostByCategory(category);
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
 
     @GetMapping("/map")
     public List<PostByCategoryResponseDto> getMapPostByCategory(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @RequestBody PostSearchRequestDto postSearchRequestDto) {
 
-        User user = userDetails.getUser();
-        return postService.getMapPostByCategory(postSearchRequestDto,user);
+        return postService.getMapPostByCategory(postSearchRequestDto);
 
     }
 
