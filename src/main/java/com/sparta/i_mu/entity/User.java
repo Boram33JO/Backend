@@ -31,6 +31,19 @@ public class User {
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Column
+    private String introduce;
+
+    @Column
+    private String userImage;
+
+    public void update(User user) {
+        this.password = user.getPassword();
+        this.nickname = user.getNickname();
+        this.introduce = user.getIntroduce();
+        this.userImage = user.getUserImage();
+    }
+
 //    @Enumerated(STRING)
 //    private Role role;
 

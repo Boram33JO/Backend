@@ -7,24 +7,24 @@ import java.util.List;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProfileResponsDto {
+public class UserResponsDto {
     private String nickname;
 
     private List<FollowListResponseDto> followList;
 
-    private List<PostListResponseDto> postList;
+    private List<PostResponseDto> postList;
 
-    private List<WishlistResponseDto> wishList;
+    private List<PostResponseDto> wishList;
 
     private List<CommentListResponseDto> commentList;
 
-    public ProfileResponsDto(String nickname, List<PostListResponseDto> postList, List<FollowListResponseDto> followList) {
+    public UserResponsDto(String nickname, List<PostResponseDto> postList, List<FollowListResponseDto> followList) {
         this.nickname = nickname;
         this.postList = postList;
         this.followList = followList;
     }
 
-    public ProfileResponsDto(String nickname, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<WishlistResponseDto> wishList) {
+    public UserResponsDto(String nickname, List<PostResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<PostResponseDto> wishList) {
         this.nickname = nickname;
         this.postList = postList;
         this.followList = followList;

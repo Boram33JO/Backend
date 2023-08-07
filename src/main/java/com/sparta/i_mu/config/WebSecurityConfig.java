@@ -70,6 +70,7 @@ public class WebSecurityConfig {
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(GET, "/api/search").permitAll()
+                            .requestMatchers(GET, "/api/profile/**").permitAll()
                             
                             .anyRequest().authenticated();
                 })

@@ -7,9 +7,11 @@ import lombok.Getter;
 public class FollowListResponseDto {
     private Long id;
     private String nickname;
+    private String userImage;
 
     public FollowListResponseDto(Follow follow) {
        this.id = follow.getFollowUser().getId();
        this.nickname = follow.getFollowUser().getNickname();
+       this.userImage = follow.getFollowUser().getUserImage();
     }
 }

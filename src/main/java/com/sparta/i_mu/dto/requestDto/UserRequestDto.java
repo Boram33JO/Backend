@@ -1,14 +1,13 @@
 package com.sparta.i_mu.dto.requestDto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileRequestDto {
+public class UserRequestDto {
 
     private String password;
 
