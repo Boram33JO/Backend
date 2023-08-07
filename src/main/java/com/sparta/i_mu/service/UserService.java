@@ -77,7 +77,7 @@ public class UserService {
         // profile, user 합치고 연관관계 설정 후 정보 조회부분 리팩토링 필요
         // response 수정 필요
 
-        User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저 입니다"));
+        User user = findUser(userId);
         String nickname = user.getNickname();
         String introduce = user.getIntroduce();
 
@@ -103,7 +103,7 @@ public class UserService {
         if (!userId.equals(id)) {
             throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
         }
-        User findUser = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        User findUser = findUser(userId);
 
         String getUserImage = findUser.getUserImage();
         String getIntroduce = findUser.getIntroduce();
@@ -149,7 +149,7 @@ public class UserService {
     public ResponseResource<?> updatePassword(Long userId, PasswordRequestDto requestDto, User user) {
         String changePassword = requestDto.getChangePassword();
 
-        User findUser = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        User findUser = findUser(userId);
         if (!userId.equals(user.getId())) {
             throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
         }
@@ -166,6 +166,42 @@ public class UserService {
 
         return new ResponseResource<> (true, "비밀번호 수정 성공", null);
 
+    }
+
+    public List<FollowListResponseDto> getUserFollow(Long userId) {
+        findUser(userId);
+        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
+
+        return followResponseDtoList;
+    }
+
+    public List<PostListResponseDto> getUserPosts(Long userId) {
+        findUser(userId);
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+
+        return postResponseDtoList;
+    }
+
+    public List<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails) {
+        if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
+            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
+
+            return commentResponseDtoList;
+        }
+        return null;
+    }
+
+    public List<PostListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
+        if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
+            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+
+            return wishlistResponseDtoList;
+        }
+        return null;
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 입니다"));
     }
 
     private List<FollowListResponseDto> getFollowListResponseDtoList(Long userId) {

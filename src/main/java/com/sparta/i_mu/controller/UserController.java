@@ -3,8 +3,7 @@ package com.sparta.i_mu.controller;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
-import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
-import com.sparta.i_mu.dto.responseDto.UserResponsDto;
+import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.UserService;
@@ -15,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -41,6 +41,26 @@ public class UserController {
     @PutMapping("/profile/{userId}/password")
     public ResponseResource<?> updatePassword(@PathVariable Long userId, @RequestBody @Valid PasswordRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.updatePassword(userId, requestDto, userDetails.getUser());
+    }
+
+    @GetMapping("/profile/{userId}/follow")
+    public List<FollowListResponseDto> getUserFollow(@PathVariable Long userId) {
+        return userService.getUserFollow(userId);
+    }
+
+    @GetMapping("/profile/{userId}/posts")
+    public List<PostListResponseDto> getUserPosts(@PathVariable Long userId) {
+        return userService.getUserPosts(userId);
+    }
+
+    @GetMapping("/profile/{userId}/comments")
+    public List<CommentListResponseDto> getUserComments(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.getUserComments(userId, Optional.ofNullable(userDetails));
+    }
+
+    @GetMapping("/profile/{userId}/wishlist")
+    public List<PostListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
 
 }
