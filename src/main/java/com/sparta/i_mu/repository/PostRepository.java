@@ -27,4 +27,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 지도페이지 - 위치에 따른 카테고리별 조회
     @Query("SELECT p FROM Post p WHERE p.category.name = :name AND ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude), Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS")
     List<Post> findAllByCategoryAndLocationNear(@Param("name")String name, @Param("latitude") Double latitude, @Param("longitude") Double longitude, @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS);
+
+    List<Post> findAllByUserId(Long userId);
 }
