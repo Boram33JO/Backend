@@ -1,8 +1,6 @@
 package com.sparta.i_mu.mapper;
 
-import com.sparta.i_mu.dto.responseDto.CommentResponseDto;
-import com.sparta.i_mu.dto.responseDto.PostResponseDto;
-import com.sparta.i_mu.dto.responseDto.SongResponseDto;
+import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.CommentRepository;
@@ -72,6 +70,20 @@ public class PostMapper {
                 .comments(comments)
                 .songs(songs)
                 .location(post.getLocation())
+                .build();
+    }
+
+    public PostListResponseDto mapToPostListResponseDto(Post post) {
+        List<PostListSongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
+                .stream()
+                .map(postSongLink -> songMapper.entityToPostListSongResponseDto(postSongLink.getSong()))
+                .collect(Collectors.toList());
+
+        return PostListResponseDto.builder()
+                .postId(post.getId())
+//                .postTitle(post.getPostTitle())
+                .content(post.getContent())
+                .songs(songs)
                 .build();
     }
 

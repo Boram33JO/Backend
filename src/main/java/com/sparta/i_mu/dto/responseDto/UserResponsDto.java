@@ -10,22 +10,26 @@ import java.util.List;
 public class UserResponsDto {
     private String nickname;
 
+    private String introduce;
+
     private List<FollowListResponseDto> followList;
 
-    private List<PostResponseDto> postList;
+    private List<PostListResponseDto> postList;
 
-    private List<PostResponseDto> wishList;
+    private List<PostListResponseDto> wishList;
 
     private List<CommentListResponseDto> commentList;
 
-    public UserResponsDto(String nickname, List<PostResponseDto> postList, List<FollowListResponseDto> followList) {
+    public UserResponsDto(String nickname, String introduce, List<PostListResponseDto> postList, List<FollowListResponseDto> followList) {
         this.nickname = nickname;
+        this.introduce = introduce;
         this.postList = postList;
         this.followList = followList;
     }
 
-    public UserResponsDto(String nickname, List<PostResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<PostResponseDto> wishList) {
+    public UserResponsDto(String nickname, String introduce, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<PostListResponseDto> wishList) {
         this.nickname = nickname;
+        this.introduce = introduce;
         this.postList = postList;
         this.followList = followList;
         this.commentList = commentList;

@@ -1,5 +1,6 @@
 package com.sparta.i_mu.service;
 
+import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
@@ -76,32 +77,36 @@ public class UserService {
         // profile, user 합치고 연관관계 설정 후 정보 조회부분 리팩토링 필요
         // response 수정 필요
 
-        User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저 입니다"));
+        User user = findUser(userId);
         String nickname = user.getNickname();
+        String introduce = user.getIntroduce();
 
         List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
-        List<PostResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
 
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
             List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
 
-            UserResponsDto responsDto = new UserResponsDto(nickname, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
+            UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
             return responsDto;
         }
 
-        UserResponsDto responsDto = new UserResponsDto(nickname, postResponseDtoList, followResponseDtoList);
+        UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList);
 
         return responsDto;
     }
 
     @Transactional
-    public ResponseResource<?> updateUser(MultipartFile multipartFile, UserRequestDto requestDto, Long userId) {
-        User findUser = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile, UserRequestDto requestDto, Long userId) {
+        if (!userId.equals(id)) {
+            throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
+        }
+        User findUser = findUser(userId);
+
         String getUserImage = findUser.getUserImage();
         String getIntroduce = findUser.getIntroduce();
-        String getPassword = findUser.getPassword();
         String getNickname = findUser.getNickname();
 
         if (requestDto == null) {
@@ -119,10 +124,6 @@ public class UserService {
             getIntroduce = requestDto.getIntroduce();
         }
 
-        if (requestDto.getPassword() != null) {
-            getPassword = requestDto.getPassword();
-        }
-
         if (requestDto.getNickname() != null) {
             getNickname = requestDto.getNickname();
         }
@@ -135,7 +136,6 @@ public class UserService {
 
         User user = User.builder()
                 .userImage(getUserImage)
-                .password(passwordEncoder.encode(getPassword))
                 .nickname(getNickname)
                 .introduce(getIntroduce)
                 .build();
@@ -145,30 +145,63 @@ public class UserService {
         return new ResponseResource<> (true, "프로필 수정 성공", null);
     }
 
-    private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
-        List<Comment> commentList = commentRepository.findAllByUserId(userId);
-        List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
-                .map(CommentListResponseDto::new)
-                .toList();
-        return commentResponseDtoList;
+    @Transactional
+    public ResponseResource<?> updatePassword(Long userId, PasswordRequestDto requestDto, User user) {
+        String changePassword = requestDto.getChangePassword();
+
+        User findUser = findUser(userId);
+        if (!userId.equals(user.getId())) {
+            throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
+        }
+
+        if (!passwordEncoder.matches(requestDto.getOriginPassword(), user.getPassword())){
+            throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
+        }
+
+        User changePassswordUser = User.builder()
+                .password(passwordEncoder.encode(changePassword))
+                .build();
+
+        findUser.passwordUpdate(changePassswordUser);
+
+        return new ResponseResource<> (true, "비밀번호 수정 성공", null);
+
     }
 
-    private List<PostResponseDto> getWishlistResponseDtoList(Long userId) {
-        List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
-        List<PostResponseDto> wishListReponsePostList = wishList.stream()
-                .map(wishlist -> postMapper.mapToPostResponseDto(wishlist.getPost()))
-                .collect(Collectors.toList());
+    public List<FollowListResponseDto> getUserFollow(Long userId) {
+        findUser(userId);
+        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
 
-        return wishListReponsePostList;
+        return followResponseDtoList;
     }
 
-    private List<PostResponseDto> getPostListResponseDtoList(Long userId) {
-        List<Post> postList = postRepository.findAllByUserId(userId);
-        List<PostResponseDto> postResponseDtoList = postList.stream()
-                .map(postMapper::mapToPostResponseDto)
-                .collect(Collectors.toList());
+    public List<PostListResponseDto> getUserPosts(Long userId) {
+        findUser(userId);
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
 
         return postResponseDtoList;
+    }
+
+    public List<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails) {
+        if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
+            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
+
+            return commentResponseDtoList;
+        }
+        return null;
+    }
+
+    public List<PostListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
+        if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
+            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+
+            return wishlistResponseDtoList;
+        }
+        return null;
+    }
+
+    private User findUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 입니다"));
     }
 
     private List<FollowListResponseDto> getFollowListResponseDtoList(Long userId) {
@@ -179,4 +212,29 @@ public class UserService {
         return followResponseDtoList;
     }
 
+    private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
+        List<Post> postList = postRepository.findAllByUserId(userId);
+        List<PostListResponseDto> postResponseDtoList = postList.stream()
+                .map(postMapper::mapToPostListResponseDto)
+                .collect(Collectors.toList());
+
+        return postResponseDtoList;
+    }
+
+    private List<PostListResponseDto> getWishlistResponseDtoList(Long userId) {
+        List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
+        List<PostListResponseDto> wishListReponsePostList = wishList.stream()
+                .map(wishlist -> postMapper.mapToPostListResponseDto(wishlist.getPost()))
+                .collect(Collectors.toList());
+
+        return wishListReponsePostList;
+    }
+
+    private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
+        List<Comment> commentList = commentRepository.findAllByUserId(userId);
+        List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
+                .map(CommentListResponseDto::new)
+                .toList();
+        return commentResponseDtoList;
+    }
 }

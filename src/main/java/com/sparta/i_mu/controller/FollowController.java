@@ -22,9 +22,9 @@ public class FollowController {
         return followService.createFollow(userId, userDetails.getUser());
     }
 
-    @GetMapping("/profile/{userId}/follow")
-    public List<FollowResponseDto> findFollow (@PathVariable Long userId) {
-        return followService.findFollow(userId);
-    }
+//    @GetMapping("/profile/{userId}/follow")
+//    public List<FollowResponseDto> findFollow (@PathVariable Long userId) {
+//        return followService.findFollow(userId);
+//    }
 
 }
