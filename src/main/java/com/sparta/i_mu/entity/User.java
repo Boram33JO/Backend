@@ -38,10 +38,13 @@ public class User {
     private String userImage;
 
     public void update(User user) {
-        this.password = user.getPassword();
         this.nickname = user.getNickname();
         this.introduce = user.getIntroduce();
         this.userImage = user.getUserImage();
+    }
+
+    public void passwordUpdate(User user) {
+        this.password = user.getPassword();
     }
 
 //    @Enumerated(STRING)

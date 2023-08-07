@@ -1,5 +1,6 @@
 package com.sparta.i_mu.controller;
 
+import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
@@ -32,9 +33,14 @@ public class UserController {
         return userService.getUser(userId, Optional.ofNullable(userDetails));
     }
 
-    @PutMapping("/profile")
-    public ResponseResource<?> updateUser(@RequestPart(value = "userImage", required = false) MultipartFile multipartFile, @RequestPart(required = false) UserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.updateUser(multipartFile, requestDto, userDetails.getUser().getId());
+    @PutMapping("/profile/{userId}")
+    public ResponseResource<?> updateUser(@PathVariable Long userId, @RequestPart(value = "userImage", required = false) MultipartFile multipartFile, @RequestPart(required = false) @Valid UserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId());
+    }
+
+    @PutMapping("/profile/{userId}/password")
+    public ResponseResource<?> updatePassword(@PathVariable Long userId, @RequestBody @Valid PasswordRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.updatePassword(userId, requestDto, userDetails.getUser());
     }
 
 }

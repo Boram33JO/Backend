@@ -1,5 +1,6 @@
 package com.sparta.i_mu.service;
 
+import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
@@ -97,11 +98,14 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseResource<?> updateUser(MultipartFile multipartFile, UserRequestDto requestDto, Long userId) {
+    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile, UserRequestDto requestDto, Long userId) {
+        if (!userId.equals(id)) {
+            throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
+        }
         User findUser = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
         String getUserImage = findUser.getUserImage();
         String getIntroduce = findUser.getIntroduce();
-        String getPassword = findUser.getPassword();
         String getNickname = findUser.getNickname();
 
         if (requestDto == null) {
@@ -119,10 +123,6 @@ public class UserService {
             getIntroduce = requestDto.getIntroduce();
         }
 
-        if (requestDto.getPassword() != null) {
-            getPassword = requestDto.getPassword();
-        }
-
         if (requestDto.getNickname() != null) {
             getNickname = requestDto.getNickname();
         }
@@ -135,7 +135,6 @@ public class UserService {
 
         User user = User.builder()
                 .userImage(getUserImage)
-                .password(passwordEncoder.encode(getPassword))
                 .nickname(getNickname)
                 .introduce(getIntroduce)
                 .build();
@@ -143,6 +142,29 @@ public class UserService {
         findUser.update(user);
 
         return new ResponseResource<> (true, "프로필 수정 성공", null);
+    }
+
+    @Transactional
+    public ResponseResource<?> updatePassword(Long userId, PasswordRequestDto requestDto, User user) {
+        String changePassword = requestDto.getChangePassword();
+
+        User findUser = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        if (!userId.equals(user.getId())) {
+            throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
+        }
+
+        if (!passwordEncoder.matches(requestDto.getOriginPassword(), user.getPassword())){
+            throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
+        }
+
+        User changePassswordUser = User.builder()
+                .password(passwordEncoder.encode(changePassword))
+                .build();
+
+        findUser.passwordUpdate(changePassswordUser);
+
+        return new ResponseResource<> (true, "비밀번호 수정 성공", null);
+
     }
 
     private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
@@ -178,5 +200,4 @@ public class UserService {
                 .toList();
         return followResponseDtoList;
     }
-
 }
