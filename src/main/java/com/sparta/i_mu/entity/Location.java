@@ -24,12 +24,9 @@ public class Location {
     @Column
     private String address;
 
-    public void updateCoordinates(Double latitude, Double longitude) {
+    public void updateLocation(Double latitude, Double longitude, String address) {
         this.latitude = latitude;
         this.longitude = longitude;
-    }
-
-    public void updateAddress(String address) {
         this.address = address;
     }
 }
