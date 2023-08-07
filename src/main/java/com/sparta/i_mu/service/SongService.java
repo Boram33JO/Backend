@@ -60,7 +60,7 @@ public class SongService {
                                 .artistName(artistName)
                                 .album(albumName)
                                 .thumbnail(thumbnail)
-                                .title(title)
+                                .songTitle(title)
                                 //미리 듣기
                                 .audioUrl(audio)
                                 // 스포티파이로 연결하는 url
