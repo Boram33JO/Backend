@@ -1,6 +1,7 @@
 package com.sparta.i_mu.controller;
 
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
+import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
@@ -79,26 +80,24 @@ public class PostController {
     // 상세 리스트 페이지 - 내주변
     @GetMapping("/details")
     public List<PostResponseDto> getAllAreaPost(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails){
         User user = userDetails.getUser();
         return postService.getAllAreaPost(postSearchRequestDto, user);
     }
 
     // 상세 리스트 페이지 - 카테고리별
-    @GetMapping("/category")
+    @GetMapping("/category/{categoryId}")
     public List<PostResponseDto> getPostByCategory(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @PathVariable Long categoryId,
             @AuthenticationPrincipal UserDetailsImpl userDetails){
         User user = userDetails.getUser();
-        String category = postSearchRequestDto.getCategory();
-        return postService.getPostByCategory(category,user);
+        return postService.getPostByCategory(categoryId,user);
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
-
     @GetMapping("/map")
     public List<PostByCategoryResponseDto> getMapPostByCategory(
-            @RequestBody PostSearchRequestDto postSearchRequestDto,
+            @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         User user = userDetails.getUser();

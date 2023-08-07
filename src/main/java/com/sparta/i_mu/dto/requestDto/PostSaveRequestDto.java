@@ -15,6 +15,7 @@ public class PostSaveRequestDto {
     private Double longitude;
     private String address;
     private List<SongSaveRequestDto> songs;
+    private String postTitle;
     private String content;
     private Long category;
 }

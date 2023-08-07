@@ -14,5 +14,4 @@ import java.util.List;
 public class PostByCategoryResponseDto {
     private String category;
     private List<PostResponseDto> postByCategoryResponseDtoList;
-    private Long totalCount;
 }

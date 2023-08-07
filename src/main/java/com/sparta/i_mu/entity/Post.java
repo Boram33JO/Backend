@@ -23,11 +23,14 @@ public class Post extends Timestamped{
     @Column(name = "post_id")
     private Long id;
 
+    @Column(nullable = false)
+    private String postTitle;
+
     @Column
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @Column
@@ -68,12 +71,13 @@ public class Post extends Timestamped{
     }
 
     /**
-     * update 메서드
+     * update메서드
      * @param postSaveRequestDto
+     * @param newCategory
      */
     public void update(PostSaveRequestDto postSaveRequestDto , Category newCategory) {
-        this.location.updateCoordinates(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude());
-        this.location.updateAddress(postSaveRequestDto.getAddress());
+        this.postTitle = postSaveRequestDto.getPostTitle();
+        this.location.updateLocation(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude(), postSaveRequestDto.getAddress());
         this.category = newCategory;
         this.content = postSaveRequestDto.getContent();
     }
