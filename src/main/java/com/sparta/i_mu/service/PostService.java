@@ -2,7 +2,6 @@ package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
-import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
@@ -11,6 +10,8 @@ import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -167,24 +168,20 @@ public class PostService {
     // 서브게시물 페이지
 
     // 서브 게시글 조회 - 내 주변
-    public List<PostResponseDto> getAllAreaPost(MapPostSearchRequestDto postSearchRequestDto) {
+    public Page<PostResponseDto> getAllAreaPost(MapPostSearchRequestDto postSearchRequestDto, Pageable pageable) {
 
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        List<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS);
-        return posts.stream()
-                .map(postMapper::mapToPostResponseDto)
-                .collect(Collectors.toList());
+        Page<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS, pageable);
+        return posts.map(postMapper::mapToPostResponseDto);
     }
 
     //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
-    public List<PostResponseDto> getPostByCategory(Long category) {
-        List<Post> posts = postRepository.findAllPostByCategoryIdOrderByCreatedAtDesc(category);
-        return posts.stream()
-                .map(postMapper::mapToPostResponseDto)
-                .collect(Collectors.toList());
+    public Page<PostResponseDto> getPostByCategory(Long category, Pageable pageable) {
+        Page <Post> posts = postRepository.findAllPostByCategoryIdOrderByCreatedAtDesc(category, pageable);
+        return posts.map(postMapper::mapToPostResponseDto);
 
     }
 
@@ -195,29 +192,27 @@ public class PostService {
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
+
     //지도 페이지
 
-    public List<PostByCategoryResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto) {
+    public Page<PostResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto, Optional <Long> categoryId, Pageable pageable) {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        List<Category> categories = categoryRepository.findAll();
-        return categories.stream()
-                .map(category ->{
-                    String name = category.getName();
-                    List<Post> posts = postRepository.findAllByCategoryAndLocationNear(name,latitude, longitude, DISTANCE_IN_METERS);
-                    List<PostResponseDto> postResponseDtoList = posts.stream()
-                            .map(postMapper::mapToPostResponseDto)
-                            .collect(Collectors.toList());
-                    return PostByCategoryResponseDto.builder()
-                            .category(category.getName()) // check 현재는 객체로
-                            .postByCategoryResponseDtoList(postResponseDtoList)
-                            .build();
+        if (categoryId.isPresent()) {
+            //해당 카테고리 조회
+            Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
+                    () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-                }).collect(Collectors.toList());
-
+            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getName(), latitude, longitude, DISTANCE_IN_METERS, pageable);
+            return posts.map(postMapper::mapToPostResponseDto);
+        }
+        // 전체 카테고리 조회
+        else {
+            Page<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS,pageable);
+            return posts.map(postMapper::mapToPostResponseDto);
+        }
     }
-
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
     public Post findPost(Long postId) {

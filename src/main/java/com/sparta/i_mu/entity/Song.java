@@ -28,6 +28,8 @@ public class Song {
     @Column
     private String album;
     @Column
+    private String audioUrl;
+    @Column
     private String thumbnail;
     @Column
     private String external_url;
