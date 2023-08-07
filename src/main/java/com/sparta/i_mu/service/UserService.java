@@ -79,20 +79,21 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저 입니다"));
         String nickname = user.getNickname();
+        String introduce = user.getIntroduce();
 
         List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
-        List<PostResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
 
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
             List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
 
-            UserResponsDto responsDto = new UserResponsDto(nickname, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
+            UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
             return responsDto;
         }
 
-        UserResponsDto responsDto = new UserResponsDto(nickname, postResponseDtoList, followResponseDtoList);
+        UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList);
 
         return responsDto;
     }
@@ -167,37 +168,37 @@ public class UserService {
 
     }
 
-    private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
-        List<Comment> commentList = commentRepository.findAllByUserId(userId);
-        List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
-                .map(CommentListResponseDto::new)
-                .toList();
-        return commentResponseDtoList;
-    }
-
-    private List<PostResponseDto> getWishlistResponseDtoList(Long userId) {
-        List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
-        List<PostResponseDto> wishListReponsePostList = wishList.stream()
-                .map(wishlist -> postMapper.mapToPostResponseDto(wishlist.getPost()))
-                .collect(Collectors.toList());
-
-        return wishListReponsePostList;
-    }
-
-    private List<PostResponseDto> getPostListResponseDtoList(Long userId) {
-        List<Post> postList = postRepository.findAllByUserId(userId);
-        List<PostResponseDto> postResponseDtoList = postList.stream()
-                .map(postMapper::mapToPostResponseDto)
-                .collect(Collectors.toList());
-
-        return postResponseDtoList;
-    }
-
     private List<FollowListResponseDto> getFollowListResponseDtoList(Long userId) {
         List<Follow> followList = followReporitory.findAllByFollowedUserId(userId);
         List<FollowListResponseDto> followResponseDtoList = followList.stream()
                 .map(FollowListResponseDto::new)
                 .toList();
         return followResponseDtoList;
+    }
+
+    private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
+        List<Post> postList = postRepository.findAllByUserId(userId);
+        List<PostListResponseDto> postResponseDtoList = postList.stream()
+                .map(postMapper::mapToPostListResponseDto)
+                .collect(Collectors.toList());
+
+        return postResponseDtoList;
+    }
+
+    private List<PostListResponseDto> getWishlistResponseDtoList(Long userId) {
+        List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
+        List<PostListResponseDto> wishListReponsePostList = wishList.stream()
+                .map(wishlist -> postMapper.mapToPostListResponseDto(wishlist.getPost()))
+                .collect(Collectors.toList());
+
+        return wishListReponsePostList;
+    }
+
+    private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
+        List<Comment> commentList = commentRepository.findAllByUserId(userId);
+        List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
+                .map(CommentListResponseDto::new)
+                .toList();
+        return commentResponseDtoList;
     }
 }

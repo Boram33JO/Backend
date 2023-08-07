@@ -8,10 +8,12 @@ public class FollowListResponseDto {
     private Long id;
     private String nickname;
     private String userImage;
+    private String introduce;
 
     public FollowListResponseDto(Follow follow) {
        this.id = follow.getFollowUser().getId();
        this.nickname = follow.getFollowUser().getNickname();
        this.userImage = follow.getFollowUser().getUserImage();
+       this.introduce = follow.getFollowUser().getIntroduce();
     }
 }
