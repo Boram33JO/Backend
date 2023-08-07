@@ -11,12 +11,18 @@ public class CommentResponseDto {
 
     private String content;
 
+    private String nickname;
+
+    private String userImage;
+
     private LocalDateTime createdAt;
 
     public CommentResponseDto (Comment comment) {
         this.commentId = comment.getId();
         this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
+        this.nickname = comment.getUser().getNickname();
+        this.userImage = comment.getUser().getUserImage();
     }
 
 }
