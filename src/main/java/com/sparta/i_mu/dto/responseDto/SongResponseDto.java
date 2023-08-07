@@ -10,8 +10,9 @@ public class SongResponseDto {
     private Long id;
     private String songNum;
     private String artistName;
-    private String title;
+    private String songTitle;
     private String album;
+    private String audioUrl;
     private String thumbnail;
-    private String external_url;
+    private String externalUrl;
 }

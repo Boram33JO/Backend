@@ -1,6 +1,7 @@
 package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
+import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
@@ -58,6 +59,7 @@ public class PostService {
         locationRepository.save(location);
         // post 생성
         Post post = Post.builder()
+                .postTitle(postSaveRequestDto.getPostTitle())
                 .content(postSaveRequestDto.getContent())
                 .category(category)
                 .user(user)
@@ -165,8 +167,8 @@ public class PostService {
     // 서브게시물 페이지
 
     // 서브 게시글 조회 - 내 주변
+    public List<PostResponseDto> getAllAreaPost(MapPostSearchRequestDto postSearchRequestDto) {
 
-    public List<PostResponseDto> getAllAreaPost(PostSearchRequestDto postSearchRequestDto) {
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
@@ -178,9 +180,8 @@ public class PostService {
     }
 
     //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
-    public List<PostResponseDto> getPostByCategory(String category) {
-
-        List<Post> posts = postRepository.findAllPostByCategoryNameOrderByCreatedAtDesc(category);
+    public List<PostResponseDto> getPostByCategory(Long category) {
+        List<Post> posts = postRepository.findAllPostByCategoryIdOrderByCreatedAtDesc(category);
         return posts.stream()
                 .map(postMapper::mapToPostResponseDto)
                 .collect(Collectors.toList());
@@ -195,8 +196,8 @@ public class PostService {
     }
 
     //지도 페이지
-    public List<PostByCategoryResponseDto> getMapPostByCategory(PostSearchRequestDto postSearchRequestDto) {
 
+    public List<PostByCategoryResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto) {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
