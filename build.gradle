@@ -30,6 +30,8 @@ allprojects {
 }
 
 dependencies {
+    // aws
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     // spotify api
     implementation 'com.github.thelinmichael:spotify-web-api-java:master-SNAPSHOT'
     // spring web
