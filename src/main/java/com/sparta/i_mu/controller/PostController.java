@@ -83,28 +83,22 @@ public class PostController {
     // 상세 리스트 페이지 - 내주변
     @GetMapping("/details")
     public List<PostResponseDto> getAllAreaPost(
-            @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getAllAreaPost(postSearchRequestDto, user);
+            @RequestBody MapPostSearchRequestDto postSearchRequestDto){
+        return postService.getAllAreaPost(postSearchRequestDto);
 
     }
 
     // 상세 리스트 페이지 - 카테고리별
     @GetMapping("/category/{categoryId}")
     public List<PostResponseDto> getPostByCategory(
-            @PathVariable Long categoryId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getPostByCategory(categoryId,user);
+            @PathVariable Long categoryId){
+        return postService.getPostByCategory(categoryId);
 
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
     @GetMapping("/map")
     public List<PostByCategoryResponseDto> getMapPostByCategory(
-
-            @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @RequestBody MapPostSearchRequestDto postSearchRequestDto) {
         return postService.getMapPostByCategory(postSearchRequestDto);
 
     }
