@@ -1,14 +1,16 @@
 package com.sparta.i_mu.controller;
 
-import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
-import com.sparta.i_mu.dto.requestDto.PostSearchRequestDto;
+import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -65,7 +67,7 @@ public class PostController {
         return postService.deletePost(postId,user);
     }
 
-    // 메인페이지 - 카테고리 별 전체 게시글 조회
+    // 메인 페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
     public List<PostByCategoryResponseDto> getAllPost(){
         return postService.getAllPost();
@@ -76,36 +78,49 @@ public class PostController {
     public PostResponseDto getDetailPost(
             @PathVariable Long postId,
             @AuthenticationPrincipal UserDetailsImpl userDetails){
-
         return postService.getDetailPost(postId, Optional.ofNullable(userDetails));
     }
 
+    // 메인 페이지 - 검색
+    @GetMapping("/search")
+    public Page<PostResponseDto> getSearch(@RequestParam(value = "keyword") String keyword,
+                                           @RequestParam(value = "type") String type,
+                                           @RequestParam int page,
+                                           @RequestParam int size){
+        Pageable pageable = PageRequest.of(page,size);
+        return postService.getSearch(keyword,type,pageable);
+    }
+
     // 상세 리스트 페이지 - 내주변
-    @GetMapping("/details")
-    public List<PostResponseDto> getAllAreaPost(
+    @GetMapping("/area")
+    public Page<PostResponseDto> getAllAreaPost(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getAllAreaPost(postSearchRequestDto, user);
+            @RequestParam int page,
+            @RequestParam int size){
+        Pageable pageable = PageRequest.of(page,size);
+        return postService.getAllAreaPost(postSearchRequestDto,pageable);
 
     }
 
     // 상세 리스트 페이지 - 카테고리별
     @GetMapping("/category/{categoryId}")
-    public List<PostResponseDto> getPostByCategory(
+    public Page<PostResponseDto> getPostByCategory(
             @PathVariable Long categoryId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        User user = userDetails.getUser();
-        return postService.getPostByCategory(categoryId,user);
+            @RequestParam int page,
+            @RequestParam int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return postService.getPostByCategory(categoryId, pageable);
 
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
-    @GetMapping("/map")
-    public List<PostByCategoryResponseDto> getMapPostByCategory(
-
+    @GetMapping("/map/{categoryId}")
+    public Page<PostResponseDto> getMapPostByCategory(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return postService.getMapPostByCategory(postSearchRequestDto);
+            @PathVariable Long categoryId,
+            @RequestParam int page,
+            @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return postService.getMapPostByCategory(postSearchRequestDto, Optional.ofNullable(categoryId),pageable);
 
     }
 

@@ -24,7 +24,6 @@ public class PostMapper {
 
     public PostResponseDto mapToPostResponseDto(Post post) {
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
-//        List<Comment> comments = commentRepository.findAllByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong())) // SongResponseDto로의 매핑 로직이 필요합니다
@@ -32,13 +31,12 @@ public class PostMapper {
 
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
+                .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
-                //.wishlist(post.getWishlist())
                 .wishlistCount(wishlistCount)
-                //.comments(comments)
                 .songs(songs)
                 .location(post.getLocation())
                 .build();
@@ -61,6 +59,7 @@ public class PostMapper {
 
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
+                .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .userImage(post.getUser().getUserImage())
                 .content(post.getContent())

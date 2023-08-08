@@ -63,12 +63,6 @@ public class Post extends Timestamped{
                 .build();
     }
 
-    /**
-     * Post와 Song을 연결한 postSongLink 해지
-     */
-    public void removeSongs() {
-        this.postSongLink.clear();
-    }
 
     /**
      * update메서드
@@ -77,7 +71,11 @@ public class Post extends Timestamped{
      */
     public void update(PostSaveRequestDto postSaveRequestDto , Category newCategory) {
         this.postTitle = postSaveRequestDto.getPostTitle();
-        this.location.updateLocation(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude(), postSaveRequestDto.getAddress());
+        this.location.updateLocation(
+                postSaveRequestDto.getLatitude(),
+                postSaveRequestDto.getLongitude(),
+                postSaveRequestDto.getAddress(),
+                postSaveRequestDto.getPlaceName());
         this.category = newCategory;
         this.content = postSaveRequestDto.getContent();
     }

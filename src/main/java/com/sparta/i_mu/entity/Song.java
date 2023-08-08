@@ -25,11 +25,13 @@ public class Song {
     private String songTitle;
     @Column(nullable = false)
     private String artistName;
-    @Column
+    @Column(nullable = false)
     private String album;
-    @Column
+    @Column(nullable = false)
+    private String audioUrl;
+    @Column(nullable = false)
     private String thumbnail;
-    @Column
-    private String external_url;
+    @Column(nullable = false)
+    private String externalUrl;
 
 }

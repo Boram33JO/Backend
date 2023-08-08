@@ -17,7 +17,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class CommetService {
+public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
