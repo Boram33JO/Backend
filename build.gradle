@@ -30,6 +30,8 @@ allprojects {
 }
 
 dependencies {
+
+    implementation 'org.springframework.security:spring-security-config:6.0.2'
     // aws
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     // spotify api
@@ -62,6 +64,9 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    //kakao
+    implementation 'com.google.code.gson:gson:2.8.7'
 }
 
 tasks.named('test') {

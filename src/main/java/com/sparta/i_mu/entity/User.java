@@ -31,6 +31,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Enumerated(STRING)
+    private Role role;
+
     @Column
     private String introduce;
 
@@ -46,8 +49,5 @@ public class User {
     public void passwordUpdate(User user) {
         this.password = user.getPassword();
     }
-
-//    @Enumerated(STRING)
-//    private Role role;
 
 }

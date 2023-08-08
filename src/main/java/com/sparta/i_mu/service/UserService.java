@@ -2,6 +2,10 @@ package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
+import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
+import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.entity.UserRoleEnum;
+import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.*;
@@ -48,6 +52,17 @@ public class UserService {
         String password = passwordEncoder.encode(signUpRequestDto.getPassword());
         String email = signUpRequestDto.getEmail();
 
+
+//        checkDuplicatedEmail(email);
+//        UserRoleEnum role = UserRoleEnum.USER;
+//
+//        private void checkDuplicatedEmail(String email) {
+//            Optional<User> found = userRepository.findByEmail(email);
+//            if (found.isPresent()) {
+//                throw new InvalidConditionException(ErrorCodeEnum.DUPLICATE_USERNAME_EXIST);
+//            }
+//        }
+
         // 회원 email 중복 확인
         Optional<User> checkEmail = userRepository.findByEmail(email);
         if (checkEmail.isPresent()) {
@@ -66,6 +81,7 @@ public class UserService {
                 .email(email)
                 .nickname(nickname)
                 .password(password)
+//                .role(role)
                 .build();
 
         userRepository.save(user);
