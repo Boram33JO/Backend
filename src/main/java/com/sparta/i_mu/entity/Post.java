@@ -63,12 +63,6 @@ public class Post extends Timestamped{
                 .build();
     }
 
-    /**
-     * Post와 Song을 연결한 postSongLink 해지
-     */
-    public void removeSongs() {
-        this.postSongLink.clear();
-    }
 
     /**
      * update메서드

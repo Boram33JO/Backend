@@ -10,11 +10,17 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>{
 
     // 서브게시물 페이지 - 카테고리 (내 주변 전체)
-    @Query("SELECT p FROM Post p WHERE ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude), Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS")
-    Page<Post> findAllByLocationNear(Double latitude, Double longitude, Double DISTANCE_IN_METERS, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
+            " Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS" +
+            " order by ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
+            " Point(:longitude, :latitude))")
+    Page<Post> findAllByLocationNear( @Param("latitude")Double latitude,
+                                      @Param("longitude")Double longitude,
+                                      @Param("DISTANCE_IN_METERS")Double DISTANCE_IN_METERS,
+                                      Pageable pageable);
 
     //메인 페이지 - 카테고리별 최신순
     List<Post> findAllByCategoryOrderByCreatedAtDesc(Category category);
@@ -27,8 +33,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByOrderByWishlistCountDesc();
 
     // 지도페이지 - 위치에 따른 카테고리별 조회
-    @Query("SELECT p FROM Post p WHERE p.category.name = :name AND ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude), Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS")
-    Page<Post> findAllByCategoryAndLocationNear(@Param("name")String name, @Param("latitude") Double latitude, @Param("longitude") Double longitude, @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS, Pageable pageable);
+    @Query( "SELECT p FROM Post p WHERE p.category.name = :name " +
+            "AND ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
+            "Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS " +
+            "order by ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
+            "Point(:longitude, :latitude))")
+    Page<Post> findAllByCategoryAndLocationNear(@Param("name")String name,
+                                                @Param("latitude") Double latitude,
+                                                @Param("longitude") Double longitude,
+                                                @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS,
+                                                Pageable pageable);
 
     List<Post> findAllByUserId(Long userId);
 

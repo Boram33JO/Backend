@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
@@ -44,7 +45,7 @@ public class PostService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
-    private static final Double DISTANCE_IN_METERS = 500.0;
+    private static final Double DISTANCE_IN_METERS = 2000.0;
 
     //게시글 생성
     @Transactional
@@ -96,25 +97,40 @@ public class PostService {
         checkAuthority(post, user);
 
         Category newCategory = categoryRepository.findById(postRequestDto.getCategory())
-                .orElseThrow(()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-        // post의 song의 연결 주체인 postSongLink 삭제
-        post.removeSongs();
-        //TODO 현재 게시물에서 노래 목록을 가져와 새로 업데이트 될 목록과 비교해서 각각 추가 삭제 하기
-        postRequestDto.getSongs().stream()
+        // 현재 post와 연결되어있는 song의 id조회
+        Set<String> songsNum = post.getPostSongLink().stream()
+                .map(postSongLink -> postSongLink.getSong().getSongNum())
+                .collect(Collectors.toSet());
+
+        // 업데이트 될 song id 조회 후 없는 것은 추가 후 집합으로 가져오기
+        Set<String> newSongsNum = postRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> songRepository.findBySongNum(songSaveRequestDto.getSongNum())
-                            .orElseGet(()->{
-                                Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
-                                songRepository.save(newSong);
-                                return newSong;
-                            })
-                ).map(post::addPostSongLink)
+                        .orElseGet(() -> {
+                            Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
+                            songRepository.save(newSong);
+                            return newSong;
+                        })
+                )
+                .map(Song::getSongNum).collect(Collectors.toSet());
+
+        // 기존 노래 중 새로운 노래 목록에 없는 노래들 postSongLink삭제
+        post.getPostSongLink().removeIf(postSongLink -> !newSongsNum.contains(postSongLink.getSong().getSongNum()));
+
+        // 기존 노래에 없는 새로운 노래를 postSongLink에 추가
+        newSongsNum.stream()
+                .filter(songNum -> !songsNum.contains(songNum))
+                .map(songNum -> songRepository.findBySongNum(songNum)
+                        .orElseThrow(()-> new IllegalArgumentException("해당 곡은 존재하지 않습니다.")))
+                .map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
 
         post.update(postRequestDto, newCategory);
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 업데이트 되었습니다.");
     }
+
     /**
      * 게시글 삭제
      * @param postId
@@ -156,7 +172,7 @@ public class PostService {
     }
 
 
-    // 좋아요 순 인기 게시글 내림차순 조회
+    // 좋아요 순 인기 게시글 내림차순 조회 top5 만
     public List<PostResponseDto> getPostByWishlist() {
         return postRepository.findAllByOrderByWishlistCountDesc().stream()
                 .map(postMapper::mapToPostResponseDto)
@@ -188,7 +204,6 @@ public class PostService {
     //상세페이지 게시글 조회
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails) {
         Post post = findPost(postId);
-
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
