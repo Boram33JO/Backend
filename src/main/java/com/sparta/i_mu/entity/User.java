@@ -31,7 +31,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-//    @Enumerated(STRING)
-//    private Role role;
+    @Enumerated(STRING)
+    private Role role;
 
 }
