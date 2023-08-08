@@ -67,7 +67,7 @@ public class PostController {
         return postService.deletePost(postId,user);
     }
 
-    // 메인페이지 - 카테고리 별 전체 게시글 조회
+    // 메인 페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
     public List<PostByCategoryResponseDto> getAllPost(){
         return postService.getAllPost();
@@ -79,6 +79,16 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal UserDetailsImpl userDetails){
         return postService.getDetailPost(postId, Optional.ofNullable(userDetails));
+    }
+
+    // 메인 페이지 - 검색
+    @GetMapping("/search")
+    public Page<PostResponseDto> getSearch(@RequestParam(value = "keyword") String keyword,
+                                           @RequestParam(value = "type") String type,
+                                           @RequestParam int page,
+                                           @RequestParam int size){
+        Pageable pageable = PageRequest.of(page,size);
+        return postService.getSearch(keyword,type,pageable);
     }
 
     // 상세 리스트 페이지 - 내주변

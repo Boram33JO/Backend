@@ -171,6 +171,30 @@ public class PostService {
 
     }
 
+    // 메인 페이지 - 검색
+
+    public Page<PostResponseDto> getSearch(String keyword, String type, Pageable pageable) {
+        switch (type) {
+            case "all" -> {
+                Page<Post> postsAll = postRepository.findAll(keyword, pageable);
+                return postsAll.map(postMapper::mapToPostResponseDto);
+            }
+            case "title" -> {
+                postRepository.findAllByPostTitleContaining(keyword, pageable);
+                Page<Post> postsTitle = postRepository.findAllByPostTitleContaining(keyword, pageable);
+                return postsTitle.map(postMapper::mapToPostResponseDto);
+            }
+            case "nickname" -> {
+                Page<Post> UserNickname = postRepository.findAllByUserNicknameContaining(keyword, pageable);
+                return UserNickname.map(postMapper::mapToPostResponseDto);
+            }
+            case "songName" -> {
+                Page<Post> songName = postRepository.findAllBySongTitleContaining(keyword, pageable);
+                return songName.map(postMapper::mapToPostResponseDto);
+            }
+            default -> throw new IllegalArgumentException("해당 타입에서는 게시글을 찾을 수 없습니다. type: " + type);
+        }
+    }
 
     // 좋아요 순 인기 게시글 내림차순 조회 top5 만
     public List<PostResponseDto> getPostByWishlist() {

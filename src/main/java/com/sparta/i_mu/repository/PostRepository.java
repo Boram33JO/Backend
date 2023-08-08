@@ -54,4 +54,25 @@ public interface PostRepository extends JpaRepository<Post, Long>{
 
     List<Post> findAllByUserId(Long userId);
 
+
+    // 메인 페이지 - 검색
+    @Query( "SELECT p FROM Post p " +
+            "LEFT JOIN p.user pu " +
+            "INNER JOIN p.postSongLink ps " +
+            "INNER JOIN ps.song s " +
+            "WHERE p.postTitle LIKE %:keyword% OR pu.nickname LIKE %:keyword% OR s.songTitle LIKE %:keyword% ")
+    Page<Post> findAll(String keyword, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.postTitle LIKE %:keyword% ")
+    Page<Post> findAllByPostTitleContaining(String keyword, Pageable pageable);
+    @Query( "SELECT p FROM Post p " +
+            "INNER JOIN p.user pu " +
+            "WHERE pu.nickname LIKE %:keyword% ")
+    Page<Post> findAllByUserNicknameContaining(String keyword, Pageable pageable);
+
+    @Query( "SELECT p FROM Post p " +
+            "INNER JOIN p.postSongLink ps " +
+            "INNER JOIN  ps.song s " +
+            "WHERE s.songTitle LIKE %:keyword% ")
+    Page<Post> findAllBySongTitleContaining(String keyword, Pageable pageable);
 }
