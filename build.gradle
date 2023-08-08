@@ -1,7 +1,9 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.1.1'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'org.springframework.boot' version '3.1.2'
+    id 'io.spring.dependency-management' version '1.1.2'
+    // queryDSL 추가
+//    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.sparta'
@@ -21,10 +23,20 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation 'org.springframework.security:spring-security-config:6.0.2'
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
 
-    //spring web
+dependencies {
+
+    implementation 'org.springframework.security:spring-security-config:6.0.2'
+    // aws
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // spotify api
+    implementation 'com.github.thelinmichael:spotify-web-api-java:master-SNAPSHOT'
+    // spring web
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // social login
@@ -33,15 +45,23 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'    // mapper
+    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
     // JWT
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
     // Mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
+    // Querydsl 추가
+//    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+//    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
@@ -52,3 +72,20 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+//// queryDSL 추가 : QueryDSL 빌드 옵션
+//def querydslDir = "$buildDir/generated/querydsl"
+//
+//querydsl {
+//    jpa = true
+//    querydslSourcesDir = querydslDir
+//}
+//sourceSets {
+//    main.java.srcDir querydslDir
+//}
+//configurations {
+//    querydsl.extendsFrom compileClasspath
+//}
+//compileQuerydsl {
+//    options.annotationProcessorPath = configurations.querydsl
+//}

@@ -11,6 +11,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @Builder
+@Table
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class Song {
@@ -18,14 +19,19 @@ public class Song {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
-
-    @Column
-    private String title;
-
-    @Column
-    private String artist;
-
-    @Column
-    private String thumbnailImage;
+    @Column(nullable = false, unique = true)
+    private String songNum;
+    @Column(nullable = false)
+    private String songTitle;
+    @Column(nullable = false)
+    private String artistName;
+    @Column(nullable = false)
+    private String album;
+    @Column(nullable = false)
+    private String audioUrl;
+    @Column(nullable = false)
+    private String thumbnail;
+    @Column(nullable = false)
+    private String externalUrl;
 
 }
