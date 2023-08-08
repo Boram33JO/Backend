@@ -190,7 +190,7 @@ public class PostService {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        Page<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS, pageable);
+        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(latitude, longitude, DISTANCE_IN_METERS, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
     }
 
