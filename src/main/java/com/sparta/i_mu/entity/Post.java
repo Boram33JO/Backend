@@ -71,7 +71,11 @@ public class Post extends Timestamped{
      */
     public void update(PostSaveRequestDto postSaveRequestDto , Category newCategory) {
         this.postTitle = postSaveRequestDto.getPostTitle();
-        this.location.updateLocation(postSaveRequestDto.getLatitude(), postSaveRequestDto.getLongitude(), postSaveRequestDto.getAddress());
+        this.location.updateLocation(
+                postSaveRequestDto.getLatitude(),
+                postSaveRequestDto.getLongitude(),
+                postSaveRequestDto.getAddress(),
+                postSaveRequestDto.getPlaceName());
         this.category = newCategory;
         this.content = postSaveRequestDto.getContent();
     }

@@ -23,10 +23,13 @@ public class Location {
     private Double longitude; //경도 x
     @Column
     private String address;
+    @Column
+    private String placeName;
 
-    public void updateLocation(Double latitude, Double longitude, String address) {
+    public void updateLocation(Double latitude, Double longitude, String address , String placeName) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.address = address;
+        this.placeName = placeName;
     }
 }
