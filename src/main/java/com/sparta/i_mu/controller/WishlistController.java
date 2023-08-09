@@ -18,7 +18,7 @@ public class WishlistController {
 
     private final WishlistService wishlistService;
 
-    @PostMapping("/posts/{postId}")
+    @PostMapping("/posts/{postId}/wishlist")
     public ResponseResource<?> createWishlist (@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return wishlistService.createWishlist(postId, userDetails.getUser());
     }
