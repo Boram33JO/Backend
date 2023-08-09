@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(GET, "/api/search").permitAll()
                             .requestMatchers(GET, "/api/profile/**").permitAll()
+                            .requestMatchers(GET, "/api/mostSong").permitAll()
                             .anyRequest().authenticated();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling

@@ -1,7 +1,10 @@
 package com.sparta.i_mu.service;
 
+import com.neovisionaries.i18n.CountryCode;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.global.util.SpotifyUtil;
+import com.sparta.i_mu.mapper.SongMapper;
+import com.sparta.i_mu.repository.PostSongLinkRepository;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.*;
@@ -23,6 +26,14 @@ public class SongService {
 
     private final SpotifyApi spotifyApi;
     private final SpotifyUtil spotifyUtil;
+    private final PostSongLinkRepository postSongLinkRepository;
+    private final SongMapper songMapper;
+
+    /**
+     * spotify에서 노래 찾기
+     * @param keyword
+     * @return keyword에 해당하는 노래 정보
+     */
     public List<SongResponseDto> getSearch(String keyword) {
         try {
             // 토큰을 사용하기 전에 CreateToken을 이용해서 유효한 토큰을 가져옵니다.
@@ -33,7 +44,9 @@ public class SongService {
             //만약 띄워쓰기가 존재한다면 없애줘야함
             String key = keyword.replace(" ","");
             SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(key)
+                    .market(CountryCode.KR)
                     .limit(10)
+                    .offset(0)
                     .build();
             Paging<Track> SearchResult = searchTracksRequest.execute();
             Track[] tracks = SearchResult.getItems();
@@ -72,5 +85,16 @@ public class SongService {
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             throw new IllegalArgumentException("Error: " + e.getMessage());
         }
+    }
+
+    /**
+     * 포스팅이 가장 많이 된 top4 노래 조회
+     * @return 인기노래 4개
+     */
+    public List<SongResponseDto> getMostPostSong() {
+        return postSongLinkRepository.findTopSong().stream()
+                .map(songMapper::entityToResponseDto)
+                .limit(4)
+                .collect(Collectors.toList());
     }
 }

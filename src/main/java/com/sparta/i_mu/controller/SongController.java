@@ -26,4 +26,9 @@ public class SongController {
     public List<SongResponseDto> getSearch(@RequestBody String keyword){
         return songService.getSearch(keyword);
     }
+
+    @GetMapping("/mostSong")
+    public List<SongResponseDto> getMostPostSong(){
+        return songService.getMostPostSong();
+    }
 }
