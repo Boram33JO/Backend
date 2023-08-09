@@ -21,6 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -234,7 +239,6 @@ public class PostService {
         Post post = findPost(postId);
 
         // redis 추가 되면 전환
-        // cookie 만료 시간이 추가 될 때 마다 갱신, 24:00:00 으로 수정
         postCountUpdate(post, req, res);
 
         return postMapper.mapToPostResponseDto(post, userDetails);
@@ -284,6 +288,9 @@ public class PostService {
     private void postCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
         Cookie oldCookie = null;
 
+        long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
+        long currentSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
         Cookie[] cookies = req.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -293,24 +300,18 @@ public class PostService {
             }
         }
 
-        if (oldCookie != null) {
-            if (!oldCookie.getValue().contains("[" + post.getId() + "]")) {
-                post.countUpdate();
-                oldCookie.setValue(oldCookie.getValue() + "_[" + post.getId() + "]");
-                oldCookie.setPath("/");
-                oldCookie.setMaxAge(60 * 60 * 24);
-                res.addCookie(oldCookie);
-            }
-        } else {
+        if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
             post.countUpdate();
-            Cookie newCookie = new Cookie("postCount","[" + post.getId() + "]");
+            String newCookieValue = "[" + post.getId() + "]";
+            if (oldCookie != null) {
+                newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";
+            }
+            Cookie newCookie = new Cookie("postCount", newCookieValue);
             newCookie.setPath("/");
-            newCookie.setMaxAge(60 * 60 * 24);
+            newCookie.setMaxAge((int) (todayEndSecond - currentSecond));
             res.addCookie(newCookie);
         }
 
     }
-
-
 
 }
