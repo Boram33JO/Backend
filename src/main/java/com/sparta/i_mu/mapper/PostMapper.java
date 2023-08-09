@@ -3,6 +3,7 @@ package com.sparta.i_mu.mapper;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.CommentRepository;
+import com.sparta.i_mu.repository.FollowReporitory;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
 import com.sparta.i_mu.repository.WishlistRepository;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostMapper {
     private final WishlistRepository wishlistRepository;
+    private final FollowReporitory followReporitory;
     private final CommentRepository commentRepository;
     private final PostSongLinkRepository postSongLinkRepository;
     private final SongMapper songMapper;
@@ -43,6 +45,7 @@ public class PostMapper {
 
     public PostResponseDto mapToPostResponseDto(Post post, Optional<UserDetailsImpl> userDetails) {
         boolean isWishlist = userDetails.isPresent() && wishlistRepository.existsByPostIdAndUserId(post.getId(), userDetails.get().getUser().getId());
+        boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(post.getUser().getId(), userDetails.get().getUser().getId());
 
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
 
@@ -66,6 +69,7 @@ public class PostMapper {
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
                 .wishlist(isWishlist)
+                .follow(isfollow)
                 .wishlistCount(wishlistCount)
                 .comments(comments)
                 .songs(songs)
