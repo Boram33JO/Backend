@@ -1,7 +1,6 @@
 package com.sparta.i_mu.mapper;
 
 import com.sparta.i_mu.dto.responseDto.*;
-import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
@@ -81,7 +80,7 @@ public class PostMapper {
 
         return PostListResponseDto.builder()
                 .postId(post.getId())
-//                .postTitle(post.getPostTitle())
+                .postTitle(post.getPostTitle())
                 .content(post.getContent())
                 .songs(songs)
                 .build();

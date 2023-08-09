@@ -9,6 +9,9 @@ import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -225,9 +228,15 @@ public class PostService {
 
     }
 
+    @Transactional
     //상세페이지 게시글 조회
-    public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails) {
+    public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = findPost(postId);
+
+        // redis 추가 되면 전환
+        // cookie 만료 시간이 추가 될 때 마다 갱신, 24:00:00 으로 수정
+        postCountUpdate(post, req, res);
+
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -270,6 +279,37 @@ public class PostService {
         }
     }
 //    }
+
+    // 게시글 조회수 증가 메서드
+    private void postCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
+        Cookie oldCookie = null;
+
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("postCount")) {
+                    oldCookie = cookie;
+                }
+            }
+        }
+
+        if (oldCookie != null) {
+            if (!oldCookie.getValue().contains("[" + post.getId() + "]")) {
+                post.countUpdate();
+                oldCookie.setValue(oldCookie.getValue() + "_[" + post.getId() + "]");
+                oldCookie.setPath("/");
+                oldCookie.setMaxAge(60 * 60 * 24);
+                res.addCookie(oldCookie);
+            }
+        } else {
+            post.countUpdate();
+            Cookie newCookie = new Cookie("postCount","[" + post.getId() + "]");
+            newCookie.setPath("/");
+            newCookie.setMaxAge(60 * 60 * 24);
+            res.addCookie(newCookie);
+        }
+
+    }
 
 
 
