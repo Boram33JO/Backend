@@ -42,16 +42,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String tokenValue = jwtUtil.getTokenFromRequest(request); // good
-        if (StringUtils.hasText(tokenValue)) {
-            String token = jwtUtil.substringToken(tokenValue);
-            if (!jwtUtil.validateToken(token)) {
-                log.error("Token error");
-                response.setStatus(HttpStatus.FORBIDDEN.value());
-                response.getWriter().write("유효하지 않은 토큰입니다.");
-                return;
+        String accessToken = jwtUtil.getAccessTokenFromRequest(request); // good
+        if (StringUtils.hasText(accessToken)) {
+            if (!jwtUtil.validateAccessToken(accessToken)) {
+                log.error("AccessToken error");
+                String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+                if(StringUtils.hasText(refreshToken)){
+                    if(jwtUtil.validateRegenerate(accessToken, refreshToken)){
+                        // 새로운 AccessToken 발급
+                        String newAccessToken = jwtUtil.regenerateAccessToken(refreshToken,response);
+                    }
+                } log.error("RefreshToken 이 존재하지 않습니다.");
             }
-            Claims info = jwtUtil.getUserInfoFromToken(token);
+            Claims info = jwtUtil.getUserInfoFromToken(accessToken);
 
             try {
                 setAuthentication(info.getSubject());

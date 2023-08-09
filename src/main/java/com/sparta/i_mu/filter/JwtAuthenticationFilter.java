@@ -56,26 +56,38 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        log.info("로그인 성공 및 JWT 생성");
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
 
-        String token = jwtUtil.createAccessToken(username);
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+        String accessToken = jwtUtil.createAccessToken(username);
+        String refreshToken = jwtUtil.createRefreshToken(username);
+        jwtUtil.saveTokenToRedis(refreshToken, accessToken);
+        jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
 
-        MessageResponseDto responseDto = new MessageResponseDto("로그인 완료", HttpStatus.OK.toString());
+//        MessageResponseDto responseDto = new MessageResponseDto("로그인 완료", HttpStatus.OK.toString());
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write("로그인 성공");
 
     }
 
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        response.setStatus(401);
-        MessageResponseDto responseDto = new MessageResponseDto("id 또는 pw 틀림 ㅋ", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
+        log.info("로그인 실패");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"로그인 실패");
+
+//        MessageResponseDto responseDto = new MessageResponseDto("id 또는 pw 틀림 ㅋ", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
+//        response.setContentType("application/json");
+//        response.setCharacterEncoding("UTF-8");
+//        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
     }
 
 }

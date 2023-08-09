@@ -1,9 +1,12 @@
 package com.sparta.i_mu.global.util;
+import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.repository.UserRepository;
+import com.sparta.i_mu.role.Role;
+import com.sparta.i_mu.service.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-
-import static org.springframework.boot.web.servlet.filter.ApplicationContextHeaderFilter.HEADER_NAME;
 
 
 @Slf4j
@@ -28,9 +29,17 @@ import static org.springframework.boot.web.servlet.filter.ApplicationContextHead
 @RequiredArgsConstructor
 public class JwtUtil {
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";
+    private final RedisService redisService;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final UserRepository userRepository;
+
+    public final String HEADER_ACCESS_TOKEN = "AccessToken";
+    public final String HEADER_REFRESH_TOKEN = "RefreshToken";
+
+    public static final String AUTHORIZATION_KEY = "auth";
     private final String BEARER = "Bearer ";
     private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 3000L; // 1시간
+    private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
@@ -54,12 +63,44 @@ public class JwtUtil {
         return BEARER +
                 Jwts.builder()
                         .setSubject(email) // 토큰(사용자) 식별자 값
+//                        .claim(AUTHORIZATION_KEY,role)
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
                         .compact();
     }
 
+    public String createRefreshToken(String email) {
+        Date date = new Date();
+        return BEARER +
+                Jwts.builder()
+                        .setSubject(email) // 토큰(사용자) 식별자 값
+                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRATION_TIME)) // 만료일
+                        .setIssuedAt(date) // 발급일
+                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
+                        .compact();
+    }
+
+    public void addTokenToHeader(String accessToken, String refreshToken, HttpServletResponse response) {
+        response.setHeader(HEADER_ACCESS_TOKEN, accessToken);
+        response.setHeader(HEADER_REFRESH_TOKEN, refreshToken);
+    }
+
+    public String getAccessTokenFromRequest(HttpServletRequest req){
+        String accessToken = req.getHeader(HEADER_ACCESS_TOKEN);
+        if(StringUtils.hasText(accessToken)){
+            return substringToken(accessToken);
+        }
+        return null;
+    }
+
+    public String getRefreshTokenFromRequest(HttpServletRequest req) {
+        String refreshToken = req.getHeader(HEADER_REFRESH_TOKEN);
+        if(StringUtils.hasText(refreshToken)){
+            return substringToken(refreshToken);
+        }
+        return null;
+    }
 
     /**
      *JWT Bearer Substirng 메서드
@@ -80,7 +121,7 @@ public class JwtUtil {
      * @param accessToken
      * @return 토큰 검증 여부
      */
-    public boolean validateToken(String accessToken) {
+    public boolean validateAccessToken(String accessToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken); // key로 accessToken 검증
             return true;
@@ -96,13 +137,58 @@ public class JwtUtil {
         return false;
     }
 
+    // AccessToken, RefreshToken 위조 검증 메서드
+    public boolean validateRegenerate(String accessToken, String refreshToken) {
+        // refreshToken이 없을 경우
+        if (refreshToken.isEmpty()) {
+            log.error("RefreshToken 이 존재하지 않습니다.");
+            throw new NullPointerException("RefreshToken 이 존재하지 않습니다.");
+        }
 
-    public String getTokenFromRequest(HttpServletRequest req){
-        return req.getHeader(AUTHORIZATION_HEADER);
+        // redis에서 기존에 저장된 AccessToken 조회
+        String accessTokenFromRedis = getAccessTokenFromRedis(refreshToken);
+
+        // 사용자가 보낸 AccessToken 과 최초 발급된 AccessToken 이 일치하지 않을 경우
+        if (!accessToken.equals(accessTokenFromRedis)) {
+            log.error("AccessToken 이 위조되었습니다.");
+            throw new IllegalArgumentException("AccessToken 이 위조되었습니다.");
+        }
+        return true;
+    }
+
+
+    // AccessToken 재발급 메서드
+    public String regenerateAccessToken(String refreshToken, HttpServletResponse res) {
+        Long userId = Long.parseLong(getUserInfoFromToken(substringToken(refreshToken)).getSubject());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("해당 유저는 존재하지 않습니다."));
+
+        String email = user.getEmail();
+        // TODO 권한 Role도 넣어주기
+        String newAccessToken = createAccessToken(email);
+
+        res.addHeader(HEADER_ACCESS_TOKEN, newAccessToken);
+        log.info("토큰재발급 성공: {}", newAccessToken);
+        return newAccessToken;
+    }
+
+    // Redis에 저장된 최초 AccessToken 반환 메서드 (key : refreshToken / value : accessToken)
+    public String getAccessTokenFromRedis(String refreshToken) {
+        ValueOperations<String, String> values = redisTemplate.opsForValue();
+        return redisService.getAccessToken(refreshToken);
+    }
+    // Redis에 최초 발급된 토큰 값 저장 (key : refreshToken / value : accessToken)
+    public void saveTokenToRedis(String refreshToken, String accessToken) {
+        try {
+            Date refreshExpire = getUserInfoFromToken(substringToken(refreshToken)).getExpiration(); // refresh 토큰의 만료일
+            redisService.saveAccessToken(refreshToken, accessToken, refreshExpire);
+        } catch (Exception e) {
+            log.error("Error: {} ", e.getMessage());
+        }
     }
 
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody(); //body부분의 claims를 가지고 올 수 잇음
     }
-
 }
