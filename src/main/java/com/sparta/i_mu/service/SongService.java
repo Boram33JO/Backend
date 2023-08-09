@@ -1,12 +1,10 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.responseDto.PostResponseDto;
+import com.neovisionaries.i18n.CountryCode;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
-import com.sparta.i_mu.entity.Song;
 import com.sparta.i_mu.global.util.SpotifyUtil;
 import com.sparta.i_mu.mapper.SongMapper;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
-import com.sparta.i_mu.repository.SongRepository;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.*;
@@ -46,7 +44,9 @@ public class SongService {
             //만약 띄워쓰기가 존재한다면 없애줘야함
             String key = keyword.replace(" ","");
             SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(key)
+                    .market(CountryCode.KR)
                     .limit(10)
+                    .offset(0)
                     .build();
             Paging<Track> SearchResult = searchTracksRequest.execute();
             Track[] tracks = SearchResult.getItems();
