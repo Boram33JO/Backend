@@ -31,9 +31,7 @@ public class SpotifyUtil {
     }
 
     public String getAccessToken() {
-        if (accessToken == null || isTokenExpired()) {
-            accessToken();
-        }
+        if (accessToken == null || isTokenExpired()) { CreateAccessToken(); }
         return accessToken;
     }
 
@@ -44,14 +42,14 @@ public class SpotifyUtil {
         return Instant.now().isAfter(tokenExpiryTime);
     }
 
-    public void accessToken() {
+    public void CreateAccessToken() {
         ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
         try {
             final ClientCredentials clientCredentials = clientCredentialsRequest.execute();
 
             spotifyApi.setAccessToken(clientCredentials.getAccessToken());
             this.accessToken = spotifyApi.getAccessToken();
-            log.info( "spotify accesToken 발급 : " +  accessToken);
+            log.info( "spotify accessToken 발급 : " +  accessToken);
             int expiresIn = clientCredentials.getExpiresIn(); // expiresIn is in seconds
             this.tokenExpiryTime = Instant.now().plusSeconds(expiresIn - 300); // subtract 300 seconds to account for possible delays
 
