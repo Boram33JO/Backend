@@ -2,6 +2,7 @@ package com.sparta.i_mu.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.i_mu.dto.requestDto.LoginRequestDto;
+import com.sparta.i_mu.dto.responseDto.LoginResponseDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.repository.UserRepository;
@@ -57,11 +58,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
+        String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
 
         String token = jwtUtil.createAccessToken(username);
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 
-        MessageResponseDto responseDto = new MessageResponseDto("로그인 완료", HttpStatus.OK.toString());
+        LoginResponseDto responseDto = new LoginResponseDto(nickname, userImage);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
@@ -72,7 +75,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         response.setStatus(401);
-        MessageResponseDto responseDto = new MessageResponseDto("id 또는 pw 틀림 ㅋ", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
+        MessageResponseDto responseDto = new MessageResponseDto("로그인 실패", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
