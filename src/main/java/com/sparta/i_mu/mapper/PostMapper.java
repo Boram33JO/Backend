@@ -32,6 +32,7 @@ public class PostMapper {
 
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
+                .postId(post.getId())
                 .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .content(post.getContent())

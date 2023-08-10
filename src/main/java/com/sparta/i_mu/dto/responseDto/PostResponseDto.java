@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostResponseDto {
     private Long userId;
+    private Long postId;
     private String nickname;
     private String postTitle;
     private int count;
