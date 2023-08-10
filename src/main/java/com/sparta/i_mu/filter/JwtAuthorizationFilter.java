@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -42,53 +41,62 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken = jwtUtil.getAccessTokenFromRequest(request); // good
-        if (StringUtils.hasText(accessToken)) {
-            if (!jwtUtil.validateAccessToken(accessToken)) {
-                log.error("AccessToken error");
-                String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
-                if(StringUtils.hasText(refreshToken)){
-                    if(jwtUtil.validateRegenerate(accessToken, refreshToken)){
-                        // 새로운 AccessToken 발급
-                        String newAccessToken = jwtUtil.regenerateAccessToken(refreshToken,response);
-                    }
-                } log.error("RefreshToken 이 존재하지 않습니다.");
-            }
-            Claims info = jwtUtil.getUserInfoFromToken(accessToken);
+        // 로그인 경로는 필터를 회피
+        if (request.getRequestURI().equals("/api/user/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        String accessToken = jwtUtil.getAccessTokenFromRequest(request); // good
+        if (StringUtils.hasText(accessToken) && jwtUtil.validateAccessToken(accessToken)) {
+            Claims info = jwtUtil.getUserInfoFromToken(accessToken);
             try {
                 setAuthentication(info.getSubject());
             } catch (Exception e) {
                 log.error(e.getMessage());
                 return;
             }
+        } else {
+            String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+            if(StringUtils.hasText(refreshToken) && jwtUtil.validateRefreshToken(refreshToken)){
+                // 새로운 AccessToken 발급
+                String newAccessToken = jwtUtil.regenerateAccessToken(refreshToken,response);
+                log.info("재발급 토큰 : {}",newAccessToken);
+                Claims info = jwtUtil.getUserInfoFromToken(newAccessToken);
+                try {
+                    setAuthentication(info.getSubject());
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    return;
+                }
+            } else {
+                // 둘 다 유효하지 않은 경우
+                log.error("AccessToken 및 RefreshToken 모두 유효하지 않습니다.");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"error\": \"AccessToken 및 RefreshToken 모두 유효하지 않습니다. 다시 로그인 해주세요.\"}");
+                return;
+            }
         }
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request,response);
     }
 
-    // 인증 처리
-    private void setAuthentication(String username) {
+
+// 인증 처리
+private void setAuthentication(String username) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(username);
         context.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(context);
-    }
-
-    //인증 객체 생성
-    private Authentication createAuthentication(String email) {
-        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
-    }
-
-    protected boolean isExistURI(HttpServletRequest request) {
-        HandlerExecutionChain handlerExecutionChain;
-        try {
-            handlerExecutionChain = handlerMapping.getHandler(request);
-        } catch (Exception e) {
-            handlerExecutionChain = null;
         }
 
-        return handlerExecutionChain != null && handlerExecutionChain.getHandler() instanceof HandlerMethod;
-    }
-}
+//인증 객체 생성
+private Authentication createAuthentication(String email) {
+        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);
+        return new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
+        }
+
+
+        }

@@ -1,7 +1,6 @@
 package com.sparta.i_mu.global.util;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.repository.UserRepository;
-import com.sparta.i_mu.role.Role;
 import com.sparta.i_mu.service.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -38,8 +37,8 @@ public class JwtUtil {
 
     public static final String AUTHORIZATION_KEY = "auth";
     private final String BEARER = "Bearer ";
-    private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 3000L; // 1시간
-    private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주
+    private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 1000L; // 1시간 / 1분
+    private final Long REFRESH_TOKEN_EXPIRATION_TIME = 5 * 60 * 1000L; // 2주 / 3분
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
@@ -137,24 +136,23 @@ public class JwtUtil {
         return false;
     }
 
-    // AccessToken, RefreshToken 위조 검증 메서드
-    public boolean validateRegenerate(String accessToken, String refreshToken) {
-        // refreshToken이 없을 경우
-        if (refreshToken.isEmpty()) {
-            log.error("RefreshToken 이 존재하지 않습니다.");
-            throw new NullPointerException("RefreshToken 이 존재하지 않습니다.");
+    // RefreshToken 검증 메서드
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(refreshToken); // key로 refreshToken 검증
+            return true;
+        } catch (SecurityException | MalformedJwtException | SignatureException e) {
+            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+        } catch (ExpiredJwtException e) {
+            log.error("Expired JWT refreshToken, 만료된 JWT refreshToken 입니다.");
+        } catch (UnsupportedJwtException e) {
+            log.error("Unsupported JWT refreshToken, 지원되지 않는 JWT 토큰 입니다.");
+        } catch (IllegalArgumentException e) {
+            log.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
+        return false;
+}
 
-        // redis에서 기존에 저장된 AccessToken 조회
-        String accessTokenFromRedis = getAccessTokenFromRedis(refreshToken);
-
-        // 사용자가 보낸 AccessToken 과 최초 발급된 AccessToken 이 일치하지 않을 경우
-        if (!accessToken.equals(accessTokenFromRedis)) {
-            log.error("AccessToken 이 위조되었습니다.");
-            throw new IllegalArgumentException("AccessToken 이 위조되었습니다.");
-        }
-        return true;
-    }
 
 
     // AccessToken 재발급 메서드
@@ -169,6 +167,7 @@ public class JwtUtil {
         String newAccessToken = createAccessToken(email);
 
         res.addHeader(HEADER_ACCESS_TOKEN, newAccessToken);
+        saveTokenToRedis(refreshToken, newAccessToken);
         log.info("토큰재발급 성공: {}", newAccessToken);
         return newAccessToken;
     }

@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 new UsernamePasswordAuthenticationToken(
                         requestDto.getEmail(),
                         requestDto.getPassword(),
-                        null // TODO 리펙토링 가능한지 찾아보기
+                        null
                 )
         );
     }
@@ -60,7 +60,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
 
         String accessToken = jwtUtil.createAccessToken(username);
+        log.info("accessToken 발급 : {}",accessToken);
         String refreshToken = jwtUtil.createRefreshToken(username);
+        log.info("refreshToken 발급 : {}",refreshToken);
         jwtUtil.saveTokenToRedis(refreshToken, accessToken);
         jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
 
