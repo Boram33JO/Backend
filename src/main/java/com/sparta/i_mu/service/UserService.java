@@ -132,7 +132,7 @@ public class UserService {
         // 닉네임 중복 확인, api 따로 빼는게 좋을듯
         boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
         if (checkNicknameDuplicate) {
-            return new ResponseResource<> (false, "닉네임 중복", null);
+            return ResponseResource.message("닉네임 중복", HttpStatus.OK);
         }
 
         // 새로운 방법 강구 필요
@@ -158,7 +158,7 @@ public class UserService {
 
         findUser.update(user);
 
-        return new ResponseResource<> (true, "프로필 수정 성공", null);
+        return ResponseResource.message("프로필 수정 성공", HttpStatus.OK);
     }
 
     @Transactional
@@ -180,7 +180,7 @@ public class UserService {
 
         findUser.passwordUpdate(changePassswordUser);
 
-        return new ResponseResource<> (true, "비밀번호 수정 성공", null);
+        return ResponseResource.message("비밀번호 수정 성공", HttpStatus.OK);
 
     }
 
