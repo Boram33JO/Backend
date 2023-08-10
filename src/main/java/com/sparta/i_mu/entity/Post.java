@@ -39,6 +39,9 @@ public class Post extends Timestamped{
     @Column
     private Boolean wishlist;
 
+    @Column(name = "post_count", columnDefinition = "integer default 0", nullable = false)
+    private int count;
+
     @OneToOne
     @JoinColumn(name = "location_id")
     private Location location;
@@ -78,6 +81,10 @@ public class Post extends Timestamped{
                 postSaveRequestDto.getPlaceName());
         this.category = newCategory;
         this.content = postSaveRequestDto.getContent();
+    }
+
+    public void countUpdate() {
+        this.count++;
     }
 
 }
