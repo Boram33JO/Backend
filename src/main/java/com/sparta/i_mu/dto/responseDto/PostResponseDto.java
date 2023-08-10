@@ -14,13 +14,16 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostResponseDto {
     private Long userId;
+    private Long postId;
     private String nickname;
     private String postTitle;
+    private int count;
     private String userImage;
     private String content;
     private Long category;
     private LocalDateTime createdAt;
     private Boolean wishlist;
+    private Boolean follow;
     private Long wishlistCount;
     private List<CommentResponseDto> comments;
     private List<SongResponseDto> songs;

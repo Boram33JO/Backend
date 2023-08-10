@@ -9,6 +9,9 @@ import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -225,9 +233,14 @@ public class PostService {
 
     }
 
+    @Transactional
     //상세페이지 게시글 조회
-    public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails) {
+    public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = findPost(postId);
+
+        // redis 추가 되면 전환
+        postCountUpdate(post, req, res);
+
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -271,6 +284,34 @@ public class PostService {
     }
 //    }
 
+    // 게시글 조회수 증가 메서드
+    private void postCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
+        Cookie oldCookie = null;
 
+        long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
+        long currentSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("postCount")) {
+                    oldCookie = cookie;
+                }
+            }
+        }
+
+        if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
+            post.countUpdate();
+            String newCookieValue = "[" + post.getId() + "]";
+            if (oldCookie != null) {
+                newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";
+            }
+            Cookie newCookie = new Cookie("postCount", newCookieValue);
+            newCookie.setPath("/");
+            newCookie.setMaxAge((int) (todayEndSecond - currentSecond));
+            res.addCookie(newCookie);
+        }
+
+    }
 
 }
