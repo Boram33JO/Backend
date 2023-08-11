@@ -3,6 +3,7 @@ package com.sparta.i_mu.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.JwtUtil;
@@ -42,7 +43,7 @@ public class KakaoService {
     private String clientSecret;
 
 
-    public String kakaoLogin(String code) throws JsonProcessingException {
+    public KakaoResult kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
 
@@ -52,16 +53,13 @@ public class KakaoService {
         // 3. 카카오ID로 회원가입 처리
         User kakaoUser = registerKakaoUserIfNeed(kakaoUserInfo);
 
-//        // 4. 강제 로그인 처리
-//        Authentication authentication = forceLogin(kakaoUser);
-//
-//        // 5. response Header에 JWT 토큰 추가
-//        kakaoUsersAuthorizationInput(authentication, response);
-//
         //4.JWT 토큰 반환
         String createToken = jwtUtil.createAccessToken(kakaoUser.getEmail());
 
-        return createToken;
+        return KakaoResult.builder()
+                .token(createToken)
+                .userInfo(kakaoUserInfo)
+                .build();
     }
 
 
@@ -202,22 +200,5 @@ public class KakaoService {
         }
         return kakaoUser;
     }
-//
-//    // 4. 강제 로그인 처리
-//    private Authentication forceLogin(User kakaoUser) {
-//        UserDetails userDetails = new UserDetailsImpl(kakaoUser);
-//        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//        return authentication;
-//    }
-//    // 5. response Header에 JWT 토큰 추가
-//    private void kakaoUsersAuthorizationInput(Authentication authentication, HttpServletResponse response) {
-//        // response header에 token 추가
-//        UserDetailsImpl userDetailsImpl = ((UserDetailsImpl) authentication.getPrincipal());
-//        String userEmail = userDetailsImpl.getUsername();
-//        String token = jwtUtil.createAccessToken(userEmail);
-//        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
-//    }
-
 
 }
