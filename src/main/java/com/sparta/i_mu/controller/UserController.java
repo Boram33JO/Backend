@@ -12,6 +12,8 @@ import com.sparta.i_mu.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +71,11 @@ public class UserController {
 
 
     // 카카오 로그인
-    @GetMapping("/user/kakao/callback")
-    public KakaoUserInfo kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        return kakaoService.kakaoLogin(code, response);
+    @GetMapping("/oauth/token")
+    public ResponseEntity<String> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
+        String createToken = kakaoService.kakaoLogin(code);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + createToken);  // 토큰을 헤더에 추가
+        return new ResponseEntity<>("Login Successful", headers, HttpStatus.OK);
     }
 }

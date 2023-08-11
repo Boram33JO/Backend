@@ -14,6 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByNickname(String Nickname);
 
+    Optional<User> findByKakaoId(Long kakaoId);
+
     @Query("SELECT f.followUser, COUNT(f) FROM Follow f GROUP BY 1 ORDER BY 2 DESC")
     List<User> findAllByOrderByFollowCountDesc();
 }
