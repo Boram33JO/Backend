@@ -1,6 +1,6 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.responseDto.FollowResponseDto;
+import com.sparta.i_mu.dto.responseDto.FollowPopularResponseDto;
 import com.sparta.i_mu.entity.Follow;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
@@ -40,9 +40,18 @@ public class FollowService {
         return ResponseResource.message("팔로우 성공", HttpStatus.OK);
     }
 
-    public List<FollowResponseDto> findFollow(Long userId) {
-        List<FollowResponseDto> followList = followReporitory.findAllByFollowedUserId(userId).stream().map(FollowResponseDto::new).toList();
+    public List<FollowPopularResponseDto> getFollowPopular() {
 
-        return followList;
+        List<FollowPopularResponseDto> followPopularList = userRepository.findAllByOrderByFollowCountDesc().stream().map(FollowPopularResponseDto::new).limit(4).toList();
+
+        return followPopularList;
     }
+
+//    public List<FollowResponseDto> findFollow(Long userId) {
+//        List<FollowResponseDto> followList = followReporitory.findAllByFollowedUserId(userId).stream().map(FollowResponseDto::new).toList();
+//
+//        return followList;
+//    }
+
+
 }
