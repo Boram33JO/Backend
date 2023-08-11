@@ -95,19 +95,26 @@ public class KakaoService {
                 .body(body);
 
         log.info("HTTP 요청");
+        log.info("redirect_uri used 전 : {}", frontUrl);
         // HTTP 요청 보내기;
         ResponseEntity<String> response = restTemplate.exchange(
                 requestEntity,
                 String.class
         );
-
+        log.info("redirect_uri used 후 : {}", frontUrl);
         log.info("토큰 파싱");
-        // HTTP 응답 (JSON) -> 액세스 토큰 파싱
-        log.info("HTTP 응답 내용: {}", response.getBody());
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        return jsonNode.get("access_token").asText();
-    }
 
+        try {
+            // HTTP 응답 (JSON) -> 액세스 토큰 파싱
+            log.info("HTTP 응답 내용: {}", response.getBody());
+            JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
+            return jsonNode.get("access_token").asText();
+
+        } catch (JsonProcessingException e) {
+            log.error("액세스 토큰 파싱 중 오류 발생: {}", e.getMessage());
+            throw e; // 혹은 적절한 예외를 던지거나 다른 처리를 수행합니다.
+        }
+    }
 
 
 
