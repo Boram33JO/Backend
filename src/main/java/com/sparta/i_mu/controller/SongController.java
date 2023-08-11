@@ -25,8 +25,16 @@ public class SongController {
         return songService.getSearch(keyword);
     }
 
+    @GetMapping("/AllMostSong")
+    public List<SongResponseDto> getMostAllPostSong(){
+        return songService.getMostAllPostSong();
+    }
+    /**
+     * 카테고리별 별 가장 많이 포스팅된 노래 top 4
+     * @return
+     */
     @GetMapping("/mostSong")
-    public List<SongByCategoryResponseDto> getMostPostSong(){
-        return songService.getMostPostSong();
+    public List<SongByCategoryResponseDto> getMostByCategoryPostSong(){
+        return songService.getMostByCategoryPostSong();
     }
 }

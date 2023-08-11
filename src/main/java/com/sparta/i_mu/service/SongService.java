@@ -32,6 +32,7 @@ public class SongService {
     private final SpotifyApi spotifyApi;
     private final SpotifyUtil spotifyUtil;
     private final SongRepository songRepository;
+    private final PostSongLinkRepository postSongLinkRepository;
     private final CategoryRepository categoryRepository;
     private final SongMapper songMapper;
 
@@ -102,10 +103,21 @@ public class SongService {
     }
 
     /**
+     * 전체에서 포스팅이 가장 많이 된 top4 노래 조회
+     * @return 인기노래 4개
+     */
+    public List<SongResponseDto> getMostAllPostSong() {
+        return postSongLinkRepository.findTopSong().stream()
+                .map(songMapper::entityToResponseDto)
+                .limit(4)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 카테고리별 포스팅이 많이 된 노래 4개
      * @return
      */
-    public List<SongByCategoryResponseDto> getMostPostSong(){
+    public List<SongByCategoryResponseDto> getMostByCategoryPostSong(){
 
         List<Long> categoryIds = categoryRepository.findIds();
 
