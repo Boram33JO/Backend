@@ -73,9 +73,8 @@ public class UserController {
     // 카카오 로그인
     @GetMapping("/oauth/token")
     public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        String createToken = kakaoService.kakaoLogin(code, response);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + createToken);  // 토큰을 헤더에 추가
-        return new ResponseEntity<>("Login Successful", headers, HttpStatus.OK);
+        String createToken = kakaoService.kakaoLogin(code);
+        response.addHeader("Authorization", "Bearer " + createToken);// 토큰을 헤더에 추가
+        return new ResponseEntity<>("Login Successful", HttpStatus.OK);
     }
 }

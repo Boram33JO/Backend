@@ -95,12 +95,13 @@ public class KakaoService {
                 .body(body);
 
         log.info("HTTP 요청");
+        log.info("redirect_uri used 전 : {}", frontUrl);
         // HTTP 요청 보내기;
         ResponseEntity<String> response = restTemplate.exchange(
                 requestEntity,
                 String.class
         );
-
+        log.info("redirect_uri used 후 : {}", frontUrl);
         log.info("토큰 파싱");
         // HTTP 응답 (JSON) -> 액세스 토큰 파싱
         log.info("HTTP 응답 내용: {}", response.getBody());
