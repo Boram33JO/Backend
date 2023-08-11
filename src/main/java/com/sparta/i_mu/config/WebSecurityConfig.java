@@ -68,7 +68,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
-                            .requestMatchers(GET, "/api/oauth/**").permitAll() // 소셜 로그인
+                            .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(GET, "/api/search").permitAll()
                             .requestMatchers(GET, "/api/profile/**").permitAll()

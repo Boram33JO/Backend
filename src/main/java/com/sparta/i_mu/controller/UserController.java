@@ -1,6 +1,8 @@
 package com.sparta.i_mu.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sparta.i_mu.dto.KakaoResult;
+import com.sparta.i_mu.dto.KakaoUserInfo;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -72,10 +74,10 @@ public class UserController {
 
     // 카카오 로그인
     @PostMapping ("/oauth/token")
-    public ResponseEntity<String> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        String createToken = kakaoService.kakaoLogin(code);
-        response.addHeader("Authorization", "Bearer " + createToken);// 토큰을 헤더에 추가
-        return new ResponseEntity<>("Login Successful", HttpStatus.OK);
-
+    public ResponseEntity<KakaoUserInfo> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
+        KakaoResult kakaoResult = kakaoService.kakaoLogin(code);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + kakaoResult.getToken()); // 토큰을 헤더에 추가
+        return new ResponseEntity<>(kakaoResult.getUserInfo(), headers, HttpStatus.OK);
     }
 }
