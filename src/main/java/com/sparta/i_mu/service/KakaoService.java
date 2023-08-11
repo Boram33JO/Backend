@@ -127,7 +127,7 @@ public class KakaoService {
 
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Authorization", accessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
 
@@ -146,7 +146,7 @@ public class KakaoService {
 
         // responseBody에 있는 정보를 꺼냄
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        long id = jsonNode.get("id").asLong();
+        Long id = jsonNode.get("id").asLong();
 
         JsonNode kakaoAccountNode = jsonNode.get("kakao_account");
 
@@ -166,6 +166,7 @@ public class KakaoService {
         log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email + ", " + userImage);
 
         return KakaoUserInfo.builder()
+                .id(id)
                 .email(email)
                 .userImage(userImage)
                 .nickname(nickname)
