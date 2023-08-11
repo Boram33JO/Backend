@@ -147,13 +147,23 @@ public class KakaoService {
         // responseBody에 있는 정보를 꺼냄
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         long id = jsonNode.get("id").asLong();
-        String email = jsonNode.get("kakao_account").get("email").asText();
+
+        JsonNode kakaoAccountNode = jsonNode.get("kakao_account");
+
+        String email = null;
+        if (kakaoAccountNode != null && kakaoAccountNode.has("email")) {
+            email = jsonNode.get("kakao_account").get("email").asText(null);
+        }
+
         JsonNode profileNode = jsonNode.get("kakao_account").get("profile");
-        String nickname = profileNode.get("nickname").asText();
-        String userImage = profileNode.get("profile_image_url").asText();
+        String nickname = profileNode.get("nickname").asText(); // 닉네임은 필수 동의값
+        String userImage = null;
+        if(profileNode.has("profile_image_url")){
+            userImage = profileNode.get("profile_image_url").asText(null);
+        }
 
 
-        log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email);
+        log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email + ", " + userImage);
 
         return KakaoUserInfo.builder()
                 .email(email)
@@ -164,8 +174,7 @@ public class KakaoService {
 
 
     public User registerKakaoUserIfNeed(KakaoUserInfo kakaoUserInfo) {
-        log.info("중복된 email 확인");
-        // DB 에 중복된 email이 있는지 확인
+        log.info("중복된 User 확인");
 
         Long kakaoId = kakaoUserInfo.getId();
 
