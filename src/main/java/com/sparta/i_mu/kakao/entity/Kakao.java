@@ -1,3 +1,4 @@
+
 //package com.sparta.i_mu.kakao.entity;
 //
 //import jakarta.persistence.*;
@@ -52,3 +53,4 @@
 //        return false;
 //    }
 //}
+

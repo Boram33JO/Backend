@@ -1,9 +1,9 @@
 package com.sparta.i_mu.mapper;
 
 import com.sparta.i_mu.dto.responseDto.*;
-import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.CommentRepository;
+import com.sparta.i_mu.repository.FollowReporitory;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
 import com.sparta.i_mu.repository.WishlistRepository;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostMapper {
     private final WishlistRepository wishlistRepository;
+    private final FollowReporitory followReporitory;
     private final CommentRepository commentRepository;
     private final PostSongLinkRepository postSongLinkRepository;
     private final SongMapper songMapper;
@@ -31,6 +32,7 @@ public class PostMapper {
 
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
+                .postId(post.getId())
                 .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .content(post.getContent())
@@ -44,6 +46,7 @@ public class PostMapper {
 
     public PostResponseDto mapToPostResponseDto(Post post, Optional<UserDetailsImpl> userDetails) {
         boolean isWishlist = userDetails.isPresent() && wishlistRepository.existsByPostIdAndUserId(post.getId(), userDetails.get().getUser().getId());
+        boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(post.getUser().getId(), userDetails.get().getUser().getId());
 
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
 
@@ -60,12 +63,14 @@ public class PostMapper {
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
                 .postTitle(post.getPostTitle())
+                .count(post.getCount())
                 .nickname(post.getUser().getNickname())
                 .userImage(post.getUser().getUserImage())
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
                 .wishlist(isWishlist)
+                .follow(isfollow)
                 .wishlistCount(wishlistCount)
                 .comments(comments)
                 .songs(songs)
@@ -81,7 +86,7 @@ public class PostMapper {
 
         return PostListResponseDto.builder()
                 .postId(post.getId())
-//                .postTitle(post.getPostTitle())
+                .postTitle(post.getPostTitle())
                 .content(post.getContent())
                 .songs(songs)
                 .build();

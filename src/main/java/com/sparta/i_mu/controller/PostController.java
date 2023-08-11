@@ -7,6 +7,8 @@ import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -67,7 +69,7 @@ public class PostController {
         return postService.deletePost(postId,user);
     }
 
-    // 메인 페이지 - 카테고리 별 전체 게시글 조회
+    // 메인페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
     public List<PostByCategoryResponseDto> getAllPost(){
         return postService.getAllPost();
@@ -77,8 +79,10 @@ public class PostController {
     @GetMapping("/{postId}")
     public PostResponseDto getDetailPost(
             @PathVariable Long postId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return postService.getDetailPost(postId, Optional.ofNullable(userDetails));
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletRequest req,
+            HttpServletResponse res){
+        return postService.getDetailPost(postId, Optional.ofNullable(userDetails), req, res);
     }
 
     // 메인 페이지 - 검색

@@ -9,6 +9,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return new ResponseResource<>(true, "댓글 등록 성공", null);
+        return ResponseResource.message("댓글 등록 성공", HttpStatus.OK);
     }
 
     @Transactional
@@ -44,7 +45,7 @@ public class CommentService {
 
         comment.update(requestDto);
 
-        return new ResponseResource<>(true, "댓글 수정 성공", null);
+        return ResponseResource.message("댓글 수정 성공", HttpStatus.OK);
     }
 
     public ResponseResource<?> deleteComment(Long commentId, Long userId) {
@@ -54,7 +55,7 @@ public class CommentService {
 
         commentRepository.delete(comment);
 
-        return new ResponseResource<>(true, "댓글 삭제 성공", null);
+        return ResponseResource.message("댓글 삭제 성공", HttpStatus.OK);
     }
 
     public List<CommentResponseDto> getComment(Long userId) {

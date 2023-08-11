@@ -1,5 +1,6 @@
 package com.sparta.i_mu.global.handler;
 
+import com.sparta.i_mu.global.exception.NoContentException;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
-    // 권한 요청이 잘못들어왔을 경우(게시글의 생성은 host만)
+    // 권한 요청이 잘못들어왔을 경우
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleException(AccessDeniedException e){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
@@ -57,6 +58,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SizeLimitExceededException.class)
     public ResponseEntity<String> handleException(SizeLimitExceededException e){
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+
+    // HTTP 204 status code -> Song 검색 시 콘텐츠가 존재하지 않습니다.
+    @ExceptionHandler(NoContentException.class)
+    public ResponseEntity<?> handleNoContentException(NoContentException e) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(e.getMessage());
     }
 
 }

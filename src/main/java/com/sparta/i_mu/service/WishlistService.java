@@ -7,6 +7,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.repository.PostRepository;
 import com.sparta.i_mu.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class WishlistService {
 
         if (wishlist.isPresent()) {
             wishlistRepository.delete(wishlist.get());
-            return new ResponseResource<>(true, "좋아요 삭제", null);
+            return ResponseResource.message("좋아요 삭제", HttpStatus.OK);
         }
 
         Wishlist saveWishlist = Wishlist.builder()
@@ -35,7 +36,7 @@ public class WishlistService {
 
         wishlistRepository.save(saveWishlist);
 
-        return new ResponseResource<>(true, "좋아요 성공", null);
+        return ResponseResource.message("좋아요 성공", HttpStatus.OK);
     }
 
 }
