@@ -42,7 +42,7 @@ public class KakaoService {
     private String clientSecret;
 
 
-    public String kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
+    public String kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
 
@@ -71,7 +71,7 @@ public class KakaoService {
         // 요펑 URL 만들기
         URI uri = UriComponentsBuilder
                 .fromUriString("https://kauth.kakao.com")
-                .path("/auth/token")
+                .path("/oauth/token")
                 .encode()
                 .build()
                 .toUri();
@@ -94,13 +94,16 @@ public class KakaoService {
                 .headers(headers)
                 .body(body);
 
+        log.info("HTTP 요청");
         // HTTP 요청 보내기;
         ResponseEntity<String> response = restTemplate.exchange(
                 requestEntity,
                 String.class
         );
 
+        log.info("토큰 파싱");
         // HTTP 응답 (JSON) -> 액세스 토큰 파싱
+        log.info("HTTP 응답 내용: {}", response.getBody());
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         return jsonNode.get("access_token").asText();
     }
@@ -134,10 +137,12 @@ public class KakaoService {
                 requestEntity,
                 String.class
         );
+        log.info("API Response: " + response.getBody());
+
 
         // responseBody에 있는 정보를 꺼냄
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        Long id = jsonNode.get("id").asLong();
+        long id = jsonNode.get("id").asLong();
         String email = jsonNode.get("kakao_account").get("email").asText();
         String nickname = jsonNode.get("properties")
                 .get("nickname").asText();
