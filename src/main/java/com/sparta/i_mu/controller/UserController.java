@@ -11,7 +11,6 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

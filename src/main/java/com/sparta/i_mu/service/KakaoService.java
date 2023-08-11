@@ -46,7 +46,6 @@ public class KakaoService {
     public KakaoResult kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
-
         // 2. 토큰으로 카카오 API 호출
         KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(accessToken);
 
@@ -149,9 +148,10 @@ public class KakaoService {
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         long id = jsonNode.get("id").asLong();
         String email = jsonNode.get("kakao_account").get("email").asText();
-        String nickname = jsonNode.get("properties")
-                .get("nickname").asText();
-        String userImage = jsonNode.get("properties").get("profile_image").asText(); // 또는 "thumbnail_image" 사용
+        JsonNode profileNode = jsonNode.get("kakao_account").get("profile");
+        String nickname = profileNode.get("nickname").asText();
+        String userImage = profileNode.get("profile_image_url").asText();
+
 
         log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email);
 
@@ -164,6 +164,7 @@ public class KakaoService {
 
 
     public User registerKakaoUserIfNeed(KakaoUserInfo kakaoUserInfo) {
+        log.info("중복된 email 확인");
         // DB 에 중복된 email이 있는지 확인
 
         Long kakaoId = kakaoUserInfo.getId();
@@ -196,6 +197,7 @@ public class KakaoService {
                         .build();
             }
             userRepository.save(kakaoUser);
+            log.info("User정보 email : {}",kakaoUser.getEmail());
 
         }
         return kakaoUser;
