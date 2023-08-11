@@ -47,6 +47,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String token = jwtUtil.substringToken(tokenValue);
             if (!jwtUtil.validateToken(token)) {
                 log.error("Token error");
+                response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 response.getWriter().write("유효하지 않은 토큰입니다.");
                 return;

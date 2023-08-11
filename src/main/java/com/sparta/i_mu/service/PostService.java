@@ -171,7 +171,7 @@ public class PostService {
                             .collect(Collectors.toList());
 
                     return PostByCategoryResponseDto.builder()
-                            .category(category.getName()) // check 현재는 객체로
+                            .category(category.getId()) // check 현재는 객체로
                             .postByCategoryResponseDtoList(postResponseDtoList)
                             .build();
 

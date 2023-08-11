@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-import static lombok.AccessLevel.PROTECTED;
-
 @Getter
 @Builder
 @AllArgsConstructor
@@ -16,8 +14,9 @@ public class ResponseResource<T> {
     private final boolean success;
     private final T data;
     private final String message;
-    private int statusCode;
-    private final ErrorCodeResponse error;
+    private final int statusCode;
+    private final String error;
+    private final ErrorCodeResponse error1;
 
     public static <T> ResponseResource<T> data(T data, HttpStatus status){
         return ResponseResource.<T>builder()
@@ -35,10 +34,20 @@ public class ResponseResource<T> {
                 .build();
     }
 
-    public static <T> ResponseResource<T> error(ErrorCodeResponse errorResponse){
-                return ResponseResource.<T>builder()
+    // 1안
+//    public static <T> ResponseResource<T> error1(ErrorCodeResponse errorResponse){
+//                return ResponseResource.<T>builder()
+//                .success(false)
+//                .error1(errorResponse)
+//                .build();
+//    }
+
+    // 2안
+    public static <T> ResponseResource<T> error(String message, HttpStatus status){
+        return ResponseResource.<T>builder()
                 .success(false)
-                .error(errorResponse)
+                .statusCode(status.value())
+                .error(message)
                 .build();
     }
 }

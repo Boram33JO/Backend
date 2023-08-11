@@ -12,6 +12,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostByCategoryResponseDto {
-    private String category;
+    private Long category;
     private List<PostResponseDto> postByCategoryResponseDtoList;
 }
