@@ -1,5 +1,6 @@
 package com.sparta.i_mu.controller;
 
+import com.sparta.i_mu.dto.responseDto.SongByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.service.SongService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class SongController {
     }
 
     @GetMapping("/mostSong")
-    public List<SongResponseDto> getMostPostSong(){
+    public List<SongByCategoryResponseDto> getMostPostSong(){
         return songService.getMostPostSong();
     }
 }
