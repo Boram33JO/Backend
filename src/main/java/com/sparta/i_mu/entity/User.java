@@ -2,10 +2,7 @@ package com.sparta.i_mu.entity;
 
 import com.nimbusds.oauth2.sdk.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import static jakarta.persistence.EnumType.STRING;
 import static lombok.AccessLevel.PROTECTED;
@@ -40,6 +37,8 @@ public class User {
     @Column
     private String userImage;
 
+    private Long kakaoId;
+
     public void update(User user) {
         this.nickname = user.getNickname();
         this.introduce = user.getIntroduce();
@@ -50,4 +49,8 @@ public class User {
         this.password = user.getPassword();
     }
 
+    public User kakaoIdUpdate(Long kakaoId) {
+        this.kakaoId = kakaoId;
+        return this;
+    }
 }
