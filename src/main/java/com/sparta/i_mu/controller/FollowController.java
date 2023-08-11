@@ -1,6 +1,6 @@
 package com.sparta.i_mu.controller;
 
-import com.sparta.i_mu.dto.responseDto.FollowResponseDto;
+import com.sparta.i_mu.dto.responseDto.FollowPopularResponseDto;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.FollowService;
@@ -20,6 +20,11 @@ public class FollowController {
     @PostMapping("/profile/{userId}/follow")
     public ResponseResource<?> createFollow (@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return followService.createFollow(userId, userDetails.getUser());
+    }
+
+    @GetMapping("/popular")
+    public List<FollowPopularResponseDto> createFollow () {
+        return followService.getFollowPopular();
     }
 
 //    @GetMapping("/profile/{userId}/follow")
