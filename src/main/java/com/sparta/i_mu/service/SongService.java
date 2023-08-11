@@ -1,11 +1,15 @@
 package com.sparta.i_mu.service;
 
 import com.neovisionaries.i18n.CountryCode;
+import com.sparta.i_mu.dto.responseDto.SongByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
+import com.sparta.i_mu.entity.Song;
 import com.sparta.i_mu.global.exception.NoContentException;
 import com.sparta.i_mu.global.util.SpotifyUtil;
 import com.sparta.i_mu.mapper.SongMapper;
+import com.sparta.i_mu.repository.CategoryRepository;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
+import com.sparta.i_mu.repository.SongRepository;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.*;
@@ -27,7 +31,8 @@ public class SongService {
 
     private final SpotifyApi spotifyApi;
     private final SpotifyUtil spotifyUtil;
-    private final PostSongLinkRepository postSongLinkRepository;
+    private final SongRepository songRepository;
+    private final CategoryRepository categoryRepository;
     private final SongMapper songMapper;
 
     /**
@@ -97,13 +102,29 @@ public class SongService {
     }
 
     /**
-     * 포스팅이 가장 많이 된 top4 노래 조회
-     * @return 인기노래 4개
+     * 카테고리별 포스팅이 많이 된 노래 4개
+     * @return
      */
-    public List<SongResponseDto> getMostPostSong() {
-        return postSongLinkRepository.findTopSong().stream()
-                .map(songMapper::entityToResponseDto)
-                .limit(4)
+    public List<SongByCategoryResponseDto> getMostPostSong(){
+
+        List<Long> categoryIds = categoryRepository.findIds();
+
+        return categoryIds.stream()
+                .map(categoryId -> {
+                    // 해당 카테고리에서 가장 많이 포스팅된 노래 4곡을 찾습니다.
+                    List<Song> topPostedSongs = songRepository.findByCategoryIdOrderByPostCountDesc(categoryId);
+
+                    List<SongResponseDto> songResponseDtos = topPostedSongs.stream()
+                            .map(songMapper::entityToResponseDto)
+                            .limit(4)
+                            .collect(Collectors.toList());
+
+                    return SongByCategoryResponseDto.builder()
+                            .Category(categoryId)
+                            .songResponseDtos(songResponseDtos)
+                            .build();
+                })
+
                 .collect(Collectors.toList());
     }
 }

@@ -1,12 +1,15 @@
 package com.sparta.i_mu.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
-import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
+import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,7 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class UserController {
     private final UserService userService;
+    private final KakaoService kakaoService;
 
     @PostMapping("/user/signup")
     public ResponseEntity<MessageResponseDto> createUser(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
@@ -63,4 +67,10 @@ public class UserController {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
 
+
+    // 카카오 로그인
+    @GetMapping("/user/kakao/callback")
+    public KakaoUserInfo kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        return kakaoService.kakaoLogin(code, response);
+    }
 }
