@@ -63,7 +63,12 @@ public class AuthService {
         }
     }
 
-    // 리프레시 토큰이 주기적으로 갱신되게
+    /**
+     * refreshToken을 일주일 주기로 재 업로드 하는 코드
+     * @param refreshToken
+     * @param userEmail
+     * @param response
+     */
     public void refreshTokenRegularly(String refreshToken, String userEmail, HttpServletResponse response) {
         log.info("일주일 간격으로 refreshToken 갱신메서드 현재 refreshToken : {}", refreshToken);
         Claims refreshTokenClaims = jwtUtil.getUserInfoFromToken(refreshToken);
