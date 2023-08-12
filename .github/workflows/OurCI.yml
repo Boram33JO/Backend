@@ -1,3 +1,4 @@
+
 name: CI/CD
 
 on:
@@ -21,7 +22,15 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 17
-    
+          
+       # application.properties를 프로젝트에 포함
+      - name: add Application.properties
+        run: touch ./src/main/resources/application.properties
+        shell: bash
+        
+      - name: copy Application.properties
+        run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
+        shell: bash
         
       # 빌드
       - name: Grant execute permission for gradlew
@@ -29,3 +38,13 @@ jobs:
       
       - name: Build with Gradle
         run: ./gradlew build
+        
+      - name: Make Zip File
+        run: zip -qq -r ./app.zip .  # 쉘명령어 찾아보고싶음 찾아보아뱀 ㅎ
+      #aws
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEYID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
