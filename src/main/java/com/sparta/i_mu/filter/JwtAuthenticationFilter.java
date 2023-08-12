@@ -6,6 +6,8 @@ import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import com.sparta.i_mu.service.AuthService;
+import com.sparta.i_mu.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,10 +30,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
-    @Autowired
-    private UserRepository userRepository;
-
-
+    private final RedisService redisService;
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
@@ -61,9 +60,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String accessToken = jwtUtil.createAccessToken(username);
         log.info("accessToken 발급 : {}",accessToken);
-        String refreshToken = jwtUtil.createRefreshToken(username);
+        String refreshToken = jwtUtil.createRefreshToken(username); // username = email
         log.info("refreshToken 발급 : {}",refreshToken);
-        jwtUtil.saveTokenToRedis(refreshToken, accessToken);
+        redisService.storeRefreshToken(username,refreshToken); // refreshToken redis에 저장
         jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
 
 //        MessageResponseDto responseDto = new MessageResponseDto("로그인 완료", HttpStatus.OK.toString());
