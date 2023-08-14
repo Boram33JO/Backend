@@ -1,7 +1,7 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
+import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -162,7 +162,7 @@ public class PostService {
     public List<PostByCategoryResponseDto> getAllPost() {
 
         List<Category> categories = categoryRepository.findAll();
-        return categories.stream()
+        return categories.stream().sorted(Comparator.comparing(Category::getId))
                 .map(category ->{
                     List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()

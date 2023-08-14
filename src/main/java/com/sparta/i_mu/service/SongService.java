@@ -121,7 +121,7 @@ public class SongService {
 
         List<Long> categoryIds = categoryRepository.findIds();
 
-        return categoryIds.stream()
+        return categoryIds.stream().sorted()
                 .map(categoryId -> {
                     // 해당 카테고리에서 가장 많이 포스팅된 노래 4곡을 찾습니다.
                     List<Song> topPostedSongs = songRepository.findByCategoryIdOrderByPostCountDesc(categoryId);
