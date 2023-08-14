@@ -1,12 +1,10 @@
 package com.sparta.i_mu.controller;
 
+import com.sparta.i_mu.dto.responseDto.SongByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.service.SongService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,7 +21,20 @@ public class SongController {
      * @return 해당 keyword에 맞는 아티스트의 노래
      */
     @GetMapping("/search")
-    public List<SongResponseDto> getSearch(@RequestBody String keyword){
+    public List<SongResponseDto> getSearch(@RequestParam String keyword){
         return songService.getSearch(keyword);
+    }
+
+    @GetMapping("/AllMostSong")
+    public List<SongResponseDto> getMostAllPostSong(){
+        return songService.getMostAllPostSong();
+    }
+    /**
+     * 카테고리별 별 가장 많이 포스팅된 노래 top 4
+     * @return
+     */
+    @GetMapping("/mostSong")
+    public List<SongByCategoryResponseDto> getMostByCategoryPostSong(){
+        return songService.getMostByCategoryPostSong();
     }
 }

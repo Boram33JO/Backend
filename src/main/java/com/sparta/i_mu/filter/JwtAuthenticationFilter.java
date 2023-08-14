@@ -2,6 +2,7 @@ package com.sparta.i_mu.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.i_mu.dto.requestDto.LoginRequestDto;
+import com.sparta.i_mu.dto.responseDto.LoginResponseDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.repository.UserRepository;
@@ -57,6 +58,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         log.info("로그인 성공 및 JWT 생성");
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
+        String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
 
         String accessToken = jwtUtil.createAccessToken(username);
         log.info("accessToken 발급 : {}",accessToken);
@@ -65,15 +68,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         redisService.storeRefreshToken(username,refreshToken); // refreshToken redis에 저장
         jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
 
-//        MessageResponseDto responseDto = new MessageResponseDto("로그인 완료", HttpStatus.OK.toString());
-//        response.setContentType("application/json");
-//        response.setCharacterEncoding("UTF-8");
-//        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().write("로그인 성공");
+        LoginResponseDto responseDto = new LoginResponseDto(nickname, userImage);
 
     }
 
@@ -81,14 +77,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
+
+        response.setStatus(401);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"로그인 실패");
 
-//        MessageResponseDto responseDto = new MessageResponseDto("id 또는 pw 틀림 ㅋ", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
-//        response.setContentType("application/json");
-//        response.setCharacterEncoding("UTF-8");
-//        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
     }
 
 }

@@ -1,12 +1,13 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.responseDto.FollowResponseDto;
+import com.sparta.i_mu.dto.responseDto.FollowPopularResponseDto;
 import com.sparta.i_mu.entity.Follow;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.repository.FollowReporitory;
 import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class FollowService {
 
         if (follow.isPresent()) {
             followReporitory.delete(follow.get());
-            return new ResponseResource<>(true, "팔로우 삭제", null);
+            return ResponseResource.message("팔로우 삭제", HttpStatus.OK);
         }
 
         User followUser = userRepository.findById(userId).orElseThrow();
@@ -36,12 +37,21 @@ public class FollowService {
 
         followReporitory.save(saveFollow);
 
-        return new ResponseResource<>(true, "팔로우 성공", null);
+        return ResponseResource.message("팔로우 성공", HttpStatus.OK);
     }
 
-    public List<FollowResponseDto> findFollow(Long userId) {
-        List<FollowResponseDto> followList = followReporitory.findAllByFollowedUserId(userId).stream().map(FollowResponseDto::new).toList();
+    public List<FollowPopularResponseDto> getFollowPopular() {
 
-        return followList;
+        List<FollowPopularResponseDto> followPopularList = userRepository.findAllByOrderByFollowCountDesc().stream().map(FollowPopularResponseDto::new).limit(4).toList();
+
+        return followPopularList;
     }
+
+//    public List<FollowResponseDto> findFollow(Long userId) {
+//        List<FollowResponseDto> followList = followReporitory.findAllByFollowedUserId(userId).stream().map(FollowResponseDto::new).toList();
+//
+//        return followList;
+//    }
+
+
 }
