@@ -46,6 +46,9 @@ public class UserDetailsImpl implements UserDetails {
         return user.getUserImage();
     }
 
+    public Long getUserId() {
+        return user.getId();
+    }
 
     @Override
     public boolean isAccountNonExpired() {

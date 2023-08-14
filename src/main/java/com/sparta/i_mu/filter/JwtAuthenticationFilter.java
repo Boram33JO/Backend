@@ -3,11 +3,9 @@ package com.sparta.i_mu.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.i_mu.dto.requestDto.LoginRequestDto;
 import com.sparta.i_mu.dto.responseDto.LoginResponseDto;
-import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
+import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.JwtUtil;
-import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.security.UserDetailsImpl;
-import com.sparta.i_mu.service.AuthService;
 import com.sparta.i_mu.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -60,16 +57,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
+        Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
 
         String accessToken = jwtUtil.createAccessToken(username);
         log.info("accessToken 발급 : {}",accessToken);
         String refreshToken = jwtUtil.createRefreshToken(username); // username = email
         log.info("refreshToken 발급 : {}",refreshToken);
         redisService.storeRefreshToken(username,refreshToken); // refreshToken redis에 저장
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto(nickname, userImage, userId);
+        ResponseResource<?> responseDto = new ResponseResource<>(true,loginResponseDto,"로그인 성공", HttpStatus.OK.value(),"null");
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
+
         jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
-
-
-        LoginResponseDto responseDto = new LoginResponseDto(nickname, userImage);
 
     }
 

@@ -16,13 +16,14 @@ public class ResponseResource<T> {
     private final String message;
     private final int statusCode;
     private final String error;
-    private final ErrorCodeResponse error1;
+//    private final ErrorCodeResponse error1;
 
-    public static <T> ResponseResource<T> data(T data, HttpStatus status){
+    public static <T> ResponseResource<T> data(T data, HttpStatus status, String message){
         return ResponseResource.<T>builder()
                 .success(true)
                 .statusCode(status.value())
                 .data(data)
+                .message(message)
                 .build();
     }
 
