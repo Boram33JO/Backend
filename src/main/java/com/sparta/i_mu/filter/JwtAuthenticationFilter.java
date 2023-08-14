@@ -7,6 +7,8 @@ import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import com.sparta.i_mu.service.AuthService;
+import com.sparta.i_mu.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,10 +31,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
-    @Autowired
-    private UserRepository userRepository;
-
-
+    private final RedisService redisService;
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
@@ -50,35 +49,40 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 new UsernamePasswordAuthenticationToken(
                         requestDto.getEmail(),
                         requestDto.getPassword(),
-                        null // TODO 리펙토링 가능한지 찾아보기
+                        null
                 )
         );
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        log.info("로그인 성공 및 JWT 생성");
         String username = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
 
-        String token = jwtUtil.createAccessToken(username);
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+        String accessToken = jwtUtil.createAccessToken(username);
+        log.info("accessToken 발급 : {}",accessToken);
+        String refreshToken = jwtUtil.createRefreshToken(username); // username = email
+        log.info("refreshToken 발급 : {}",refreshToken);
+        redisService.storeRefreshToken(username,refreshToken); // refreshToken redis에 저장
+        jwtUtil.addTokenToHeader(accessToken,refreshToken,response);
+
 
         LoginResponseDto responseDto = new LoginResponseDto(nickname, userImage);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
 
     }
 
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        log.info("로그인 실패");
+
         response.setStatus(401);
-        MessageResponseDto responseDto = new MessageResponseDto("로그인 실패", HttpStatus.UNAUTHORIZED.toString()); //ok는 200 성공 코드
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(responseDto));
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"로그인 실패");
+
     }
 
 }
