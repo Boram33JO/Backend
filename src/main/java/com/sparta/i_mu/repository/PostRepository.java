@@ -9,8 +9,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface PostRepository extends JpaRepository<Post, Long>{
+public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRepository {
+
+
+    Optional<Post> findByIdAndDeletedFalse(Long postId);
 
     // 서브 게시물 페이지 - 카테고리 (내 주변 전체) - 최신순 기준
     @Query("SELECT p FROM Post p WHERE ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
@@ -24,7 +28,7 @@ public interface PostRepository extends JpaRepository<Post, Long>{
     Page<Post> findAllPostByCategoryIdOrderByCreatedAtDesc(Long category, Pageable pageable);
 
     //메인 페이지 - 카테고리별 최신순
-    List<Post> findAllByCategoryOrderByCreatedAtDesc(Category category);
+    List<Post> findAllByDeletedFalseAndCategoryOrderByCreatedAtDesc(Category category);
 
     // 메인페이지 - 좋아요 순을 기준으로 인기게시글 조회
     @Query("SELECT w.post, COUNT(w) AS c FROM Wishlist w GROUP BY w.post ORDER BY c DESC")
@@ -75,4 +79,5 @@ public interface PostRepository extends JpaRepository<Post, Long>{
             "INNER JOIN  ps.song s " +
             "WHERE s.songTitle LIKE %:keyword% ")
     Page<Post> findAllBySongTitleContaining(String keyword, Pageable pageable);
+
 }

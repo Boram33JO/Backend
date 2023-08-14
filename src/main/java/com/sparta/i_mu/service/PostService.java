@@ -1,5 +1,6 @@
 package com.sparta.i_mu.service;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
@@ -74,6 +75,7 @@ public class PostService {
                 .category(category)
                 .user(user)
                 .location(location)
+                .deleted(false)
                 .build();
 
         postRepository.save(post);
@@ -151,7 +153,8 @@ public class PostService {
 
         Post post = findPost(postId);
         checkAuthority(post,user);
-        postRepository.delete(post);
+        post.setDeletedAt(LocalDateTime.now());
+        post.setDeleted(true);
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
     }
 
@@ -164,7 +167,7 @@ public class PostService {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream()
                 .map(category ->{
-                    List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
+                    List<Post> posts = postRepository.findAllByDeletedFalseAndCategoryOrderByCreatedAtDesc(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
                             .map(postMapper::mapToPostResponseDto)
                             .limit(3)
@@ -237,10 +240,8 @@ public class PostService {
     //상세페이지 게시글 조회
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = findPost(postId);
-
         // redis 추가 되면 전환
         postCountUpdate(post, req, res);
-
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -268,8 +269,8 @@ public class PostService {
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
     public Post findPost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() ->
-                new NullPointerException("존재하지 않는 게시글입니다."));
+        return postRepository.findByIdAndDeletedFalse(postId).orElseThrow(() ->
+                new NotFoundException("해당 아이디의 게시글를 찾을 수 없거나 이미 삭제된 게시글입니다."));
     }
 
     // 수정, 삭제 할 게시물의 권한을 확인하는 메서드

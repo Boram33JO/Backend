@@ -22,6 +22,9 @@ public class PostResponseDto {
     private String content;
     private Long category;
     private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
+    private LocalDateTime deletedAt;
+    private Boolean deleted;
     private Boolean wishlist;
     private Boolean follow;
     private Long wishlistCount;

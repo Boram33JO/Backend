@@ -39,6 +39,9 @@ public class Post extends Timestamped{
     @Column
     private Boolean wishlist;
 
+    @Column
+    private Boolean deleted; // 삭제 여부 판별 필드
+
     @Column(name = "post_count", columnDefinition = "integer default 0", nullable = false)
     private int count;
 
@@ -83,8 +86,12 @@ public class Post extends Timestamped{
         this.content = postSaveRequestDto.getContent();
     }
 
+    // 삭제 값 변경 -> true로
+    public void setDeleted(boolean deletedPost) {
+        this.deleted = deletedPost;
+    }
+
     public void countUpdate() {
         this.count++;
     }
-
 }
