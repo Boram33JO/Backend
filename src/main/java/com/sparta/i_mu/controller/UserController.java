@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,16 @@ public class UserController {
     public List<PostListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
+
+//    //로그아웃
+//    @PostMapping(value = "/logout")
+//    @ApiOperation(value="로그아웃")
+//    public ResponseEntity<Void> logout(HttpServletRequest servletRequest) {
+//
+//        UserService.logout();
+//        return ResponseEntity.ok().build();
+//    }
+
 
 
     // 카카오 로그인

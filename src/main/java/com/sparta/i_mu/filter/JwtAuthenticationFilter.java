@@ -58,6 +58,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
+        String introduce = ((UserDetailsImpl) authResult.getPrincipal()).getIntroduce();
 
         String accessToken = jwtUtil.createAccessToken(username);
         log.info("accessToken 발급 : {}",accessToken);
@@ -65,8 +66,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("refreshToken 발급 : {}",refreshToken);
         redisService.storeRefreshToken(username,refreshToken); // refreshToken redis에 저장
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(nickname, userImage, userId);
+        LoginResponseDto loginResponseDto = new LoginResponseDto(nickname, userImage, introduce, userId);
         ResponseResource<?> responseDto = new ResponseResource<>(true,loginResponseDto,"로그인 성공", HttpStatus.OK.value(),"null");
+
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -87,5 +89,4 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"로그인 실패");
 
     }
-
 }

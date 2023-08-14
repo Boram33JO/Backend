@@ -15,8 +15,10 @@ import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -253,4 +255,14 @@ public class UserService {
                 .toList();
         return commentResponseDtoList;
     }
+
+//    //로그아웃
+//    @Transactional
+//    public void logout() {
+//        //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
+//        KafkaProperties.Admin admin = (KafkaProperties.Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        if (redisTemplate.opsForValue().get("JWT_TOKEN:" + admin.getLoginId()) != null) {
+//            redisTemplate.delete("JWT_TOKEN:" + admin.getLoginId()); //Token 삭제
+//        }
+//    }
 }
