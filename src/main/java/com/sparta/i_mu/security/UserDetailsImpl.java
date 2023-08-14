@@ -45,6 +45,9 @@ public class UserDetailsImpl implements UserDetails {
     public String getUserImage() {
         return user.getUserImage();
     }
+    public String getIntroduce() {
+        return user.getIntroduce();
+    }
 
     public Long getUserId() {
         return user.getId();
