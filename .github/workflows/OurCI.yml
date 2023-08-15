@@ -3,9 +3,9 @@ name: CI/CD
 
 on:
   push:
-    branches:
-      - dev
-
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
 env:
   PROJECT_NAME: my-project
   BUCKET_NAME: my-s3-bucket
