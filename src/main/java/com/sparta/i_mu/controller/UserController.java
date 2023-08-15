@@ -67,7 +67,7 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}/wishlist")
-    public List<PostListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public List<WishListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
 

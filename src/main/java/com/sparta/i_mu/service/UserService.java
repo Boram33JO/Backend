@@ -5,6 +5,7 @@ import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.entity.UserRoleEnum;
+import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
@@ -47,6 +48,8 @@ public class UserService {
     private final AwsS3Util awsS3Util;
 
     private final PostMapper postMapper;
+
+    private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
     public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto){
@@ -103,8 +106,8 @@ public class UserService {
         List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId).stream().limit(3).toList();
 
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId).stream().limit(3).toList();;
-            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId).stream().limit(3).toList();;
+            List<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId).stream().limit(3).toList();
+            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId).stream().limit(3).toList();
 
             UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
@@ -209,9 +212,9 @@ public class UserService {
         return null;
     }
 
-    public List<PostListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
+    public List<WishListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+            List<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
 
             return wishlistResponseDtoList;
         }
@@ -239,13 +242,13 @@ public class UserService {
         return postResponseDtoList;
     }
 
-    private List<PostListResponseDto> getWishlistResponseDtoList(Long userId) {
+    private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
         List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
-        List<PostListResponseDto> wishListReponsePostList = wishList.stream()
-                .map(wishlist -> postMapper.mapToPostListResponseDto(wishlist.getPost()))
+        List<WishListResponseDto> wishListReponseList = wishList.stream()
+                .map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()))
                 .collect(Collectors.toList());
 
-        return wishListReponsePostList;
+        return wishListReponseList;
     }
 
     private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
