@@ -50,7 +50,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 }
 // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
                 authService.refreshTokenRegularly(refreshToken, userEmail, response);
-                filterChain.doFilter(request, response);
             }
             catch (Exception e) {
                 log.error("필터 처리 중 오류 발생 : ", e);
