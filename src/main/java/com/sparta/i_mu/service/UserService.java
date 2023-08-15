@@ -99,12 +99,12 @@ public class UserService {
 
         UserInfoResponseDto userInfo = getUserInfo(user);
 
-        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
-        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId).stream().limit(4).toList();
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId).stream().limit(3).toList();
 
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
-            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
+            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId).stream().limit(3).toList();;
+            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId).stream().limit(3).toList();;
 
             UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
