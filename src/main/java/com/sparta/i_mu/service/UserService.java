@@ -194,18 +194,26 @@ public class UserService {
         return ResponseResource.message("닉네임 중복이 아닙니다.", HttpStatus.OK);
     }
 
-    public List<FollowListResponseDto> getUserFollow(Long userId) {
-        findUser(userId);
+    public GetFollowResponseDto getUserFollow(Long userId) {
+        User user = findUser(userId);
+        String nickname = user.getNickname();
+
         List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
 
-        return followResponseDtoList;
+        GetFollowResponseDto followResponseDto = new GetFollowResponseDto(nickname, followResponseDtoList);
+
+        return followResponseDto;
     }
 
-    public List<PostListResponseDto> getUserPosts(Long userId) {
-        findUser(userId);
+    public GetPostResponseDto getUserPosts(Long userId) {
+        User user = findUser(userId);
+        String nickname = user.getNickname();
+
         List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
 
-        return postResponseDtoList;
+        GetPostResponseDto postResponseDto = new GetPostResponseDto(nickname, postResponseDtoList);
+
+        return postResponseDto;
     }
 
     public List<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails) {
