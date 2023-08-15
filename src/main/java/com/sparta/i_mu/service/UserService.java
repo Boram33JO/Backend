@@ -1,10 +1,10 @@
 package com.sparta.i_mu.service;
 
+import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.entity.User;
-import com.sparta.i_mu.entity.UserRoleEnum;
 import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -16,10 +16,8 @@ import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -136,11 +134,6 @@ public class UserService {
             requestDto = new UserRequestDto();
         }
 
-        // 닉네임 중복 확인, api 따로 빼는게 좋을듯
-        boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
-        if (checkNicknameDuplicate) {
-            return ResponseResource.message("닉네임 중복", HttpStatus.OK);
-        }
 
         // 새로운 방법 강구 필요
         if (requestDto.getIntroduce() != null) {
@@ -165,7 +158,7 @@ public class UserService {
 
         findUser.update(user);
 
-        return ResponseResource.message("프로필 수정 성공", HttpStatus.OK);
+        return ResponseResource.data(getUserImage, HttpStatus.OK,"프로필 수정 성공");
     }
 
     @Transactional
@@ -189,6 +182,16 @@ public class UserService {
 
         return ResponseResource.message("비밀번호 수정 성공", HttpStatus.OK);
 
+    }
+
+    public ResponseResource<?> checkNickname(NicknameRequestDto requestDto) {
+        boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
+        // status code 수정 필요
+        if (checkNicknameDuplicate) {
+            return ResponseResource.message("닉네임 중복입니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseResource.message("닉네임 중복이 아닙니다.", HttpStatus.OK);
     }
 
     public List<FollowListResponseDto> getUserFollow(Long userId) {
@@ -269,6 +272,8 @@ public class UserService {
                 .introduce(user.getIntroduce())
                 .build();
     }
+
+
 
 //    //로그아웃
 //    @Transactional
