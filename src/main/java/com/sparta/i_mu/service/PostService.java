@@ -239,7 +239,7 @@ public class PostService {
         Post post = findPost(postId);
 
         // redis 추가 되면 전환
-        postCountUpdate(post, req, res);
+        postViewCountUpdate(post, req, res);
 
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
@@ -285,7 +285,7 @@ public class PostService {
 //    }
 
     // 게시글 조회수 증가 메서드
-    private void postCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
+    private void postViewCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
         Cookie oldCookie = null;
 
         long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
@@ -301,7 +301,7 @@ public class PostService {
         }
 
         if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
-            post.countUpdate();
+            post.viewCountUpdate();
             String newCookieValue = "[" + post.getId() + "]";
             if (oldCookie != null) {
                 newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";

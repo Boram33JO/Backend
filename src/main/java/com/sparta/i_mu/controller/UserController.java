@@ -3,6 +3,7 @@ package com.sparta.i_mu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
+import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -67,9 +68,16 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}/wishlist")
-    public List<PostListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public List<WishListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
+
+    @PostMapping("/profile/check")
+    public ResponseResource<?> checkNickname(@RequestBody @Valid NicknameRequestDto requestDto) {
+        return userService.checkNickname(requestDto);
+    }
+
+
 
 //    //로그아웃
 //    @PostMapping(value = "/logout")

@@ -39,8 +39,8 @@ public class Post extends Timestamped{
     @Column
     private Boolean wishlist;
 
-    @Column(name = "post_count", columnDefinition = "integer default 0", nullable = false)
-    private int count;
+    @Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
+    private int viewCount;
 
     @OneToOne
     @JoinColumn(name = "location_id")
@@ -83,8 +83,8 @@ public class Post extends Timestamped{
         this.content = postSaveRequestDto.getContent();
     }
 
-    public void countUpdate() {
-        this.count++;
+    public void viewCountUpdate() {
+        this.viewCount++;
     }
 
 }

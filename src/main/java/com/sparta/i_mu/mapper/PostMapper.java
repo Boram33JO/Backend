@@ -63,7 +63,7 @@ public class PostMapper {
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
                 .postTitle(post.getPostTitle())
-                .count(post.getCount())
+                .viewCount(post.getViewCount())
                 .nickname(post.getUser().getNickname())
                 .userImage(post.getUser().getUserImage())
                 .content(post.getContent())
@@ -79,14 +79,15 @@ public class PostMapper {
     }
 
     public PostListResponseDto mapToPostListResponseDto(Post post) {
-        List<PostListSongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
+        List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
-                .map(postSongLink -> songMapper.entityToPostListSongResponseDto(postSongLink.getSong()))
+                .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
                 .collect(Collectors.toList());
 
         return PostListResponseDto.builder()
                 .postId(post.getId())
                 .postTitle(post.getPostTitle())
+                .createdAt(post.getCreatedAt())
                 .content(post.getContent())
                 .songs(songs)
                 .build();

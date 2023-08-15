@@ -8,28 +8,27 @@ import java.util.List;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponsDto {
-    private String nickname;
+    private Boolean follow;
 
-    private String introduce;
+    private UserInfoResponseDto userInfo;
 
     private List<FollowListResponseDto> followList;
 
     private List<PostListResponseDto> postList;
 
-    private List<PostListResponseDto> wishList;
+    private List<WishListResponseDto> wishList;
 
     private List<CommentListResponseDto> commentList;
 
-    public UserResponsDto(String nickname, String introduce, List<PostListResponseDto> postList, List<FollowListResponseDto> followList) {
-        this.nickname = nickname;
-        this.introduce = introduce;
+    public UserResponsDto(UserInfoResponseDto userInfo, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, Boolean isFollow) {
+        this.userInfo = userInfo;
         this.postList = postList;
         this.followList = followList;
+        this.follow = isFollow;
     }
 
-    public UserResponsDto(String nickname, String introduce, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<PostListResponseDto> wishList) {
-        this.nickname = nickname;
-        this.introduce = introduce;
+    public UserResponsDto(UserInfoResponseDto userInfo, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<WishListResponseDto> wishList) {
+        this.userInfo = userInfo;
         this.postList = postList;
         this.followList = followList;
         this.commentList = commentList;
