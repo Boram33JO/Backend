@@ -87,6 +87,7 @@ public class PostMapper {
         return PostListResponseDto.builder()
                 .postId(post.getId())
                 .postTitle(post.getPostTitle())
+                .createdAt(post.getCreatedAt())
                 .content(post.getContent())
                 .songs(songs)
                 .build();
