@@ -31,6 +31,14 @@ jobs:
       - name: copy Application.properties
         run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
         shell: bash
+
+      - name: Setup MySQL
+        uses: samin/mysql-action@v1
+        with:
+          character set server: 'utf8' 
+          mysql database: 'test' 
+          mysql user: 'root'
+          mysql password: ${{ secrets.MYSQL_PASSWORD }}
         
       # 빌드
       - name: Grant execute permission for gradlew
