@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponsDto {
+    private Boolean follow;
 
     private UserInfoResponseDto userInfo;
 
@@ -19,10 +20,11 @@ public class UserResponsDto {
 
     private List<CommentListResponseDto> commentList;
 
-    public UserResponsDto(UserInfoResponseDto userInfo, List<PostListResponseDto> postList, List<FollowListResponseDto> followList) {
+    public UserResponsDto(UserInfoResponseDto userInfo, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, Boolean isFollow) {
         this.userInfo = userInfo;
         this.postList = postList;
         this.followList = followList;
+        this.follow = isFollow;
     }
 
     public UserResponsDto(UserInfoResponseDto userInfo, List<PostListResponseDto> postList, List<FollowListResponseDto> followList, List<CommentListResponseDto> commentList, List<WishListResponseDto> wishList) {

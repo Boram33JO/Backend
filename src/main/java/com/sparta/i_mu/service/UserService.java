@@ -102,6 +102,8 @@ public class UserService {
 
         UserInfoResponseDto userInfo = getUserInfo(user);
 
+        boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(userId, userDetails.get().getUser().getId());
+
         List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId).stream().limit(4).toList();
         List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId).stream().limit(3).toList();
 
@@ -114,7 +116,7 @@ public class UserService {
             return responsDto;
         }
 
-        UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList);
+        UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, isfollow);
 
         return responsDto;
     }
