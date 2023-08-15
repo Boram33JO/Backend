@@ -1,6 +1,6 @@
 package com.sparta.i_mu.mapper;
 
-import com.sparta.i_mu.dto.responseDto.PostListSongResponseDto;
+import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.dto.responseDto.WishListResponseDto;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
@@ -17,9 +17,9 @@ public class WishListMapper {
     private final SongMapper songMapper;
 
     public WishListResponseDto mapToWishListResponseDto(Post post) {
-        List<PostListSongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
+        List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
-                .map(postSongLink -> songMapper.entityToPostListSongResponseDto(postSongLink.getSong()))
+                .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
                 .collect(Collectors.toList());
 
         return WishListResponseDto.builder()

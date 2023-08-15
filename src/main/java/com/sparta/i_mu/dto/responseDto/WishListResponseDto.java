@@ -24,6 +24,6 @@ public class WishListResponseDto {
 
     private String userImage;
 
-    private List<PostListSongResponseDto> songs;
+    private List<SongResponseDto> songs;
 
 }

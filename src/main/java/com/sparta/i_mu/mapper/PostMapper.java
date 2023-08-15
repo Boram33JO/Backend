@@ -79,9 +79,9 @@ public class PostMapper {
     }
 
     public PostListResponseDto mapToPostListResponseDto(Post post) {
-        List<PostListSongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
+        List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
-                .map(postSongLink -> songMapper.entityToPostListSongResponseDto(postSongLink.getSong()))
+                .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
                 .collect(Collectors.toList());
 
         return PostListResponseDto.builder()

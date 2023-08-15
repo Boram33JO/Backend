@@ -17,6 +17,6 @@ public class PostListResponseDto {
 
     private String content;
 
-    private List<PostListSongResponseDto> songs;
+    private List<SongResponseDto> songs;
 
 }
