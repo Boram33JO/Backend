@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -35,31 +36,28 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 로그인 / 회원 가입 경로는 필터를 회피
-        if (request.getRequestURI().equals("/api/user/login") || request.getRequestURI().equals("/api/user/signup")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        try {
+        String accessToken = jwtUtil.getAccessTokenFromRequest(request);
+        if(StringUtils.hasText(accessToken)){ // accessToken이 없을때
+            try {
+                String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+                String userEmail = null;
 
-            String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-            String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
-            String userEmail = null;
-
-            if (authService.isAccessTokenValid(accessToken)) {
-                log.info("토큰 검증 확인 결과 : {} ", authService.isAccessTokenValid(accessToken));
-                userEmail = getUserFromValidAccessToken(accessToken);
-            } else {
-                userEmail = renewAccessTokenByRefreshToken(refreshToken, response);
+                if (authService.isAccessTokenValid(accessToken)) {
+                    log.info("토큰 검증 확인 결과 : {} ", authService.isAccessTokenValid(accessToken));
+                    userEmail = getUserFromValidAccessToken(accessToken);
+                } else {
+                    userEmail = renewAccessTokenByRefreshToken(refreshToken, response);
+                }
+                // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
+                authService.refreshTokenRegularly(refreshToken, userEmail, response);
             }
-            // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
-            authService.refreshTokenRegularly(refreshToken, userEmail, response);
-            filterChain.doFilter(request, response);
+            catch (Exception e) {
+                log.error("필터 처리 중 오류 발생 : ", e);
+                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.");
+            }
         }
-        catch (Exception e) {
-            log.error("필터 처리 중 오류 발생 : ", e);
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.");
-        }
+        // accessToken이 없을때
+        filterChain.doFilter(request, response);
     }
 
     private String getUserFromValidAccessToken(String accessToken) {

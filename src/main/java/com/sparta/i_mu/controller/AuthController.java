@@ -19,7 +19,6 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     // 클라이언트가 명시적으로 새롭게 토큰을 발급받고 싶을 때?
-
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
         //검증을 위한 기존의 토큰
