@@ -34,9 +34,4 @@ public class CommentController {
         return commentService.deleteComment(commentId, userDetails.getUser().getId());
     }
 
-    @GetMapping("/profile/comments")
-    public List<CommentResponseDto> getComment(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return commentService.getComment(userDetails.getUser().getId());
-    }
-
 }
