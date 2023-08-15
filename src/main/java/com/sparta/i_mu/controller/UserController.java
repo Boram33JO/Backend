@@ -53,12 +53,12 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}/follow")
-    public List<FollowListResponseDto> getUserFollow(@PathVariable Long userId) {
+    public GetFollowResponseDto getUserFollow(@PathVariable Long userId) {
         return userService.getUserFollow(userId);
     }
 
     @GetMapping("/profile/{userId}/posts")
-    public List<PostListResponseDto> getUserPosts(@PathVariable Long userId) {
+    public GetPostResponseDto getUserPosts(@PathVariable Long userId) {
         return userService.getUserPosts(userId);
     }
 
