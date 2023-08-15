@@ -96,8 +96,8 @@ public class UserService {
         // response 수정 필요
 
         User user = findUser(userId);
-        String nickname = user.getNickname();
-        String introduce = user.getIntroduce();
+
+        UserInfoResponseDto userInfo = getUserInfo(user);
 
         List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
         List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
@@ -106,12 +106,12 @@ public class UserService {
             List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
             List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
 
-            UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
+            UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
             return responsDto;
         }
 
-        UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList);
+        UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList);
 
         return responsDto;
     }
@@ -254,6 +254,15 @@ public class UserService {
                 .map(CommentListResponseDto::new)
                 .toList();
         return commentResponseDtoList;
+    }
+
+    private UserInfoResponseDto getUserInfo(User user) {
+        return UserInfoResponseDto.builder()
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .userImage(user.getUserImage())
+                .introduce(user.getIntroduce())
+                .build();
     }
 
 //    //로그아웃
