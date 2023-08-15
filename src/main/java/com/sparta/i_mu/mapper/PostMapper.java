@@ -2,6 +2,7 @@ package com.sparta.i_mu.mapper;
 
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.Post;
+import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.FollowReporitory;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
@@ -34,6 +35,7 @@ public class PostMapper {
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
                 .postId(post.getId())
+                .count(post.getCount())
                 .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .content(post.getContent())

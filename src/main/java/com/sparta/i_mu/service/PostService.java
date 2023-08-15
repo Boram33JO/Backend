@@ -1,13 +1,14 @@
 package com.sparta.i_mu.service;
 
 import com.amazonaws.services.kms.model.NotFoundException;
-import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
+import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
+import com.sparta.i_mu.mapper.SongMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -50,7 +50,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final SongRepository songRepository;
     private final PostSongLinkRepository postSongLinkRepository;
-    private final WishlistRepository wishlistRepository;
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
@@ -161,13 +160,13 @@ public class PostService {
 
     // 메인페이지 관련
 
-    // 카테고리 별 전체 게시글 조회 3개 최신순
+    // 카테고리 별 전체 게시글 조회 3개 최신순 -> queryDsl 적용✅
     public List<PostByCategoryResponseDto> getAllPost() {
 
         List<Category> categories = categoryRepository.findAll();
         return categories.stream()
                 .map(category ->{
-                    List<Post> posts = postRepository.findAllByDeletedFalseAndCategoryOrderByCreatedAtDesc(category);
+                    List<Post> posts = postRepository.findMainPostsByCategory(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
                             .map(postMapper::mapToPostResponseDto)
                             .limit(3)
@@ -182,32 +181,7 @@ public class PostService {
 
     }
 
-    // 메인 페이지 - 검색
-
-    public Page<PostResponseDto> getSearch(String keyword, String type, Pageable pageable) {
-        switch (type) {
-            case "all" -> {
-                Page<Post> postsAll = postRepository.findAll(keyword, pageable);
-                return postsAll.map(postMapper::mapToPostResponseDto);
-            }
-            case "title" -> {
-                postRepository.findAllByPostTitleContaining(keyword, pageable);
-                Page<Post> postsTitle = postRepository.findAllByPostTitleContaining(keyword, pageable);
-                return postsTitle.map(postMapper::mapToPostResponseDto);
-            }
-            case "nickname" -> {
-                Page<Post> UserNickname = postRepository.findAllByUserNicknameContaining(keyword, pageable);
-                return UserNickname.map(postMapper::mapToPostResponseDto);
-            }
-            case "songName" -> {
-                Page<Post> songName = postRepository.findAllBySongTitleContaining(keyword, pageable);
-                return songName.map(postMapper::mapToPostResponseDto);
-            }
-            default -> throw new IllegalArgumentException("해당 타입에서는 게시글을 찾을 수 없습니다. type: " + type);
-        }
-    }
-
-    // 좋아요 순 인기 게시글 내림차순 조회 top5 만
+    // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
     public List<PostResponseDto> getPostByWishlist() {
         return postRepository.findAllByOrderByWishlistCountDesc().stream()
                 .map(postMapper::mapToPostResponseDto)
@@ -229,9 +203,9 @@ public class PostService {
         return posts.map(postMapper::mapToPostResponseDto);
     }
 
-    //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
+    //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순) -> queryDsl 적용✅
     public Page<PostResponseDto> getPostByCategory(Long category, Pageable pageable) {
-        Page <Post> posts = postRepository.findAllPostByCategoryIdOrderByCreatedAtDesc(category, pageable);
+        Page <Post> posts = postRepository.findSubPostsByCategoryWithOrder(category, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
 
     }
@@ -312,7 +286,5 @@ public class PostService {
             newCookie.setMaxAge((int) (todayEndSecond - currentSecond));
             res.addCookie(newCookie);
         }
-
     }
-
 }

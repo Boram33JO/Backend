@@ -85,16 +85,6 @@ public class PostController {
         return postService.getDetailPost(postId, Optional.ofNullable(userDetails), req, res);
     }
 
-    // 메인 페이지 - 검색
-    @GetMapping("/search")
-    public Page<PostResponseDto> getSearch(@RequestParam(value = "keyword") String keyword,
-                                           @RequestParam(value = "type") String type,
-                                           @RequestParam int page,
-                                           @RequestParam int size){
-        Pageable pageable = PageRequest.of(page,size);
-        return postService.getSearch(keyword,type,pageable);
-    }
-
     // 상세 리스트 페이지 - 내주변
     @GetMapping("/area")
     public Page<PostResponseDto> getAllAreaPost(
@@ -133,6 +123,4 @@ public class PostController {
     public List<PostResponseDto> getPostByWishlist(){
         return postService.getPostByWishlist();
     }
-
-
 }
