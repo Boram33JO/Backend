@@ -6,9 +6,7 @@ import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
-import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
-import com.sparta.i_mu.mapper.SongMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
@@ -53,7 +51,7 @@ public class PostService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
-    private static final Double DISTANCE_IN_METERS = 2000.0;
+    private static final Double DISTANCE_IN_METERS = 10000.0;
 
     //게시글 생성
     @Transactional
@@ -62,7 +60,13 @@ public class PostService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
         }
 
-        Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
+        Location location = Location.builder()
+                .longitude(postSaveRequestDto.getLongitude())
+                .latitude(postSaveRequestDto.getLatitude())
+                .address(postSaveRequestDto.getAddress())
+                .placeName(postSaveRequestDto.getPlaceName())
+                .build();
+
         Category category = categoryRepository.findById(postSaveRequestDto.getCategory()).orElseThrow(
                 ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
@@ -192,14 +196,14 @@ public class PostService {
 
     // 서브게시물 페이지
 
-    // 서브 게시글 조회 - 내 주변
+    // 서브 게시글 조회 - 내 주변 -> queryDsl 적용✅
     public Page<PostResponseDto> getAllAreaPost(MapPostSearchRequestDto postSearchRequestDto, Pageable pageable) {
 
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(latitude, longitude, DISTANCE_IN_METERS, pageable);
+        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(longitude,latitude, DISTANCE_IN_METERS, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
     }
 
@@ -231,14 +235,15 @@ public class PostService {
             Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
                     () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getName(), latitude, longitude, DISTANCE_IN_METERS, pageable);
+            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
             return posts.map(postMapper::mapToPostResponseDto);
         }
         // 전체 카테고리 조회
         else {
-            Page<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS,pageable);
+            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
             return posts.map(postMapper::mapToPostResponseDto);
         }
+
     }
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드

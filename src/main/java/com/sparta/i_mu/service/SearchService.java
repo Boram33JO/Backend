@@ -84,9 +84,7 @@ public class SearchService {
         List<PostResponseDto> postDtos = postResults.stream()
                 .map(postMapper::mapToPostResponseDto)
                 .toList();
-        if(postResults.isEmpty()) {
-            throw new NoContentException("No posts found with keyword: " + keyword);
-        }
+
         log.info("posts title 조회 : {}" , postResults.stream().findFirst());
         log.info("posts 결과 개수 조회 : {} ", postDtos.size());
         //User 결과
@@ -97,9 +95,7 @@ public class SearchService {
                         .nickname(user.getNickname())
                         .build())
                 .toList();
-        if(userResults.isEmpty()) {
-            throw new NoContentException("No users found with keyword: " + keyword);
-        }
+
         log.info("user nickname 조회 : {}" , userResults.stream().findFirst());
         log.info("user 결과 개수 조회 : {} ", userDtos.size());
         //Song 결과
@@ -107,9 +103,7 @@ public class SearchService {
         List<SongResponseDto> songDtos = songResults.stream()
                 .map(songMapper::entityToResponseDto)
                 .toList();
-        if(songResults.isEmpty()) {
-            throw new NoContentException("No songs found with keyword: " + keyword);
-        }
+
         log.info("song title 조회 : {}" , songResults.stream().findFirst());
         log.info("song 결과 개수 조회 : {} ", songDtos.size());
 
@@ -117,9 +111,7 @@ public class SearchService {
         List<PostResponseDto> loationDtos = locationResults.stream()
                 .map(postMapper::mapToPostResponseDto)
                 .toList();
-        if(locationResults.isEmpty()) {
-            throw new NoContentException("No location found with keyword: " + keyword);
-        }
+
         log.info("Location post 조회 : {}" , locationResults.stream().findFirst());
         log.info("Location post 결과 개수 조회 : {} ", loationDtos.size());
         return SearchResponseDto.builder()

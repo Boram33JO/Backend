@@ -20,17 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
-
-// 1. 게시글 작성 -> O
-// 2. 게시글 수정 -> O
-// 3. 게시글 삭제 -> O
-// 4. 상세 게시글 조회 -> O
-// 5. 위치 서비스에 따른 전체 게시글 조회 ->
-// . 위치 서비스에 따른 카테고리별 게시글 조회 -> O
-// . 지도페이지에서 검색시 주변 게시글 조회
-// . 전국 기준 좋아요 순 인기 게시글 조회 -> O
-// . 최신 순 게시글 조회
-// . 작성 순 게시글 조회
+import java.util.OptionalLong;
 
 @RestController
 @RequiredArgsConstructor
@@ -96,7 +86,7 @@ public class PostController {
 
     }
 
-    // 상세 리스트 페이지 - 카테고리별
+    // 서브 리스트 페이지 - 카테고리별
     @GetMapping("/category/{categoryId}")
     public Page<PostResponseDto> getPostByCategory(
             @PathVariable Long categoryId,
@@ -107,14 +97,14 @@ public class PostController {
 
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
-    @GetMapping("/map/{categoryId}")
+    @GetMapping("/map")
     public Page<PostResponseDto> getMapPostByCategory(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @PathVariable Long categoryId,
+            @RequestParam(required = false) Optional<Long> categoryId,
             @RequestParam int page,
             @RequestParam int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return postService.getMapPostByCategory(postSearchRequestDto, Optional.ofNullable(categoryId),pageable);
+        return postService.getMapPostByCategory(postSearchRequestDto,categoryId,pageable);
 
     }
 

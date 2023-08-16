@@ -34,9 +34,6 @@ public class Post extends Timestamped{
     private Category category;
 
     @Column
-    private Long wishlistCount;
-
-    @Column
     private Boolean wishlist;
 
     @Column
