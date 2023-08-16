@@ -44,6 +44,7 @@ public class PostMapper {
                 .build();
     }
 
+    // 상세 게시물 조회
     public PostResponseDto mapToPostResponseDto(Post post, Optional<UserDetailsImpl> userDetails) {
         boolean isWishlist = userDetails.isPresent() && wishlistRepository.existsByPostIdAndUserId(post.getId(), userDetails.get().getUser().getId());
         boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(post.getUser().getId(), userDetails.get().getUser().getId());
@@ -78,6 +79,7 @@ public class PostMapper {
                 .build();
     }
 
+    // 작성자가 작성한 게시글 조회
     public PostListResponseDto mapToPostListResponseDto(Post post) {
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
