@@ -34,10 +34,10 @@ public class Post extends Timestamped{
     private Category category;
 
     @Column
-    private Long wishlistCount;
+    private Boolean wishlist;
 
     @Column
-    private Boolean wishlist;
+    private Boolean deleted; // 삭제 여부 판별 필드
 
     @Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
     private int viewCount;
@@ -89,8 +89,13 @@ public class Post extends Timestamped{
         this.content = postSaveRequestDto.getContent();
     }
 
-    public void viewCountUpdate() {
-        this.viewCount++;
+    // 삭제 값 변경 -> true로
+    public void setDeleted(boolean deletedPost) {
+        this.deleted = deletedPost;
     }
 
+    public void viewCountUpdate() {
+        this.viewCount++;
+
+    }
 }

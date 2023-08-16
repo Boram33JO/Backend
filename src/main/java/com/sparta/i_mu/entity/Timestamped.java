@@ -6,6 +6,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Temporal;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -21,4 +22,16 @@ public abstract class Timestamped {
     @Column(updatable = false)
     @Temporal(TIMESTAMP)
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column
+    @Temporal(TIMESTAMP)
+    private  LocalDateTime modifiedAt;
+
+    @Column
+    private LocalDateTime deleteAt;
+
+    public void setDeletedAt(LocalDateTime now) {
+        this.deleteAt = now;
+    }
 }

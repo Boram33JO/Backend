@@ -1,5 +1,5 @@
 package com.sparta.i_mu.global.util;
-import com.sparta.i_mu.entity.User;
+
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.service.RedisService;
 import io.jsonwebtoken.*;
@@ -14,16 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Slf4j
@@ -141,38 +137,6 @@ public class JwtUtil {
         return false;
     }
 
-
-//    // AccessToken 재발급 메서드
-//    public String regenerateAccessToken(String refreshToken, HttpServletResponse res) {
-//        Long userId = Long.parseLong(getUserInfoFromToken(substringToken(refreshToken)).getSubject());
-//
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new NullPointerException("해당 유저는 존재하지 않습니다."));
-//
-//        String email = user.getEmail();
-//        // TODO 권한 Role도 넣어주기
-//        String newAccessToken = createAccessToken(email);
-//
-//        res.addHeader(HEADER_ACCESS_TOKEN, newAccessToken);
-//        saveTokenToRedis(refreshToken, newAccessToken);
-//        log.info("토큰재발급 성공: {}", newAccessToken);
-//        return newAccessToken;
-//    }
-//
-//    // Redis에 저장된 최초 AccessToken 반환 메서드 (key : refreshToken / value : accessToken)
-//    public String getAccessTokenFromRedis(String refreshToken) {
-//        ValueOperations<String, String> values = redisTemplate.opsForValue();
-//        return redisService.getAccessToken(refreshToken);
-//    }
-//    // Redis에 최초 발급된 토큰 값 저장 (key : refreshToken / value : accessToken)
-//    public void saveTokenToRedis(String refreshToken, String accessToken) {
-//        try {
-//            Date refreshExpire = getUserInfoFromToken(substringToken(refreshToken)).getExpiration(); // refresh 토큰의 만료일
-//            redisService.saveAccessToken(refreshToken, accessToken, refreshExpire);
-//        } catch (Exception e) {
-//            log.error("Error: {} ", e.getMessage());
-//        }
-//    }
     public Claims getUserInfoFromToken(String token) {
         log.info("user 의 정보 가져오는 메서드 실행");
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody(); //body부분의 claims를 가지고 올 수 잇음

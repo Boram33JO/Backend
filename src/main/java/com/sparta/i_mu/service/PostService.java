@@ -1,11 +1,11 @@
 package com.sparta.i_mu.service;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
-import com.sparta.i_mu.mapper.LocationMapper;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -49,11 +49,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final SongRepository songRepository;
     private final PostSongLinkRepository postSongLinkRepository;
-    private final WishlistRepository wishlistRepository;
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
-    private static final Double DISTANCE_IN_METERS = 2000.0;
+    private static final Double DISTANCE_IN_METERS = 10000.0;
 
     //게시글 생성
     @Transactional
@@ -62,7 +61,13 @@ public class PostService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
         }
 
-        Location location = LocationMapper.LOCATION_INSTANCE.dtoToEntity(postSaveRequestDto);
+        Location location = Location.builder()
+                .longitude(postSaveRequestDto.getLongitude())
+                .latitude(postSaveRequestDto.getLatitude())
+                .address(postSaveRequestDto.getAddress())
+                .placeName(postSaveRequestDto.getPlaceName())
+                .build();
+
         Category category = categoryRepository.findById(postSaveRequestDto.getCategory()).orElseThrow(
                 ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
@@ -74,6 +79,7 @@ public class PostService {
                 .category(category)
                 .user(user)
                 .location(location)
+                .deleted(false)
                 .build();
 
         postRepository.save(post);
@@ -151,20 +157,21 @@ public class PostService {
 
         Post post = findPost(postId);
         checkAuthority(post,user);
-        postRepository.delete(post);
+        post.setDeletedAt(LocalDateTime.now());
+        post.setDeleted(true);
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
     }
 
 
     // 메인페이지 관련
 
-    // 카테고리 별 전체 게시글 조회 3개 최신순
+    // 카테고리 별 전체 게시글 조회 3개 최신순 -> queryDsl 적용✅
     public List<PostByCategoryResponseDto> getAllPost() {
 
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().sorted(Comparator.comparing(Category::getId))
                 .map(category ->{
-                    List<Post> posts = postRepository.findAllByCategoryOrderByCreatedAtDesc(category);
+                    List<Post> posts = postRepository.findMainPostsByCategory(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
                             .map(postMapper::mapToPostResponseDto)
                             .limit(3)
@@ -179,32 +186,7 @@ public class PostService {
 
     }
 
-    // 메인 페이지 - 검색
-
-    public Page<PostResponseDto> getSearch(String keyword, String type, Pageable pageable) {
-        switch (type) {
-            case "all" -> {
-                Page<Post> postsAll = postRepository.findAll(keyword, pageable);
-                return postsAll.map(postMapper::mapToPostResponseDto);
-            }
-            case "title" -> {
-                postRepository.findAllByPostTitleContaining(keyword, pageable);
-                Page<Post> postsTitle = postRepository.findAllByPostTitleContaining(keyword, pageable);
-                return postsTitle.map(postMapper::mapToPostResponseDto);
-            }
-            case "nickname" -> {
-                Page<Post> UserNickname = postRepository.findAllByUserNicknameContaining(keyword, pageable);
-                return UserNickname.map(postMapper::mapToPostResponseDto);
-            }
-            case "songName" -> {
-                Page<Post> songName = postRepository.findAllBySongTitleContaining(keyword, pageable);
-                return songName.map(postMapper::mapToPostResponseDto);
-            }
-            default -> throw new IllegalArgumentException("해당 타입에서는 게시글을 찾을 수 없습니다. type: " + type);
-        }
-    }
-
-    // 좋아요 순 인기 게시글 내림차순 조회 top5 만
+    // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
     public List<PostResponseDto> getPostByWishlist() {
         return postRepository.findAllByOrderByWishlistCountDesc().stream()
                 .map(postMapper::mapToPostResponseDto)
@@ -215,20 +197,20 @@ public class PostService {
 
     // 서브게시물 페이지
 
-    // 서브 게시글 조회 - 내 주변
+    // 서브 게시글 조회 - 내 주변 -> queryDsl 적용✅
     public Page<PostResponseDto> getAllAreaPost(MapPostSearchRequestDto postSearchRequestDto, Pageable pageable) {
 
 
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(latitude, longitude, DISTANCE_IN_METERS, pageable);
+        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(longitude,latitude, DISTANCE_IN_METERS, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
     }
 
-    //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순)
+    //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순) -> queryDsl 적용✅
     public Page<PostResponseDto> getPostByCategory(Long category, Pageable pageable) {
-        Page <Post> posts = postRepository.findAllPostByCategoryIdOrderByCreatedAtDesc(category, pageable);
+        Page <Post> posts = postRepository.findSubPostsByCategoryWithOrder(category, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
 
     }
@@ -237,10 +219,8 @@ public class PostService {
     //상세페이지 게시글 조회
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = findPost(postId);
-
         // redis 추가 되면 전환
         postViewCountUpdate(post, req, res);
-
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -256,20 +236,21 @@ public class PostService {
             Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
                     () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getName(), latitude, longitude, DISTANCE_IN_METERS, pageable);
+            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
             return posts.map(postMapper::mapToPostResponseDto);
         }
         // 전체 카테고리 조회
         else {
-            Page<Post> posts = postRepository.findAllByLocationNear(latitude, longitude, DISTANCE_IN_METERS,pageable);
+            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
             return posts.map(postMapper::mapToPostResponseDto);
         }
+
     }
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
     public Post findPost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(() ->
-                new NullPointerException("존재하지 않는 게시글입니다."));
+        return postRepository.findByIdAndDeletedFalse(postId).orElseThrow(() ->
+                new NotFoundException("해당 아이디의 게시글를 찾을 수 없거나 이미 삭제된 게시글입니다."));
     }
 
     // 수정, 삭제 할 게시물의 권한을 확인하는 메서드
@@ -311,7 +292,5 @@ public class PostService {
             newCookie.setMaxAge((int) (todayEndSecond - currentSecond));
             res.addCookie(newCookie);
         }
-
     }
-
 }

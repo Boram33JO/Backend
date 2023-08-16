@@ -1,13 +1,17 @@
 package com.sparta.i_mu.dto.responseDto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponsDto {
+
     private Boolean follow;
 
     private UserInfoResponseDto userInfo;

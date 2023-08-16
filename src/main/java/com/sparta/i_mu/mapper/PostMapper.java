@@ -2,6 +2,7 @@ package com.sparta.i_mu.mapper;
 
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.Post;
+import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.FollowReporitory;
 import com.sparta.i_mu.repository.PostSongLinkRepository;
@@ -23,6 +24,7 @@ public class PostMapper {
     private final PostSongLinkRepository postSongLinkRepository;
     private final SongMapper songMapper;
 
+    //기본 Post responseDto -> 댓글/좋아요/팔로우를 제외한
     public PostResponseDto mapToPostResponseDto(Post post) {
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
@@ -33,11 +35,15 @@ public class PostMapper {
         return PostResponseDto.builder()
                 .userId(post.getUser().getId())
                 .postId(post.getId())
+                .count(post.getCount())
                 .postTitle(post.getPostTitle())
                 .nickname(post.getUser().getNickname())
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .deletedAt(post.getDeleteAt())
+                .deleted(post.getDeleted())
                 .wishlistCount(wishlistCount)
                 .songs(songs)
                 .location(post.getLocation())
@@ -69,6 +75,7 @@ public class PostMapper {
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
                 .wishlist(isWishlist)
                 .follow(isfollow)
                 .wishlistCount(wishlistCount)

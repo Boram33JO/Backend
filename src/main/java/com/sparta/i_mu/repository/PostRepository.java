@@ -1,78 +1,35 @@
 package com.sparta.i_mu.repository;
 
-import com.sparta.i_mu.entity.Category;
 import com.sparta.i_mu.entity.Post;
+import com.sparta.i_mu.repository.QueryDsl.CustomPostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface PostRepository extends JpaRepository<Post, Long>{
+public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRepository {
 
-    // 서브 게시물 페이지 - 카테고리 (내 주변 전체) - 최신순 기준
-    @Query("SELECT p FROM Post p WHERE ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
-            " Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS")
-    Page<Post> findAllByLocationNearOrderByCreatedAtDesc( @Param("latitude")Double latitude,
-                                      @Param("longitude")Double longitude,
-                                      @Param("DISTANCE_IN_METERS")Double DISTANCE_IN_METERS,
-                                      Pageable pageable);
 
-    //서브 게시물 페이지 - 카테고리 별로 api 요청하는 조회 //categoryId로 조회 // 최신순
-    Page<Post> findAllPostByCategoryIdOrderByCreatedAtDesc(Long category, Pageable pageable);
+    Optional<Post> findByIdAndDeletedFalse(Long postId);
 
-    //메인 페이지 - 카테고리별 최신순
-    List<Post> findAllByCategoryOrderByCreatedAtDesc(Category category);
+    /**
+     * 해당 키워드가 제목에 포함하는 게시글 리스트를 조회
+     * @param keyword
+     * @param pageable
+     * @return 게시글 리스트 pageable
+     */
+    Page<Post> findAllByPostTitleContainingAndDeletedFalse(String keyword, Pageable pageable);
 
-    // 메인페이지 - 좋아요 순을 기준으로 인기게시글 조회
-    @Query("SELECT w.post, COUNT(w) AS c FROM Wishlist w GROUP BY w.post ORDER BY c DESC")
-    List<Post> findAllByOrderByWishlistCountDesc();
-
-    // 지도페이지 - 위치에 따른 카테고리별 조회
-    @Query( "SELECT p FROM Post p WHERE p.category.name = :name " +
-            "AND ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
-            "Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS " +
-            "order by ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
-            "Point(:longitude, :latitude))")
-    Page<Post> findAllByCategoryAndLocationNear(@Param("name")String name,
-                                                @Param("latitude") Double latitude,
-                                                @Param("longitude") Double longitude,
-                                                @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS,
-                                                Pageable pageable);
-
-    // 지도 페이지 - categoryId가 없을 때
-    @Query( "SELECT p FROM Post p WHERE ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
-            " Point(:longitude, :latitude)) <= :DISTANCE_IN_METERS" +
-            " order by ST_Distance_Sphere(Point(p.location.longitude, p.location.latitude)," +
-            " Point(:longitude, :latitude))")
-    Page<Post> findAllByLocationNear( @Param("latitude")Double latitude,
-                                      @Param("longitude")Double longitude,
-                                      @Param("DISTANCE_IN_METERS")Double DISTANCE_IN_METERS,
-                                      Pageable pageable);
+    /**
+     * 해당 키워드가 주소에 포함하는 게시글 리스트를 조회
+     * @param keyword
+     * @param pageable
+     * @return 게시글 리스트 pageable
+     */
+    Page<Post> findAllByLocationAddressContainingAndDeletedFalse(String keyword, Pageable pageable);
 
     List<Post> findAllByUserId(Long userId);
 
-
-    // 메인 페이지 - 검색
-    @Query( "SELECT p FROM Post p " +
-            "LEFT JOIN p.user pu " +
-            "INNER JOIN p.postSongLink ps " +
-            "INNER JOIN ps.song s " +
-            "WHERE p.postTitle LIKE %:keyword% OR pu.nickname LIKE %:keyword% OR s.songTitle LIKE %:keyword% ")
-    Page<Post> findAll(String keyword, Pageable pageable);
-
-    @Query("SELECT p FROM Post p WHERE p.postTitle LIKE %:keyword% ")
-    Page<Post> findAllByPostTitleContaining(String keyword, Pageable pageable);
-    @Query( "SELECT p FROM Post p " +
-            "INNER JOIN p.user pu " +
-            "WHERE pu.nickname LIKE %:keyword% ")
-    Page<Post> findAllByUserNicknameContaining(String keyword, Pageable pageable);
-
-    @Query( "SELECT p FROM Post p " +
-            "INNER JOIN p.postSongLink ps " +
-            "INNER JOIN  ps.song s " +
-            "WHERE s.songTitle LIKE %:keyword% ")
-    Page<Post> findAllBySongTitleContaining(String keyword, Pageable pageable);
 }

@@ -37,7 +37,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-        if(StringUtils.hasText(accessToken)){
+
+        if(StringUtils.hasText(accessToken)){ // accessToken이 없을때
             try {
                 String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
                 String userEmail = null;
@@ -48,7 +49,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 } else {
                     userEmail = renewAccessTokenByRefreshToken(refreshToken, response);
                 }
-// 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
+                // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
                 authService.refreshTokenRegularly(refreshToken, userEmail, response);
             }
             catch (Exception e) {
@@ -56,6 +57,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.");
             }
         }
+
+        // accessToken이 없을때
         filterChain.doFilter(request, response);
     }
 
