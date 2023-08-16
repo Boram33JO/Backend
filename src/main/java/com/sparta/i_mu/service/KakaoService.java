@@ -3,16 +3,20 @@ package com.sparta.i_mu.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.i_mu.config.KakaoConfig;
 import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
+import com.sparta.i_mu.dto.KakaoUserResponseDto;
+import com.sparta.i_mu.dto.TokenPair;
+import com.sparta.i_mu.dto.responseDto.UserInfoResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.repository.UserRepository;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -32,15 +36,7 @@ public class KakaoService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final RestTemplate restTemplate;
-
-    @Value("${kakao.client-id}")
-    private String clientId;
-
-    @Value("${front.url}")
-    private String frontUrl;
-
-    @Value("${kakao.client-secret}")
-    private String clientSecret;
+    private final KakaoConfig kakaoConfig;
 
 
     public KakaoResult kakaoLogin(String code) throws JsonProcessingException {
@@ -53,11 +49,21 @@ public class KakaoService {
         User kakaoUser = registerKakaoUserIfNeed(kakaoUserInfo);
 
         //4.JWT 토큰 반환
-        String createToken = jwtUtil.createAccessToken(kakaoUser.getEmail());
+        TokenPair tokenPair = createToken(kakaoUser);
+
+        //5. User 정보는 Dto로 변환 후 반환
+        KakaoUserResponseDto kakaoUserDto = KakaoUserResponseDto.builder()
+                .userId(kakaoUser.getId())
+                .userImage(kakaoUser.getUserImage())
+                .email(kakaoUser.getEmail())
+                .kakaoId(kakaoUser.getKakaoId())
+                .nickname(kakaoUser.getNickname())
+                .build();
 
         return KakaoResult.builder()
-                .token(createToken)
-                .userInfo(kakaoUserInfo)
+                .accessToken(tokenPair.getAccessToken())
+                .refreshToken(tokenPair.getRefreshToken())
+                .userInfo(kakaoUserDto)
                 .build();
     }
 
@@ -76,6 +82,10 @@ public class KakaoService {
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        String clientId = kakaoConfig.getClientId();
+        String frontUrl = kakaoConfig.getFrontUrl();
+        String clientSecret = kakaoConfig.getClientSecret();
 
         // HTTP Body 생성
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
@@ -162,11 +172,10 @@ public class KakaoService {
             userImage = profileNode.get("profile_image_url").asText(null);
         }
 
-
         log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email + ", " + userImage);
 
         return KakaoUserInfo.builder()
-                .id(id)
+                .kakaoId(id)
                 .email(email)
                 .userImage(userImage)
                 .nickname(nickname)
@@ -177,7 +186,7 @@ public class KakaoService {
     public User registerKakaoUserIfNeed(KakaoUserInfo kakaoUserInfo) {
         log.info("중복된 User 확인");
 
-        Long kakaoId = kakaoUserInfo.getId();
+        Long kakaoId = kakaoUserInfo.getKakaoId();
 
         User kakaoUser = userRepository.findByKakaoId(kakaoId).orElse(null);
 
@@ -198,19 +207,33 @@ public class KakaoService {
                 String profile = (kakaoUserInfo.getUserImage() != null && !kakaoUserInfo.getUserImage().isEmpty())
                         ? kakaoUserInfo.getUserImage()
                         : null;
+                String nickname = kakaoUserInfo.getNickname();
 
+                int suffix = 1;
+                while(userRepository.findByNickname(nickname).isPresent()){
+                    nickname = kakaoUserInfo.getNickname() + "_" + suffix;
+                }
                 kakaoUser = User.builder()
                         .email(kakaoEmail)
-                        .nickname(kakaoUserInfo.getNickname())
+                        .nickname(nickname)
                         .userImage(profile)
                         .password(encodedPassword)
                         .build();
             }
             userRepository.save(kakaoUser);
-            log.info("User정보 email : {}",kakaoUser.getEmail());
+            log.info("Kakao User정보 Id : {}",kakaoUser.getId());
 
         }
         return kakaoUser;
+    }
+
+
+    // kakao로그인 유저는 kakaoId로 토큰 생성
+    private TokenPair createToken(User kakaoUser) {
+        String createToken = jwtUtil.createAccessToken(String.valueOf(kakaoUser.getKakaoId()));
+        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(kakaoUser.getKakaoId()));
+
+        return new TokenPair(createToken,refreshToken);
     }
 
 }

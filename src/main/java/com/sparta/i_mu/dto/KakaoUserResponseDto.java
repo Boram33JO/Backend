@@ -5,9 +5,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class KakaoUserInfo {
-    private Long kakaoId;
-    private String nickname;
+public class KakaoUserResponseDto {
+    private Long userId;
     private String email;
+    private String nickname;
     private String userImage;
+    private Long kakaoId;
+
 }

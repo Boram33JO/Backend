@@ -3,12 +3,14 @@ package com.sparta.i_mu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
+import com.sparta.i_mu.dto.KakaoUserResponseDto;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
+import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
@@ -20,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +32,7 @@ import java.util.Optional;
 public class UserController {
     private final UserService userService;
     private final KakaoService kakaoService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/user/signup")
     public ResponseEntity<MessageResponseDto> createUser(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
@@ -92,10 +94,11 @@ public class UserController {
 
     // 카카오 로그인
     @PostMapping ("/oauth/token")
-    public ResponseEntity<KakaoUserInfo> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
+    public ResponseEntity<KakaoUserResponseDto> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
         KakaoResult kakaoResult = kakaoService.kakaoLogin(code);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization",  kakaoResult.getToken()); // 토큰을 헤더에 추가
+        headers.add(jwtUtil.HEADER_ACCESS_TOKEN,  kakaoResult.getAccessToken()); // accessToken 토큰을 헤더에 추가
+        headers.add(jwtUtil.HEADER_REFRESH_TOKEN,  kakaoResult.getRefreshToken()); // accessToken 토큰을 헤더에 추가
         return new ResponseEntity<>(kakaoResult.getUserInfo(), headers, HttpStatus.OK);
     }
 }

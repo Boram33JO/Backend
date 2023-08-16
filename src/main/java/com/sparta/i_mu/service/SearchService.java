@@ -1,9 +1,6 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.dto.responseDto.PostResponseDto;
-import com.sparta.i_mu.dto.responseDto.SearchResponseDto;
-import com.sparta.i_mu.dto.responseDto.SongResponseDto;
-import com.sparta.i_mu.dto.responseDto.UserResponsDto;
+import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.entity.Song;
 import com.sparta.i_mu.entity.User;
@@ -53,8 +50,9 @@ public class SearchService {
                 if(users.isEmpty()) {
                     throw new NoContentException("No users found with keyword: " + keyword);
                 }
-                return users.map(user -> UserResponsDto.builder()
-                        .id(user.getId())
+                return users.map(user -> UserInfoResponseDto.builder()
+                        .userId(user.getId())
+                        .introduce(user.getIntroduce())
                         .nickname(user.getNickname())
                         .build());
             }
@@ -89,10 +87,11 @@ public class SearchService {
         log.info("posts 결과 개수 조회 : {} ", postDtos.size());
         //User 결과
         List<User> userResults = userRepository.findAllByNicknameContaining(keyword, PageRequest.of(0, 4)).getContent();
-        List<UserResponsDto> userDtos = userResults.stream()
-                .map(user -> UserResponsDto.builder()
-                        .id(user.getId())
+        List<UserInfoResponseDto> userDtos = userResults.stream()
+                .map(user -> UserInfoResponseDto.builder()
+                        .userId(user.getId())
                         .nickname(user.getNickname())
+                        .introduce(user.getIntroduce())
                         .build())
                 .toList();
 

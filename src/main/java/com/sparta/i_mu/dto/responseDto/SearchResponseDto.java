@@ -11,6 +11,6 @@ import java.util.List;
 public class SearchResponseDto {
     private List<SongResponseDto> songs;
     private List<PostResponseDto> posts;
-    private List<UserResponsDto> users;
+    private List<UserInfoResponseDto> users;
     private List<PostResponseDto> locations;
 }
