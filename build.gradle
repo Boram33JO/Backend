@@ -67,6 +67,10 @@ dependencies {
 
     //kakao
     implementation 'com.google.code.gson:gson:2.8.7'
+
+    //로그아웃
+//    implementation 'org.springframework.security:spring-security-test'
+
 }
 
 tasks.named('test') {

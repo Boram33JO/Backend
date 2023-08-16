@@ -17,7 +17,7 @@ public class PostResponseDto {
     private Long postId;
     private String nickname;
     private String postTitle;
-    private int count;
+    private int viewCount;
     private String userImage;
     private String content;
     private Long category;

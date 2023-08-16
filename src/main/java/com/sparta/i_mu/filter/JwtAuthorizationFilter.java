@@ -37,6 +37,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = jwtUtil.getAccessTokenFromRequest(request);
+
         if(StringUtils.hasText(accessToken)){ // accessToken이 없을때
             try {
                 String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
@@ -56,6 +57,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.");
             }
         }
+
         // accessToken이 없을때
         filterChain.doFilter(request, response);
     }

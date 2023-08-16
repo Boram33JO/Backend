@@ -141,4 +141,10 @@ public class JwtUtil {
         log.info("user 의 정보 가져오는 메서드 실행");
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody(); //body부분의 claims를 가지고 올 수 잇음
     }
+
+//    //토큰에서 Admin 정보 추출 로그아웃 관련
+//    public String getAdminPk(String token) {
+//        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
+//    }
+
 }

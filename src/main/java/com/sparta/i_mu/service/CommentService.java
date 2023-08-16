@@ -58,11 +58,6 @@ public class CommentService {
         return ResponseResource.message("댓글 삭제 성공", HttpStatus.OK);
     }
 
-    public List<CommentResponseDto> getComment(Long userId) {
-        List<CommentResponseDto> commentList = commentRepository.findAllByUserId(userId).stream().map(CommentResponseDto::new).toList();
-
-        return commentList;
-    }
 
     private Post findPost (Long postId) {
         return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시물이 존재하지 않습니다."));

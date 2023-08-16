@@ -1,10 +1,11 @@
 package com.sparta.i_mu.service;
 
+import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.entity.User;
-import com.sparta.i_mu.entity.UserRoleEnum;
+import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
@@ -45,6 +46,8 @@ public class UserService {
     private final AwsS3Util awsS3Util;
 
     private final PostMapper postMapper;
+
+    private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
     public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto){
@@ -94,22 +97,24 @@ public class UserService {
         // response 수정 필요
 
         User user = findUser(userId);
-        String nickname = user.getNickname();
-        String introduce = user.getIntroduce();
 
-        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
-        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+        UserInfoResponseDto userInfo = getUserInfo(user);
+
+        boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(userId, userDetails.get().getUser().getId());
+
+        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId).stream().limit(4).toList();
+        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId).stream().limit(3).toList();
 
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
-            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
+            List<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId).stream().limit(3).toList();
+            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId).stream().limit(3).toList();
 
-            UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
+            UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, commentResponseDtoList, wishlistResponseDtoList);
 
             return responsDto;
         }
 
-        UserResponsDto responsDto = new UserResponsDto(nickname, introduce, postResponseDtoList, followResponseDtoList);
+        UserResponsDto responsDto = new UserResponsDto(userInfo, postResponseDtoList, followResponseDtoList, isfollow);
 
         return responsDto;
     }
@@ -129,11 +134,6 @@ public class UserService {
             requestDto = new UserRequestDto();
         }
 
-        // 닉네임 중복 확인, api 따로 빼는게 좋을듯
-        boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
-        if (checkNicknameDuplicate) {
-            return ResponseResource.message("닉네임 중복", HttpStatus.OK);
-        }
 
         // 새로운 방법 강구 필요
         if (requestDto.getIntroduce() != null) {
@@ -158,7 +158,7 @@ public class UserService {
 
         findUser.update(user);
 
-        return ResponseResource.message("프로필 수정 성공", HttpStatus.OK);
+        return ResponseResource.data(getUserImage, HttpStatus.OK,"프로필 수정 성공");
     }
 
     @Transactional
@@ -184,18 +184,36 @@ public class UserService {
 
     }
 
-    public List<FollowListResponseDto> getUserFollow(Long userId) {
-        findUser(userId);
-        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
+    public ResponseResource<?> checkNickname(NicknameRequestDto requestDto) {
+        boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
+        // status code 수정 필요
+        if (checkNicknameDuplicate) {
+            return ResponseResource.message("닉네임 중복입니다.", HttpStatus.BAD_REQUEST);
+        }
 
-        return followResponseDtoList;
+        return ResponseResource.message("닉네임 중복이 아닙니다.", HttpStatus.OK);
     }
 
-    public List<PostListResponseDto> getUserPosts(Long userId) {
-        findUser(userId);
+    public GetFollowResponseDto getUserFollow(Long userId) {
+        User user = findUser(userId);
+        String nickname = user.getNickname();
+
+        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
+
+        GetFollowResponseDto followResponseDto = new GetFollowResponseDto(nickname, followResponseDtoList);
+
+        return followResponseDto;
+    }
+
+    public GetPostResponseDto getUserPosts(Long userId) {
+        User user = findUser(userId);
+        String nickname = user.getNickname();
+
         List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
 
-        return postResponseDtoList;
+        GetPostResponseDto postResponseDto = new GetPostResponseDto(nickname, postResponseDtoList);
+
+        return postResponseDto;
     }
 
     public List<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails) {
@@ -207,9 +225,9 @@ public class UserService {
         return null;
     }
 
-    public List<PostListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
+    public List<WishListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<PostListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+            List<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
 
             return wishlistResponseDtoList;
         }
@@ -237,13 +255,13 @@ public class UserService {
         return postResponseDtoList;
     }
 
-    private List<PostListResponseDto> getWishlistResponseDtoList(Long userId) {
+    private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
         List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
-        List<PostListResponseDto> wishListReponsePostList = wishList.stream()
-                .map(wishlist -> postMapper.mapToPostListResponseDto(wishlist.getPost()))
+        List<WishListResponseDto> wishListReponseList = wishList.stream()
+                .map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()))
                 .collect(Collectors.toList());
 
-        return wishListReponsePostList;
+        return wishListReponseList;
     }
 
     private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
@@ -253,4 +271,25 @@ public class UserService {
                 .toList();
         return commentResponseDtoList;
     }
+
+    private UserInfoResponseDto getUserInfo(User user) {
+        return UserInfoResponseDto.builder()
+                .userId(user.getId())
+                .nickname(user.getNickname())
+                .userImage(user.getUserImage())
+                .introduce(user.getIntroduce())
+                .build();
+    }
+
+
+
+//    //로그아웃
+//    @Transactional
+//    public void logout() {
+//        //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
+//        KafkaProperties.Admin admin = (KafkaProperties.Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        if (redisTemplate.opsForValue().get("JWT_TOKEN:" + admin.getLoginId()) != null) {
+//            redisTemplate.delete("JWT_TOKEN:" + admin.getLoginId()); //Token 삭제
+//        }
+//    }
 }

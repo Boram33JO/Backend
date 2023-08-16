@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -168,7 +169,7 @@ public class PostService {
     public List<PostByCategoryResponseDto> getAllPost() {
 
         List<Category> categories = categoryRepository.findAll();
-        return categories.stream()
+        return categories.stream().sorted(Comparator.comparing(Category::getId))
                 .map(category ->{
                     List<Post> posts = postRepository.findMainPostsByCategory(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
@@ -219,7 +220,7 @@ public class PostService {
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = findPost(postId);
         // redis 추가 되면 전환
-        postCountUpdate(post, req, res);
+        postViewCountUpdate(post, req, res);
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -265,7 +266,7 @@ public class PostService {
 //    }
 
     // 게시글 조회수 증가 메서드
-    private void postCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
+    private void postViewCountUpdate(Post post, HttpServletRequest req, HttpServletResponse res) {
         Cookie oldCookie = null;
 
         long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
@@ -281,7 +282,7 @@ public class PostService {
         }
 
         if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
-            post.countUpdate();
+            post.viewCountUpdate();
             String newCookieValue = "[" + post.getId() + "]";
             if (oldCookie != null) {
                 newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";

@@ -39,8 +39,8 @@ public class Post extends Timestamped{
     @Column
     private Boolean deleted; // 삭제 여부 판별 필드
 
-    @Column(name = "post_count", columnDefinition = "integer default 0", nullable = false)
-    private int count;
+    @Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
+    private int viewCount;
 
     @OneToOne
     @JoinColumn(name = "location_id")
@@ -49,6 +49,12 @@ public class Post extends Timestamped{
     //post에 연결된 song 리스트
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<PostSongLink> postSongLink = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Comment> Comment = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Wishlist> WishList = new ArrayList<>();
 
     // user와의 관계
     @ManyToOne(fetch = FetchType.LAZY)
@@ -88,7 +94,8 @@ public class Post extends Timestamped{
         this.deleted = deletedPost;
     }
 
-    public void countUpdate() {
-        this.count++;
+    public void viewCountUpdate() {
+        this.viewCount++;
+
     }
 }

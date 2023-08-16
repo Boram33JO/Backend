@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostListSongResponseDto {
     private String artistName;
-    private String title;
+    private String songTitle;
     private String thumbnail;
 }

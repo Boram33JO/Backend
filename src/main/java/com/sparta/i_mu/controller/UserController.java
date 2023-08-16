@@ -3,6 +3,7 @@ package com.sparta.i_mu.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
+import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,12 +53,12 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}/follow")
-    public List<FollowListResponseDto> getUserFollow(@PathVariable Long userId) {
+    public GetFollowResponseDto getUserFollow(@PathVariable Long userId) {
         return userService.getUserFollow(userId);
     }
 
     @GetMapping("/profile/{userId}/posts")
-    public List<PostListResponseDto> getUserPosts(@PathVariable Long userId) {
+    public GetPostResponseDto getUserPosts(@PathVariable Long userId) {
         return userService.getUserPosts(userId);
     }
 
@@ -66,9 +68,26 @@ public class UserController {
     }
 
     @GetMapping("/profile/{userId}/wishlist")
-    public List<PostListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public List<WishListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
     }
+
+    @PostMapping("/profile/check")
+    public ResponseResource<?> checkNickname(@RequestBody @Valid NicknameRequestDto requestDto) {
+        return userService.checkNickname(requestDto);
+    }
+
+
+
+//    //로그아웃
+//    @PostMapping(value = "/logout")
+//    @ApiOperation(value="로그아웃")
+//    public ResponseEntity<Void> logout(HttpServletRequest servletRequest) {
+//
+//        UserService.logout();
+//        return ResponseEntity.ok().build();
+//    }
+
 
 
     // 카카오 로그인

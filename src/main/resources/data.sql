@@ -1,4 +1,4 @@
-insert into category(name)
+insert IGNORE into category(name)
 values ('카페'),
        ('식당'),
        ('대중교통'),
