@@ -5,6 +5,7 @@ import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.entity.User;
+import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -15,6 +16,7 @@ import com.sparta.i_mu.global.util.AwsS3Util;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,8 @@ public class UserService {
     private final FollowReporitory followReporitory;
 
     private final CommentRepository commentRepository;
+
+    private final JwtUtil jwtUtil;
 
     private final AwsS3Util awsS3Util;
 
@@ -120,7 +124,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile, UserRequestDto requestDto, Long userId) {
+    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile, UserRequestDto requestDto, Long userId, HttpServletResponse response) {
         if (!userId.equals(id)) {
             throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
         }
@@ -156,8 +160,14 @@ public class UserService {
                 .introduce(getIntroduce)
                 .build();
 
-        findUser.update(user);
 
+        findUser.update(user);
+        //TODO 기존 닉네임과 변경된 닉네임이 다를 시 -> 토큰 재발급(액세스, 리프레시)
+        if(!findUser.getNickname().equals(getNickname)){
+           String accessToken = jwtUtil.createAccessToken(findUser.getNickname());
+           String refreshToken = jwtUtil.createRefreshToken(findUser.getNickname());
+           jwtUtil.addTokenToHeader(accessToken, refreshToken, response);
+        }
         return ResponseResource.data(getUserImage, HttpStatus.OK,"프로필 수정 성공");
     }
 
