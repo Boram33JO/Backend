@@ -18,6 +18,7 @@ import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor //의존성 주입
 public class UserService {
 
@@ -134,10 +136,12 @@ public class UserService {
         String getIntroduce = findUser.getIntroduce();
         String getNickname = findUser.getNickname();
 
+        String originNickname = findUser.getNickname();
+
+
         if (requestDto == null) {
             requestDto = new UserRequestDto();
         }
-
 
         // 새로운 방법 강구 필요
         if (requestDto.getIntroduce() != null) {
@@ -162,8 +166,9 @@ public class UserService {
 
 
         findUser.update(user);
+        log.info("수정 전 닉네임: {}, 수정 후 닉네임: {}", originNickname, getNickname);
         //TODO 기존 닉네임과 변경된 닉네임이 다를 시 -> 토큰 재발급(액세스, 리프레시)
-        if(!findUser.getNickname().equals(getNickname)){
+        if(!originNickname.equals(getNickname)){
            String accessToken = jwtUtil.createAccessToken(findUser.getNickname());
            String refreshToken = jwtUtil.createRefreshToken(findUser.getNickname());
            jwtUtil.addTokenToHeader(accessToken, refreshToken, response);
