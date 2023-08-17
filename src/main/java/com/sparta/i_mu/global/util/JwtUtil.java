@@ -48,16 +48,16 @@ public class JwtUtil {
     }
 
     /**
-     *  AccessToken 생성 메서드
-     * @param email,카카오는 고유id로 토큰 생성
+     *
+     * @param nickname
      * @return
      */
-    public String createAccessToken(String email) {
+    public String createAccessToken(String nickname) {
         Date date = new Date();
         log.info("createAccessToken");
         return BEARER +
                 Jwts.builder()
-                        .setSubject(email) // 토큰(사용자) 식별자 값
+                        .setSubject(nickname) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
@@ -65,13 +65,13 @@ public class JwtUtil {
 
     }//                        .claim(AUTHORIZATION_KEY,role)
 
-    public String createRefreshToken(String email) {
+    public String createRefreshToken(String nickname) {
         Date date = new Date();
         log.info("createRefreshToken");
         return BEARER +
                 Jwts.builder()
                         .setIssuedAt(date) // 등록 날
-                        .setSubject(email) // 토큰(사용자) 식별자 값
+                        .setSubject(nickname) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
