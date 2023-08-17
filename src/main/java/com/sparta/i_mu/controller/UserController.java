@@ -2,7 +2,6 @@ package com.sparta.i_mu.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sparta.i_mu.dto.KakaoResult;
-import com.sparta.i_mu.dto.KakaoUserInfo;
 import com.sparta.i_mu.dto.KakaoUserResponseDto;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
