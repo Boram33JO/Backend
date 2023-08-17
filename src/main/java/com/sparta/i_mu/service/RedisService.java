@@ -14,15 +14,15 @@ public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
 
-    public void storeRefreshToken(String email, String refreshToken) {
-        redisTemplate.opsForValue().set(REFRESH_TOKEN_KEY + email, refreshToken);
+    public void storeRefreshToken(String accessToken, String refreshToken) {
+        redisTemplate.opsForValue().set(REFRESH_TOKEN_KEY + accessToken, refreshToken);
     }
 
-    public String getRefreshToken(String email) {
-        return (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + email);
-    }
+//    public String getRefreshToken(String accessToken) {
+//        return (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + accessToken);
+//    }
 
-    public void removeRefreshToken(String email) {
-        redisTemplate.delete(REFRESH_TOKEN_KEY + email);
+    public void removeRefreshToken(String accessToken) {
+        redisTemplate.delete(REFRESH_TOKEN_KEY + accessToken);
     }
 }

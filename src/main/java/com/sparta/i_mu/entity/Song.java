@@ -27,9 +27,9 @@ public class Song {
     private String artistName;
     @Column(nullable = false)
     private String album;
-    @Column(nullable = false)
+    @Column
     private String audioUrl;
-    @Column(nullable = false)
+    @Column
     private String thumbnail;
     @Column(nullable = false)
     private String externalUrl;

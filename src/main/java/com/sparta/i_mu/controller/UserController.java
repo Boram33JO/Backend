@@ -78,18 +78,6 @@ public class UserController {
     }
 
 
-
-//    //로그아웃
-//    @PostMapping(value = "/logout")
-//    @ApiOperation(value="로그아웃")
-//    public ResponseEntity<Void> logout(HttpServletRequest servletRequest) {
-//
-//        UserService.logout();
-//        return ResponseEntity.ok().build();
-//    }
-
-
-
     // 카카오 로그인
     @PostMapping ("/oauth/token")
     public ResponseEntity<KakaoUserInfo> kakaoLogin(@RequestParam String code) throws JsonProcessingException {

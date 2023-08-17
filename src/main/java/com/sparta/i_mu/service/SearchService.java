@@ -32,7 +32,6 @@ public class SearchService {
 
 
     // 메인 페이지 - 검색
-
     public Page<?> getSearch(String keyword, String type, Pageable pageable) {
         switch (type) {
             case "all" -> {
