@@ -91,8 +91,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         SecurityContextHolder.setContext(context);
     }
     //인증 객체 생성
-    private Authentication createAuthentication(String email) {
-        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);
+    private Authentication createAuthentication(String nickname) {
+        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(nickname);
         return new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
     }
 }
