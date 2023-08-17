@@ -2,6 +2,7 @@ package com.sparta.i_mu.global.handler;
 
 import com.sparta.i_mu.global.exception.NoContentException;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -12,8 +13,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
+import java.util.*;
 
-
+@Slf4j
 @RestControllerAdvice
 @ResponseBody
 public class GlobalExceptionHandler {
@@ -27,20 +29,38 @@ public class GlobalExceptionHandler {
     //Validation 검증 실패 시
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseResource<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+//        // 1안
+//        StringBuilder sb = new StringBuilder();
+//
+//        BindingResult bindingResult = e.getBindingResult();
+//
+//        for (FieldError fieldError : bindingResult.getFieldErrors()) {
+//            sb.append(fieldError.getDefaultMessage()).append("/");
+//        }
+//
+//        String[] errorArray = sb.toString().split("/");
+//        Arrays.sort(errorArray);
+//        String error = Arrays.toString(errorArray);
+//        String errorSubstring = error.substring(1, error.length()-1);
+//
+//        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST);
+
+
+
+
         BindingResult bindingResult = e.getBindingResult();
 
-        StringBuilder builder = new StringBuilder();
+        List<String> errorList = new ArrayList<>();
+
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
-            builder.append("[");
-            builder.append(fieldError.getField());
-            builder.append("](은)는 ");
-            builder.append(fieldError.getDefaultMessage());
-            builder.append(" 입력된 값: [");
-            builder.append(fieldError.getRejectedValue());
-            builder.append("]");
+            errorList.add(fieldError.getDefaultMessage());
         }
 
-        return ResponseResource.error(builder.toString(), HttpStatus.BAD_REQUEST);
+        Collections.sort(errorList);
+        String error = errorList.toString();
+        String errorSubstring = error.substring(1, error.length()-1);
+
+        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST);
     }
 
     // 사용자가 제출한 데이터로 해당 객체를 찾을 수 없을 때

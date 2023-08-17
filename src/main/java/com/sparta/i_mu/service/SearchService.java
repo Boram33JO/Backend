@@ -93,7 +93,6 @@ public class SearchService {
                         .introduce(user.getIntroduce())
                         .build())
                 .toList();
-
         log.info("user nickname 조회 : {}" , userResults.stream().findFirst());
         log.info("user 결과 개수 조회 : {} ", userDtos.size());
         //Song 결과

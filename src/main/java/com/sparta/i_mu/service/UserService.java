@@ -191,7 +191,7 @@ public class UserService {
             return ResponseResource.message("닉네임 중복입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseResource.message("닉네임 중복이 아닙니다.", HttpStatus.OK);
+        return ResponseResource.message("사용 가능한 닉네임입니다.", HttpStatus.OK);
     }
 
     public GetFollowResponseDto getUserFollow(Long userId) {
