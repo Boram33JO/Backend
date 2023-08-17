@@ -211,7 +211,7 @@ public class KakaoService {
 
                 int suffix = 1;
                 while(userRepository.findByNickname(nickname).isPresent()){
-                    nickname = kakaoUserInfo.getNickname() + "_" + suffix;
+                    nickname = kakaoUserInfo.getNickname() + "_" + suffix++;
                 }
                 kakaoUser = User.builder()
                         .email(kakaoEmail)
