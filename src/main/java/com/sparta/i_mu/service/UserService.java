@@ -174,7 +174,7 @@ public class UserService {
 
         findUser.update(user);
         log.info("수정 전 닉네임: {}, 수정 후 닉네임: {}", originNickname, getNickname);
-        //TODO 기존 닉네임과 변경된 닉네임이 다를 시 -> 토큰 재발급(액세스, 리프레시
+
         if (!originNickname.equals(getNickname)) {
             // redis에서 refreshToken 삭제
             redisUtil.removeRefreshToken(jwtUtil.getAccessTokenFromRequest(request));
@@ -273,7 +273,7 @@ public class UserService {
         return followResponseDtoList;
     }
 
-    // 내가 작성한 리스트 조회
+    // 내가 작성한 리스트 조회 -> deleted false ✅
     private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
         List<Post> postList = postRepository.findAllByUserIdAndDeletedFalse(userId);
         List<PostListResponseDto> postResponseDtoList = postList.stream()
@@ -283,9 +283,9 @@ public class UserService {
         return postResponseDtoList;
     }
 
-    // 좋아요 한 리스트 조회
+    // 좋아요 한 리스트 조회 -> deleted false ✅
     private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
-        List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
+        List<Wishlist> wishList = wishlistRepository.findAllByUserIdAndPostDeletedFalse(userId);
         List<WishListResponseDto> wishListReponseList = wishList.stream()
                 .map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()))
                 .collect(Collectors.toList());

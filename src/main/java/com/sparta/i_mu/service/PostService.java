@@ -157,6 +157,12 @@ public class PostService {
 
         Post post = findPost(postId);
         checkAuthority(post,user);
+        post.getComment().stream()
+                .filter(comment -> !comment.getDeleted())
+                .forEach(comment -> {
+                    comment.setDeletedAt(LocalDateTime.now());
+                    comment.setDeleted(true);
+                });
         post.setDeletedAt(LocalDateTime.now());
         post.setDeleted(true);
         return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
