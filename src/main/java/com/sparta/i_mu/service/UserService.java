@@ -262,7 +262,7 @@ public class UserService {
     }
 
     private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
-        List<Post> postList = postRepository.findAllByUserId(userId);
+        List<Post> postList = postRepository.findAllByUserIdAndDeletedFalse(userId);
         List<PostListResponseDto> postResponseDtoList = postList.stream()
                 .map(postMapper::mapToPostListResponseDto)
                 .collect(Collectors.toList());
@@ -280,7 +280,7 @@ public class UserService {
     }
 
     private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
-        List<Comment> commentList = commentRepository.findAllByUserId(userId);
+        List<Comment> commentList = commentRepository.findAllByUserIdAndDeletedFalse(userId);
         List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
                 .map(CommentListResponseDto::new)
                 .toList();

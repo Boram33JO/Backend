@@ -22,6 +22,9 @@ public class Comment extends Timestamped {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @Column
+    private Boolean deleted;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,5 +37,8 @@ public class Comment extends Timestamped {
         this.content = requestDto.getContent();
     }
 
+    public void setDeleted(boolean deletedComment) {
+        this.deleted = deletedComment;
+    }
 
 }
