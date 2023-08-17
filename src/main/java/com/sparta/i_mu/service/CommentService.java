@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ public class CommentService {
                 .user(user)
                 .content(requestDto.getContent())
                 .post(post)
+                .deleted(false)
                 .build();
 
         commentRepository.save(comment);
@@ -48,12 +50,15 @@ public class CommentService {
         return ResponseResource.message("댓글 수정 성공", HttpStatus.OK);
     }
 
+    @Transactional
     public ResponseResource<?> deleteComment(Long commentId, Long userId) {
         Comment comment = findComment(commentId);
 
         checkUser(comment.getUser().getId(), userId);
 
-        commentRepository.delete(comment);
+        comment.setDeleted(true);
+        comment.setDeletedAt(LocalDateTime.now());
+//        commentRepository.delete(comment);
 
         return ResponseResource.message("댓글 삭제 성공", HttpStatus.OK);
     }
