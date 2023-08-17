@@ -58,7 +58,7 @@ public class PostMapper {
 
         Long wishlistCount = wishlistRepository.countByPostId(post.getId());
 
-        List<CommentResponseDto> comments = commentRepository.findAllByPostId(post.getId())
+        List<CommentResponseDto> comments = commentRepository.findAllByPostIdAndDeletedFalse(post.getId())
                 .stream()
                 .map(CommentResponseDto::new)
                 .toList();

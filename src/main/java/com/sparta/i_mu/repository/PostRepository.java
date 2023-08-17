@@ -30,6 +30,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRep
      */
     Page<Post> findAllByLocationAddressContainingAndDeletedFalse(String keyword, Pageable pageable);
 
-    List<Post> findAllByUserId(Long userId);
+    List<Post> findAllByUserIdAndDeletedFalse(Long userId);
 
 }
