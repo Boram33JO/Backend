@@ -46,14 +46,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     log.warn("AccessToken 토큰 검증 실패 -> 재발급 시도");
                     renewAccessTokenByRefreshToken(refreshToken, response);
                 }
-                Claims info = jwtUtil.getUserInfoFromToken(accessToken);
+                String userNickname = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
                 try {
-                    setAuthentication(info.getSubject());
-                } catch (Exception e) {
+                    log.info("info.Subject nickname :{}", userNickname);
+                    setAuthentication(userNickname);
+                } catch (Exception e){
                     log.error(e.getMessage());
-                    return;
+
                 }
                 authService.refreshTokenRegularly(refreshToken, accessToken, response);
+                log.info("info.Subject nickname :{}", userNickname);
             } catch (AccessDeniedException e){
                 log.error(e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -76,19 +78,18 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String newAccessToken = authService.refreshAccessToken(refreshToken);
         response.setHeader(jwtUtil.HEADER_ACCESS_TOKEN, newAccessToken);
 
-        Claims info = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(newAccessToken));
-        setAuthentication(info.getSubject());
-        log.info("재발급 한 AccessToken 의 유저 정보 : {}", info.getSubject());
+        String userNickname = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(newAccessToken)).getSubject();
+        setAuthentication(userNickname);
+        log.info("재발급 한 AccessToken 의 유저 정보 : {}", userNickname);
     }
 
     // 인증 처리
-    private void setAuthentication(String username) {
+    private void setAuthentication(String nickname) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(username);
+        Authentication authentication = createAuthentication(nickname);
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
-
     //인증 객체 생성
     private Authentication createAuthentication(String email) {
         UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);

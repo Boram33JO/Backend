@@ -29,12 +29,12 @@ public class AuthService {
 
     // 액세스 토큰을 refreshToken을 이용해 재발급 받을 때
     public String refreshAccessToken(String refreshToken) {
-        String userEmail = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
-        log.info("refreshToken 의 subject 값 User_Email : {} ", userEmail);
+        String nickname = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
+        log.info("refreshToken 의 subject 값 User_Nickname : {} ", nickname);
         if(jwtUtil.validateRefreshToken(refreshToken)) {
             // refreshToken이 유효하다면 새로운 accessToken 발급
             log.info("refreshToken 검증 : {}", jwtUtil.validateRefreshToken(refreshToken));
-            return jwtUtil.createAccessToken(userEmail);
+            return jwtUtil.createAccessToken(nickname);
         } else {
             throw new RuntimeException("Invalid refresh token");
         }
@@ -42,16 +42,16 @@ public class AuthService {
 
     // 클라이언트가 명시적으로 재발급을 원할 때 - 리프레시 토큰도 재발급 이바로 되게
     public TokenPair refreshTokenIfNeeded(String accessToken, String refreshToken) {
-        String userEmail = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
+        String nickname = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
         if(jwtUtil.validateRefreshToken(refreshToken)) {
             // refreshToken이 유효하다면 새로운 accessToken 발급
-            String newAccessToken = jwtUtil.createAccessToken(userEmail);
+            String newAccessToken = jwtUtil.createAccessToken(nickname);
             // 주기적인 리프레시 토큰 갱신 (여기서는 간단하게 매번 새로운 리프레시 토큰을 발급하도록 함)
-            String newRefreshToken = jwtUtil.createRefreshToken(userEmail);
+            String newRefreshToken = jwtUtil.createRefreshToken(nickname);
             // 이전 refreshToken 삭제
             redisService.removeRefreshToken(accessToken);
             // Redis에 새로운 리프레시 토큰 저장
-            redisService.storeRefreshToken(userEmail, newRefreshToken);
+            redisService.storeRefreshToken(nickname, newRefreshToken);
 
             return new TokenPair(newAccessToken, newRefreshToken);
         } else {
@@ -68,7 +68,7 @@ public class AuthService {
     public void refreshTokenRegularly(String refreshToken, String accessToken, HttpServletResponse response) {
         log.info("일주일 간격으로 refreshToken 갱신메서드 현재 refreshToken : {}", refreshToken);
         Claims refreshTokenClaims = jwtUtil.getUserInfoFromToken(refreshToken);
-        String email = refreshTokenClaims.getSubject();
+        String nickname = refreshTokenClaims.getSubject();
         Date issuedAt = refreshTokenClaims.getIssuedAt();
         Date date = new Date();
         long daysSinceLastRefresh = (date.getTime() - issuedAt.getTime()) / (1000 * 60 * 60 * 24);
@@ -80,7 +80,7 @@ public class AuthService {
         if(daysSinceLastRefresh >= 7) {
             // 이전 refreshToken 삭제
             redisService.removeRefreshToken(accessToken);
-            String newRefreshToken = jwtUtil.createRefreshToken(email);
+            String newRefreshToken = jwtUtil.createRefreshToken(nickname);
             log.info("new RefreshToken : {} " , newRefreshToken);
             redisService.storeRefreshToken(accessToken, newRefreshToken); // Redis에 새 리프레시 토큰 저장
             response.setHeader(jwtUtil.HEADER_REFRESH_TOKEN, newRefreshToken); // 응답 헤더에 새 리프레시 토큰 설정

@@ -191,7 +191,7 @@ public class KakaoService {
         User kakaoUser = userRepository.findByKakaoId(kakaoId).orElse(null);
 
         if (kakaoUser == null) {
-            // 카카오 사용자 email 동일한 email 가진 회원이 있는지 확인
+            // 카카오 사용자 email 동일한 email 가진 회원이 있는지 확인 -> kakaoid는 없지만 같은 email이 있을 경우 = 같은 사람 -> 해당 유저에 kakaoId를 주입
             String kakaoEmail = kakaoUserInfo.getEmail();
             User sameEmailUser = userRepository.findByEmail(kakaoEmail).orElse(null);
             if (sameEmailUser != null) {
@@ -228,10 +228,10 @@ public class KakaoService {
     }
 
 
-    // kakao로그인 유저는 kakaoId로 토큰 생성
+    // kakao로그인 유저는 userId 토큰 생성
     private TokenPair createToken(User kakaoUser) {
-        String createToken = jwtUtil.createAccessToken(String.valueOf(kakaoUser.getKakaoId()));
-        String refreshToken = jwtUtil.createRefreshToken(String.valueOf(kakaoUser.getKakaoId()));
+        String createToken = jwtUtil.createAccessToken(kakaoUser.getNickname());
+        String refreshToken = jwtUtil.createRefreshToken(kakaoUser.getNickname());
 
         return new TokenPair(createToken,refreshToken);
     }
