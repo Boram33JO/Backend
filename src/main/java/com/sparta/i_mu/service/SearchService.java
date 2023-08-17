@@ -32,7 +32,6 @@ public class SearchService {
 
 
     // 메인 페이지 - 검색
-
     public Page<?> getSearch(String keyword, String type, Pageable pageable) {
         switch (type) {
             case "all" -> {
@@ -52,8 +51,8 @@ public class SearchService {
                 }
                 return users.map(user -> UserInfoResponseDto.builder()
                         .userId(user.getId())
-                        .introduce(user.getIntroduce())
                         .nickname(user.getNickname())
+                        .introduce(user.getIntroduce())
                         .build());
             }
             case "songName" -> {
@@ -94,7 +93,6 @@ public class SearchService {
                         .introduce(user.getIntroduce())
                         .build())
                 .toList();
-
         log.info("user nickname 조회 : {}" , userResults.stream().findFirst());
         log.info("user 결과 개수 조회 : {} ", userDtos.size());
         //Song 결과
