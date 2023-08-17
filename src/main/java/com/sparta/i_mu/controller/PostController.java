@@ -97,7 +97,7 @@ public class PostController {
 
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
-    @GetMapping("/map")
+    @PostMapping("/map")
     public Page<PostResponseDto> getMapPostByCategory(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @RequestParam(required = false) Optional<Long> categoryId,
