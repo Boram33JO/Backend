@@ -6,6 +6,7 @@ import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
@@ -16,6 +17,7 @@ import com.sparta.i_mu.global.util.AwsS3Util;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,7 @@ public class UserService {
     private final CommentRepository commentRepository;
 
     private final JwtUtil jwtUtil;
+    private final RedisUtil redisUtil;
 
     private final AwsS3Util awsS3Util;
 
@@ -56,7 +59,7 @@ public class UserService {
     private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
-    public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto){
+    public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto) {
         String nickname = signUpRequestDto.getNickname();
         String password = passwordEncoder.encode(signUpRequestDto.getPassword());
         String email = signUpRequestDto.getEmail();
@@ -126,7 +129,11 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile, UserRequestDto requestDto, Long userId, HttpServletResponse response) {
+    public ResponseResource<?> updateUser(Long id, MultipartFile multipartFile,
+                                          UserRequestDto requestDto,
+                                          Long userId,
+                                          HttpServletResponse response,
+                                          HttpServletRequest request) {
         if (!userId.equals(id)) {
             throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
         }
@@ -167,13 +174,18 @@ public class UserService {
 
         findUser.update(user);
         log.info("수정 전 닉네임: {}, 수정 후 닉네임: {}", originNickname, getNickname);
-        //TODO 기존 닉네임과 변경된 닉네임이 다를 시 -> 토큰 재발급(액세스, 리프레시)
-        if(!originNickname.equals(getNickname)){
-           String accessToken = jwtUtil.createAccessToken(findUser.getNickname());
-           String refreshToken = jwtUtil.createRefreshToken(findUser.getNickname());
-           jwtUtil.addTokenToHeader(accessToken, refreshToken, response);
+        //TODO 기존 닉네임과 변경된 닉네임이 다를 시 -> 토큰 재발급(액세스, 리프레시
+        if (!originNickname.equals(getNickname)) {
+            // redis에서 refreshToken 삭제
+            redisUtil.removeRefreshToken(jwtUtil.getAccessTokenFromRequest(request));
+
+            String accessToken = jwtUtil.createAccessToken(findUser.getNickname());
+            String refreshToken = jwtUtil.createRefreshToken(findUser.getNickname());
+            jwtUtil.addTokenToHeader(accessToken, refreshToken, response);
+            // redis에 새로 발급받은 refreshToken 저장
+            redisUtil.storeRefreshToken(accessToken, refreshToken);
         }
-        return ResponseResource.data(getUserImage, HttpStatus.OK,"프로필 수정 성공");
+        return ResponseResource.data(getUserImage, HttpStatus.OK, "프로필 수정 성공");
     }
 
     @Transactional
@@ -185,7 +197,7 @@ public class UserService {
             throw new IllegalArgumentException("로그인한 유저가 아닙니다.");
         }
 
-        if (!passwordEncoder.matches(requestDto.getOriginPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(requestDto.getOriginPassword(), user.getPassword())) {
             throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
         }
 
@@ -261,6 +273,7 @@ public class UserService {
         return followResponseDtoList;
     }
 
+    // 내가 작성한 리스트 조회
     private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
         List<Post> postList = postRepository.findAllByUserId(userId);
         List<PostListResponseDto> postResponseDtoList = postList.stream()
@@ -270,6 +283,7 @@ public class UserService {
         return postResponseDtoList;
     }
 
+    // 좋아요 한 리스트 조회
     private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
         List<Wishlist> wishList = wishlistRepository.findAllByUserId(userId);
         List<WishListResponseDto> wishListReponseList = wishList.stream()
@@ -295,7 +309,6 @@ public class UserService {
                 .introduce(user.getIntroduce())
                 .build();
     }
-
 
 
 //    //로그아웃

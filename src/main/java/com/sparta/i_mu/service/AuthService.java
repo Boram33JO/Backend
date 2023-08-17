@@ -2,6 +2,7 @@ package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.dto.TokenPair;
 import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +17,7 @@ import java.util.Date;
 @Slf4j
 public class AuthService {
 
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
     private final JwtUtil jwtUtil;
 
     // 액세스 토큰이 유효한지 확인하는 메서드
@@ -62,9 +63,9 @@ public class AuthService {
             // 주기적인 리프레시 토큰 갱신 (여기서는 간단하게 매번 새로운 리프레시 토큰을 발급하도록 함)
             String newRefreshToken = jwtUtil.createRefreshToken(nickname);
             // 이전 refreshToken 삭제
-            redisService.removeRefreshToken(accessToken);
+            redisUtil.removeRefreshToken(accessToken);
             // Redis에 새로운 리프레시 토큰 저장
-            redisService.storeRefreshToken(accessToken, newRefreshToken);
+            redisUtil.storeRefreshToken(accessToken, newRefreshToken);
 
             return new TokenPair(newAccessToken, newRefreshToken);
         } else {
@@ -92,10 +93,10 @@ public class AuthService {
         // 리프레시 토큰이 일주일 이상된 경우 새로 발급 / 분
         if(daysSinceLastRefresh >= 7) {
             // 이전 refreshToken 삭제
-            redisService.removeRefreshToken(accessToken);
+            redisUtil.removeRefreshToken(accessToken);
             String newRefreshToken = jwtUtil.createRefreshToken(nickname);
             log.info("new RefreshToken : {} " , newRefreshToken);
-            redisService.storeRefreshToken(accessToken, newRefreshToken); // Redis에 새 리프레시 토큰 저장
+            redisUtil.storeRefreshToken(accessToken, newRefreshToken); // Redis에 새 리프레시 토큰 저장
             response.setHeader(jwtUtil.HEADER_REFRESH_TOKEN, newRefreshToken); // 응답 헤더에 새 리프레시 토큰 설정
         }
         else log.info("기존의 refreshToken 유지");

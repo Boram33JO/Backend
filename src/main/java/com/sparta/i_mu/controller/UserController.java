@@ -13,6 +13,7 @@ import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +50,9 @@ public class UserController {
                                           @RequestPart(value = "userImage", required = false) MultipartFile multipartFile,
                                           @RequestPart(required = false) @Valid UserRequestDto requestDto,
                                           @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                          HttpServletResponse response) {
-        return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId(),response);
+                                          HttpServletResponse response,
+                                          HttpServletRequest request) {
+        return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId(),response, request);
     }
 
     @PutMapping("/profile/{userId}/password")

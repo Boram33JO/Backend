@@ -6,7 +6,7 @@ import com.sparta.i_mu.filter.JwtAuthorizationFilter;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
 import com.sparta.i_mu.service.AuthService;
-import com.sparta.i_mu.service.RedisService;
+import com.sparta.i_mu.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -40,7 +39,7 @@ public class WebSecurityConfig {
     private final ObjectMapper objectMapper;
     private final WebConfig webConfig;
     private final AuthService authService;
-    private final RedisService redisService;
+    private final RedisUtil redisUtil;
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -53,7 +52,7 @@ public class WebSecurityConfig {
     }
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception{
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, objectMapper,redisService);
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, objectMapper, redisUtil);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         filter.setFilterProcessesUrl("/api/user/login");
         return filter;

@@ -1,16 +1,15 @@
-package com.sparta.i_mu.service;
+package com.sparta.i_mu.global.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class RedisService {
+public class RedisUtil {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
 
