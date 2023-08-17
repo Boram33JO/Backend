@@ -46,7 +46,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     log.warn("AccessToken 토큰 검증 실패 -> 재발급 시도");
                     renewAccessTokenByRefreshToken(refreshToken, response);
                 }
-                // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
+                Claims info = jwtUtil.getUserInfoFromToken(accessToken);
+                try {
+                    setAuthentication(info.getSubject());
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                    return;
+                }
                 authService.refreshTokenRegularly(refreshToken, accessToken, response);
             } catch (AccessDeniedException e){
                 log.error(e.getMessage());
