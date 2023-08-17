@@ -58,6 +58,7 @@ public class KakaoService {
                 .email(kakaoUser.getEmail())
                 .kakaoId(kakaoUser.getKakaoId())
                 .nickname(kakaoUser.getNickname())
+                .introduce(kakaoUser.getIntroduce())
                 .build();
 
         return KakaoResult.builder()

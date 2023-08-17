@@ -3,6 +3,7 @@ package com.sparta.i_mu.service;
 import com.sparta.i_mu.dto.TokenPair;
 import com.sparta.i_mu.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +41,20 @@ public class AuthService {
         }
     }
 
-    // 클라이언트가 명시적으로 재발급을 원할 때 - 리프레시 토큰도 재발급 이바로 되게
-    public TokenPair refreshTokenIfNeeded(String accessToken, String refreshToken) {
+
+
+    /**
+     * 클라이언트가 명시적으로 재발급을 원할 때
+     * accessToken - refreshToken 재발급
+     * @param accessToken
+     * @param refreshToken
+     * @return
+     */
+    public TokenPair refreshTokenIfNeeded(HttpServletRequest request) {
+
+        String accessToken = jwtUtil.getAccessTokenFromRequest(request);
+        String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+
         String nickname = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
         if(jwtUtil.validateRefreshToken(refreshToken)) {
             // refreshToken이 유효하다면 새로운 accessToken 발급
@@ -51,7 +64,7 @@ public class AuthService {
             // 이전 refreshToken 삭제
             redisService.removeRefreshToken(accessToken);
             // Redis에 새로운 리프레시 토큰 저장
-            redisService.storeRefreshToken(nickname, newRefreshToken);
+            redisService.storeRefreshToken(accessToken, newRefreshToken);
 
             return new TokenPair(newAccessToken, newRefreshToken);
         } else {

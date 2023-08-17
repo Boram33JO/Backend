@@ -10,6 +10,7 @@ public class KakaoUserResponseDto {
     private String email;
     private String nickname;
     private String userImage;
+    private String introduce;
     private Long kakaoId;
 
 }

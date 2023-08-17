@@ -13,6 +13,7 @@ import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -44,8 +45,12 @@ public class UserController {
     }
 
     @PutMapping("/profile/{userId}")
-    public ResponseResource<?> updateUser(@PathVariable Long userId, @RequestPart(value = "userImage", required = false) MultipartFile multipartFile, @RequestPart(required = false) @Valid UserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId());
+    public ResponseResource<?> updateUser(@PathVariable Long userId,
+                                          @RequestPart(value = "userImage", required = false) MultipartFile multipartFile,
+                                          @RequestPart(required = false) @Valid UserRequestDto requestDto,
+                                          @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          HttpServletResponse response) {
+        return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId(),response);
     }
 
     @PutMapping("/profile/{userId}/password")

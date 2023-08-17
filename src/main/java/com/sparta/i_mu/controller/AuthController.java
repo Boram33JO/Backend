@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class AuthController {
 
     private final AuthService authService;
@@ -21,20 +23,15 @@ public class AuthController {
     // 클라이언트가 명시적으로 새롭게 토큰을 발급받고 싶을 때?
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        //검증을 위한 기존의 토큰
-        String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-        String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
 
-        TokenPair tokenPair = authService.refreshTokenIfNeeded(accessToken,refreshToken);
-        String newAccessToken = tokenPair.getAccessToken();
-        String newRefreshToken = tokenPair.getRefreshToken();
+        try {
+            TokenPair tokenPair = authService.refreshTokenIfNeeded(request);
 
-        if (newAccessToken != null) {
-            response.setHeader(jwtUtil.HEADER_ACCESS_TOKEN, newAccessToken);
-            response.setHeader(jwtUtil.HEADER_REFRESH_TOKEN,newRefreshToken);
+            response.setHeader(jwtUtil.HEADER_ACCESS_TOKEN, tokenPair.getAccessToken());
+            response.setHeader(jwtUtil.HEADER_REFRESH_TOKEN, tokenPair.getRefreshToken());
 
             return ResponseEntity.status(HttpStatus.OK).body("Tokens refreshed successfully");
-        } else {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unable to refresh token");
         }
     }
