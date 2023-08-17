@@ -48,9 +48,8 @@ public class JwtUtil {
     }
 
     /**
-     * AccessToken 생성 메서드
-     *
-     * @param email
+     *  AccessToken 생성 메서드
+     * @param email,카카오는 고유id로 토큰 생성
      * @return
      */
     public String createAccessToken(String email) {
