@@ -21,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 
 @Slf4j(topic = "JWT 검증 및 인가")
 @RequiredArgsConstructor
@@ -34,49 +35,36 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     public RequestMappingHandlerMapping requestMappingHandlerMapping() {
         return new RequestMappingHandlerMapping();
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-
-        if(StringUtils.hasText(accessToken)){ // accessToken이 없을때
+        String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+        if (StringUtils.hasText(accessToken)) { // accessToken이 없을때
             try {
-                String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
-                String userEmail = null;
-
-                if (authService.isAccessTokenValid(accessToken)) {
-                    log.info("토큰 검증 확인 결과 : {} ", authService.isAccessTokenValid(accessToken));
-                    userEmail = getUserFromValidAccessToken(accessToken);
-                } else {
-                    userEmail = renewAccessTokenByRefreshToken(refreshToken, response);
+                if (!authService.isAccessTokenValid(accessToken)) {
+                    log.warn("AccessToken 토큰 검증 실패 -> 재발급 시도");
+                    renewAccessTokenByRefreshToken(refreshToken, response);
                 }
                 // 리프레시 토큰이 일주일 이상 된 경우, 새로운 리프레시 토큰을 발급하고 응답 헤더에 설정합니다.
-                authService.refreshTokenRegularly(refreshToken, userEmail, response);
-            }
-            catch (Exception e) {
+                authService.refreshTokenRegularly(refreshToken, accessToken, response);
+            } catch (AccessDeniedException e){
+                log.error(e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("토큰 인증에 실패하였습니다.");
+                return;
+            } catch (Exception e) {
                 log.error("필터 처리 중 오류 발생 : ", e);
-                sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다.");
             }
         }
-
-        // accessToken이 없을때
+        // accessToken 이 없을때
         filterChain.doFilter(request, response);
     }
 
-    private String getUserFromValidAccessToken(String accessToken) {
-        Claims info = jwtUtil.getUserInfoFromToken(accessToken);
-        setAuthentication(info.getSubject());
-        try {
-            setAuthentication(info.getSubject());
-            log.info("accessToken 의 유저 정보 : {}", info.getSubject());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return info.getSubject();
-    }
-
-    private String renewAccessTokenByRefreshToken (String refreshToken, HttpServletResponse response) throws Exception {
-        if (refreshToken == null) { // refreshToken +  accessToken 둘다 없을 경우
-            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "AccessToken 및 RefreshToken 모두 유효하지 않습니다. 다시 로그인 해주세요.");
+    private void renewAccessTokenByRefreshToken(String refreshToken, HttpServletResponse response) throws Exception {
+        if (refreshToken == null || !authService.isRefreshTokenValid(refreshToken)) { // refreshToken +  accessToken 둘다 없을 경우
+            log.error("AccessToken 및 RefreshToken 모두 유효하지 않습니다. 다시 로그인 해주세요.");
+            throw new AccessDeniedException("토큰 인증에 실패하였습니다.");
         }
         // refreshToken 이 존재하는 경우
         String newAccessToken = authService.refreshAccessToken(refreshToken);
@@ -84,16 +72,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         Claims info = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(newAccessToken));
         setAuthentication(info.getSubject());
-        log.info("newAccessToken 의 유저 정보 : {}", info.getSubject());
-        return info.getSubject();
-    }
-
-    // ErrorResponse ?
-    private void sendErrorResponse(HttpServletResponse response, int statusCode, String errorMessage) throws IOException {
-        response.setStatus(statusCode);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"error\": \"" + errorMessage + "\"}");
+        log.info("재발급 한 AccessToken 의 유저 정보 : {}", info.getSubject());
     }
 
     // 인증 처리
