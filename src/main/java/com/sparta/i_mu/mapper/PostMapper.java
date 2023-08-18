@@ -87,8 +87,9 @@ public class PostMapper {
                 .build();
     }
 
-    // 작성자가 작성한 게시글 조회
+    // 작성자가 작성한 게시글 조회 + 좋아요한 리스트 조회
     public PostListResponseDto mapToPostListResponseDto(Post post) {
+        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
@@ -99,6 +100,8 @@ public class PostMapper {
                 .postTitle(post.getPostTitle())
                 .createdAt(post.getCreatedAt())
                 .content(post.getContent())
+                .category(post.getCategory().getId())
+                .wishlistCount(wishlistCount)
                 .songs(songs)
                 .build();
     }

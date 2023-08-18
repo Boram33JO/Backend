@@ -11,18 +11,14 @@ import java.util.List;
 @Builder
 public class WishListResponseDto {
     private Long postId;
-
     private String postTitle;
-
     private LocalDateTime createdAt;
-
     private String content;
-
     private Long userId;
-
     private String nickname;
-
     private String userImage;
+    private Long category;
+    private Long wishlistCount;
 
     private List<SongResponseDto> songs;
 
