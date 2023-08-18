@@ -17,9 +17,9 @@ public class RedisUtil {
         redisTemplate.opsForValue().set(REFRESH_TOKEN_KEY + accessToken, refreshToken);
     }
 
-//    public String getRefreshToken(String accessToken) {
-//        return (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + accessToken);
-//    }
+    public String getRefreshToken(String accessToken) {
+        return (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + accessToken);
+    }
 
     public void removeRefreshToken(String accessToken) {
         redisTemplate.delete(REFRESH_TOKEN_KEY + accessToken);

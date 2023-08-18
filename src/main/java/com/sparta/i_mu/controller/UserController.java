@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +30,18 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api")
 public class UserController {
     private final UserService userService;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
 
+    //로그아웃
+    @PostMapping("/user/logout")
+    public ResponseResource<?> logout(@RequestHeader String accessToken){
+        return userService.logout(accessToken);
+    }
     @PostMapping("/user/signup")
     public ResponseEntity<MessageResponseDto> createUser(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
         return userService.createUser(signUpRequestDto);
