@@ -1,5 +1,6 @@
 package com.sparta.i_mu.service;
 
+import com.sparta.i_mu.config.RedisConfig;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,11 +53,9 @@ public class UserService {
 
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
-
+    private final RedisConfig redisConfig;
     private final AwsS3Util awsS3Util;
-
     private final PostMapper postMapper;
-
     private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
@@ -311,13 +311,30 @@ public class UserService {
     }
 
 
-//    //로그아웃
-//    @Transactional
-//    public void logout() {
-//        //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
-//        KafkaProperties.Admin admin = (KafkaProperties.Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        if (redisTemplate.opsForValue().get("JWT_TOKEN:" + admin.getLoginId()) != null) {
-//            redisTemplate.delete("JWT_TOKEN:" + admin.getLoginId()); //Token 삭제
-//        }
-//    }
+      //로그아웃
+    @Transactional
+    public ResponseResource<?> logout(String accessToken){
+        // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
+        String refreshToken = redisUtil.getRefreshToken(accessToken);
+        log.info("현재 accessToken 을 키 값으로 가지고 있는 refreshToken : {}" , refreshToken);
+        if (!jwtUtil.validateAccessToken(jwtUtil.substringToken(accessToken))){
+            throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
+        }
+
+        // 해당 Access Token 유효시간을 가지고 와서 BlackList에 저장하기
+        long expiration = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken)).getExpiration().getTime(); //엑세스 토큰 만료시간  가져오기
+        long expirationInMinutes = TimeUnit.MINUTES.convert(expiration, TimeUnit.MILLISECONDS);
+        log.info("expiration in Minutes : {}", expirationInMinutes);
+        // redis에 블랙리스트로 저장
+        redisConfig.redisTemplate().opsForValue().set(accessToken, "logout", expirationInMinutes);
+
+        log.info("Input refreshToken : {}", refreshToken);
+        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken) );
+        // Redis에서 해당 refreshToken 삭제
+        if (redisUtil.getRefreshToken(accessToken).equals(refreshToken)){
+            redisUtil.removeRefreshToken(accessToken);
+        }
+
+        return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
+    }
 }
