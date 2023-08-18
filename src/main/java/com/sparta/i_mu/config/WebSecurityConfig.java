@@ -74,6 +74,7 @@ public class WebSecurityConfig {
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
                             .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
                             .requestMatchers(GET,"/api/posts/**").permitAll()
+                            .requestMatchers(POST,"/api/posts/map/**").permitAll()
                             .requestMatchers(GET, "/api/search").permitAll()
                             .requestMatchers(GET, "/api/profile/**").permitAll()
                             .requestMatchers(POST, "/api/profile/check").permitAll()

@@ -32,6 +32,14 @@ public class SearchService {
 
 
     // 메인 페이지 - 검색
+
+    /**
+     * type 별 검색
+     * @param keyword
+     * @param type
+     * @param pageable
+     * @return
+     */
     public Page<?> getSearch(String keyword, String type, Pageable pageable) {
         switch (type) {
             case "all" -> {
@@ -73,7 +81,11 @@ public class SearchService {
         }
     }
 
-
+    /**
+     * 전체 검색
+     * @param keyword
+     * @return
+     */
     public SearchResponseDto getSearchAll(String keyword) {
         //Post 결과
 

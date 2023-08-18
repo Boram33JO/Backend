@@ -25,10 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
@@ -94,7 +91,10 @@ public class PostService {
                 ).map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시물 등록이 완료되었습니다.");
+        //postId 반환 값 넣어주기
+        Map<String, Long> response = new HashMap<>();
+        response.put("postId", post.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
@@ -144,6 +144,7 @@ public class PostService {
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.OK).body("게시물이 업데이트 되었습니다.");
     }
+
 
     /**
      * 게시글 삭제
