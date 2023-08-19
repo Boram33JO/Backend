@@ -11,6 +11,7 @@ import com.sparta.i_mu.dto.TokenPair;
 import com.sparta.i_mu.dto.responseDto.UserInfoResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class KakaoService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final RedisUtil redisUtil;
     private final RestTemplate restTemplate;
     private final KakaoConfig kakaoConfig;
 
@@ -231,10 +233,11 @@ public class KakaoService {
 
     // kakao로그인 유저는 userId 토큰 생성
     private TokenPair createToken(User kakaoUser) {
-        String createToken = jwtUtil.createAccessToken(kakaoUser.getNickname());
+        String accessToken = jwtUtil.createAccessToken(kakaoUser.getNickname());
         String refreshToken = jwtUtil.createRefreshToken(kakaoUser.getNickname());
 
-        return new TokenPair(createToken,refreshToken);
+        redisUtil.storeRefreshToken(accessToken,refreshToken);
+        return new TokenPair(accessToken,refreshToken);
     }
 
 }
