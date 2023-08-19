@@ -4,6 +4,7 @@ import com.sparta.i_mu.dto.responseDto.FollowPopularResponseDto;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.FollowService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Follow", description = "Follow API")
 public class FollowController {
 
     private final FollowService followService;

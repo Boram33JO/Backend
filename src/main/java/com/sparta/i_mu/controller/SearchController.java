@@ -3,6 +3,7 @@ package com.sparta.i_mu.controller;
 import com.sparta.i_mu.dto.responseDto.SearchResponseDto;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.service.SearchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
+@Tag(name = "Search", description = "Search API")
 public class SearchController {
 
     private final SearchService searchService;

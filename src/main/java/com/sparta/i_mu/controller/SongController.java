@@ -3,6 +3,7 @@ package com.sparta.i_mu.controller;
 import com.sparta.i_mu.dto.responseDto.SongByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.service.SongService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Song", description = "Song API")
 @RequestMapping("/api/song")
 public class SongController {
 
