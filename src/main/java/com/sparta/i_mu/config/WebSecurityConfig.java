@@ -78,7 +78,7 @@ public class WebSecurityConfig {
                             .requestMatchers(GET, "/api/search").permitAll()
                             .requestMatchers(GET, "/api/profile/**").permitAll()
                             .requestMatchers(POST, "/api/profile/check").permitAll()
-                            .requestMatchers(GET, "/api/mostSong").permitAll()
+                            .requestMatchers(GET, "/api/song/**").permitAll()
                             .requestMatchers(GET, "/api/popular").permitAll()
                             .anyRequest().authenticated();
                 })
