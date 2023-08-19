@@ -13,6 +13,7 @@ import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.KakaoService;
 import com.sparta.i_mu.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -32,6 +33,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api")
+@Tag(name = "User", description = "User API")
 public class UserController {
     private final UserService userService;
     private final KakaoService kakaoService;

@@ -7,6 +7,7 @@ import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.PostService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.OptionalLong;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
+@Tag(name = "Post", description = "Post API")
 public class PostController {
     private final PostService postService;
 
