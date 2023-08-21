@@ -53,7 +53,6 @@ public class UserService {
 
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
-    private final RedisConfig redisConfig;
     private final AwsS3Util awsS3Util;
     private final PostMapper postMapper;
     private final WishListMapper wishListMapper;
@@ -321,12 +320,10 @@ public class UserService {
             throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
         }
 
-        // 해당 Access Token 유효시간을 가지고 와서 BlackList에 저장하기
+        // 해당 Access Token 유효시간을 가지고 와서 BlackList 에 저장하기
         long expiration = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken)).getExpiration().getTime(); //엑세스 토큰 만료시간  가져오기
         long expirationInMinutes = TimeUnit.MINUTES.convert(expiration, TimeUnit.MILLISECONDS);
         log.info("expiration in Minutes : {}", expirationInMinutes);
-        // redis에 블랙리스트로 저장
-        redisConfig.redisTemplate().opsForValue().set(accessToken, "logout", expirationInMinutes);
 
         log.info("Input refreshToken : {}", refreshToken);
         log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken) );
@@ -334,7 +331,9 @@ public class UserService {
         if (redisUtil.getRefreshToken(accessToken).equals(refreshToken)){
             redisUtil.removeRefreshToken(accessToken);
         }
-
+        // redis에 블랙리스트로 저장
+        redisUtil.storeBlacklist(accessToken, expirationInMinutes);
+        log.info("저장된 만료시간 : {}", expirationInMinutes);
         return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
     }
 }
