@@ -85,7 +85,8 @@ public class WebSecurityConfig {
                             .requestMatchers(POST, "/api/profile/check").permitAll()
                             .requestMatchers(GET, "/api/song/**").permitAll()
                             .requestMatchers(GET, "/api/popular").permitAll()
-                            .requestMatchers(SWAGGER_WHITELIST).permitAll();
+                            .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                            .anyRequest().authenticated();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedHandler(accessDeniedHandler())
