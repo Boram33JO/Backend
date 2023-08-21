@@ -225,7 +225,11 @@ public class PostService {
     @Transactional
     //상세페이지 게시글 조회
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
-        Post post = findPost(postId);
+//        Post post = findPost(postId);
+
+        Post post = postRepository.findByIdAndDeletedFalseForUpdate(postId).orElseThrow(() ->
+                new NotFoundException("해당 아이디의 게시글를 찾을 수 없거나 이미 삭제된 게시글입니다."));
+
         // redis 추가 되면 전환
         postViewCountUpdate(post, req, res);
         return postMapper.mapToPostResponseDto(post, userDetails);
@@ -289,8 +293,8 @@ public class PostService {
         }
 
         if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
-//            post.viewCountUpdate();
-            postRepository.viewCountUpdate(post.getId());
+            post.viewCountUpdate();
+//            postRepository.viewCountUpdate(post.getId());
             String newCookieValue = "[" + post.getId() + "]";
             if (oldCookie != null) {
                 newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";

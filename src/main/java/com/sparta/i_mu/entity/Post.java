@@ -95,8 +95,8 @@ public class Post extends Timestamped{
     }
 
     // 조회수
-//    public void viewCountUpdate() {
-//        this.viewCount++;
-//    }
+    public void viewCountUpdate() {
+        this.viewCount++;
+    }
 
 }

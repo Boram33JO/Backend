@@ -51,6 +51,6 @@ public interface CustomPostRepository {
                                      Pageable pageable);
 
     // 조회수
-    void viewCountUpdate(Long postId);
+//    void viewCountUpdate(Long postId);
 
 }
