@@ -1,9 +1,14 @@
 package com.sparta.i_mu.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecuritySchemes;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
@@ -13,10 +18,22 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "P.PLE API 명세서",
                 description = "P.PLE 프로젝트에 사용되는 API 명세서",
-                version = "v1"
+                version = "v1",
+                contact = @Contact(name = "p.ple", url="https://frontend-three-dun.vercel.app/", email = "test@test.com")
         )
 )
+
+//2안
+//@SecuritySchemes({
+//        @io.swagger.v3.oas.annotations.security.SecurityScheme(name = "AccessToken",
+//                type = SecuritySchemeType.APIKEY,
+//                description = "AccessToken",
+//                in = SecuritySchemeIn.HEADER,
+//                paramName = "AccessToken"),
+//})
+
 @Configuration
+
 public class SwaggerConfig {
 
     private final String BEARER_TOKEN_PREFIX = "Bearer";

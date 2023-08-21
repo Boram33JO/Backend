@@ -7,6 +7,8 @@ import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import com.sparta.i_mu.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,12 +28,13 @@ import java.util.OptionalLong;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
-@Tag(name = "Post", description = "Post API")
+@Tag(name = "Post", description = "게시글 API Document")
 public class PostController {
     private final PostService postService;
 
     // 게시물 등록
     @PostMapping
+    @Operation(summary = "게시글 작성", description = "게시글 작성")
     public ResponseEntity<?> createPost(
             @RequestBody PostSaveRequestDto postRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -42,6 +45,8 @@ public class PostController {
 
     // 게시글 수정
     @PutMapping("/{postId}")
+    @Operation(summary = "게시글 수정", description = "게시글 수정")
+    @Parameter(name = "postId", description = "수정할 게시글의 ID ")
     public ResponseEntity<?> updatePost(
             @PathVariable Long postId,
             @RequestBody PostSaveRequestDto postRequestDto,
@@ -53,6 +58,8 @@ public class PostController {
 
     // 게시물 삭제
     @DeleteMapping("/{postId}")
+    @Operation(summary = "게시글 삭제", description = "게시글 삭제")
+    @Parameter(name = "postId", description = "삭제할 게시글의 ID ")
     public ResponseEntity<?> deletePost(
             @PathVariable Long postId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws AccessDeniedException {
@@ -63,12 +70,15 @@ public class PostController {
 
     // 메인페이지 - 카테고리 별 전체 게시글 조회
     @GetMapping
+    @Operation(summary = "카테고리 별 전체 게시글 조회", description = "카테고리 별 전체 게시글 조회")
     public List<PostByCategoryResponseDto> getAllPost(){
         return postService.getAllPost();
     }
 
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
+    @Operation(summary = "상세 게시글 조회", description = "상세 게시글 조회")
+    @Parameter(name = "postId", description = "조회할 게시글의 ID ")
     public PostResponseDto getDetailPost(
             @PathVariable Long postId,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -79,6 +89,7 @@ public class PostController {
 
     // 상세 리스트 페이지 - 내주변
     @GetMapping("/area")
+    @Operation(summary = "내 주변 게시물 리스트 조회", description = "내 주변 게시물 리스트 조회")
     public Page<PostResponseDto> getAllAreaPost(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @RequestParam int page,
@@ -90,6 +101,8 @@ public class PostController {
 
     // 서브 리스트 페이지 - 카테고리별
     @GetMapping("/category/{categoryId}")
+    @Operation(summary = "카테고리별 게시물 리스트 조회", description = "카테고리별 게시물 리스트 조회")
+    @Parameter(name = "categoryId", description = "조회할 카테고리의 ID ")
     public Page<PostResponseDto> getPostByCategory(
             @PathVariable Long categoryId,
             @RequestParam int page,
@@ -100,6 +113,7 @@ public class PostController {
     }
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
     @PostMapping("/map")
+    @Operation(summary = "위치 서비스에 따른 카테고리별 게시글 조회", description = "위치 서비스에 따른 카테고리별 게시글 조회")
     public Page<PostResponseDto> getMapPostByCategory(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @RequestParam(required = false) Optional<Long> categoryId,
@@ -112,6 +126,7 @@ public class PostController {
 
     // 전국 기준 좋아요 순 인기 게시글 조회
     @GetMapping("/wishlist")
+    @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
     public List<PostResponseDto> getPostByWishlist(){
         return postService.getPostByWishlist();
     }

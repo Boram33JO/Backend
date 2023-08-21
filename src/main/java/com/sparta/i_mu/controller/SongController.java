@@ -3,6 +3,8 @@ package com.sparta.i_mu.controller;
 import com.sparta.i_mu.dto.responseDto.SongByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.SongResponseDto;
 import com.sparta.i_mu.service.SongService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Song", description = "Song API")
+@Tag(name = "Song", description = "노래 API Document")
 @RequestMapping("/api/song")
 public class SongController {
 
@@ -23,11 +25,13 @@ public class SongController {
      * @return 해당 keyword에 맞는 아티스트의 노래
      */
     @GetMapping("/search")
+    @Operation(summary = "노래 검색", description = "노래 검색")
     public List<SongResponseDto> getSearch(@RequestParam String keyword){
         return songService.getSearch(keyword);
     }
 
     @GetMapping("/AllMostSong")
+    @Operation(summary = "가장 많이 포스팅된 노래 조회", description = "가장 많이 포스팅된 노래 조회")
     public List<SongResponseDto> getMostAllPostSong(){
         return songService.getMostAllPostSong();
     }
@@ -36,6 +40,7 @@ public class SongController {
      * @return
      */
     @GetMapping("/mostSong")
+    @Operation(summary = "카테고리별 가장 많이 포스팅된 노래 조회", description = "테고리별 가장 많이 포스팅된 노래 조회")
     public List<SongByCategoryResponseDto> getMostByCategoryPostSong(){
         return songService.getMostByCategoryPostSong();
     }

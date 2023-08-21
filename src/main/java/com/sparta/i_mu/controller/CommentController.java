@@ -29,18 +29,23 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/posts/{postId}/comments")
-    @Operation(summary = "Get member comments", description = "댓글 작성을위해 특정 회원 조회")
+    @Operation(summary = "댓글 작성", description = "게시글에 댓글 작성")
+    @Parameter(name = "postId", description = "작성할 댓글의 게시판 ID ")
     public ResponseResource<?> createComment(@PathVariable Long postId, @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.createComment(postId, requestDto, userDetails.getUser());
     }
 
 
     @PutMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 수정", description = "게시글에 작성한 댓글 수정")
+    @Parameter(name = "commentId", description = "수정할 댓글의 ID ")
     public ResponseResource<?> updateComment(@PathVariable Long commentId, @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.updateComment(commentId, requestDto, userDetails.getUser());
     }
 
     @DeleteMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 삭제", description = "게시글에 작성한 댓글 삭제")
+    @Parameter(name = "commentId", description = "삭제할 댓글의 ID ")
     public ResponseResource<?> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.deleteComment(commentId, userDetails.getUser().getId());
     }
