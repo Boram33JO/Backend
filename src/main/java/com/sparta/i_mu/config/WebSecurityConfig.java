@@ -42,9 +42,7 @@ public class WebSecurityConfig {
     private final RedisUtil redisUtil;
 
     private static final String[] SWAGGER_WHITELIST = {
-            "/api/**", "/graphiql", "/graphql",
-            "/swagger-ui/**", "/api-docs", "/swagger-ui-custom.html",
-            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html"
+            "/swagger-ui/**", "/api-docs/**", "/swagger-ui.html"
     };
 
     @Bean
