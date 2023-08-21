@@ -35,8 +35,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRep
     List<Post> findAllByUserIdAndDeletedFalse(Long userId);
 
     // 조회수 쿼리
-    @Modifying
-    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
-    void viewCountUpdate(Long postId);
+//    @Modifying
+//    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
+//    void viewCountUpdate(Long postId);
 
 }
