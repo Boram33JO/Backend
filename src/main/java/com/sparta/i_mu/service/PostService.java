@@ -289,7 +289,8 @@ public class PostService {
         }
 
         if (oldCookie == null || !oldCookie.getValue().contains("[" + post.getId() + "]")) {
-            post.viewCountUpdate();
+//            post.viewCountUpdate();
+            postRepository.viewCountUpdate(post.getId());
             String newCookieValue = "[" + post.getId() + "]";
             if (oldCookie != null) {
                 newCookieValue = oldCookie.getValue() + "_[" + post.getId() + "]";

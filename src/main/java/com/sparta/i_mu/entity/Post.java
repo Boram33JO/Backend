@@ -94,8 +94,9 @@ public class Post extends Timestamped{
         this.deleted = deletedPost;
     }
 
-    public void viewCountUpdate() {
-        this.viewCount++;
+    // 조회수
+//    public void viewCountUpdate() {
+//        this.viewCount++;
+//    }
 
-    }
 }
