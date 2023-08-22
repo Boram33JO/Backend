@@ -44,7 +44,8 @@ public class UserController {
     //로그아웃
     @PostMapping("/user/logout")
     @Operation(summary = "로그아웃", description = "로그아웃")
-    public ResponseResource<?> logout(@RequestHeader String accessToken){
+    public ResponseResource<?> logout(@RequestHeader("AccessToken") String accessToken){
+        log.info("로그아웃 메서드 진입");
         return userService.logout(accessToken);
     }
     @PostMapping("/user/signup")
