@@ -46,6 +46,7 @@ public class PostMapper {
                 .deletedAt(post.getDeleteAt())
                 .deleted(post.getDeleted())
                 .wishlistCount(wishlistCount)
+                .viewCount(post.getViewCount())
                 .songs(songs)
                 .location(post.getLocation())
                 .build();

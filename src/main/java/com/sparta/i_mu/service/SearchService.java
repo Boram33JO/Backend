@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class SearchService {
     public Page<?> getSearch(String keyword, String type, Pageable pageable) {
         switch (type) {
             case "all" -> {
-                return (Page<?>) getSearchAll(keyword);
+                return (Page<?>) getSearchAll(keyword,pageable);
             }
             case "title" -> {
                 Page<Post> posts = postRepository.findAllByPostTitleContainingAndDeletedFalse(keyword, pageable);
@@ -86,10 +87,10 @@ public class SearchService {
      * @param keyword
      * @return
      */
-    public SearchResponseDto getSearchAll(String keyword) {
+    public SearchResponseDto getSearchAll(String keyword, Pageable pageable) {
         //Post 결과
-
-        List<Post> postResults = postRepository.findAllByPostTitleContainingAndDeletedFalse(keyword, PageRequest.of(0, 4)).getContent();
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
+        List<Post> postResults = postRepository.findAllByPostTitleContainingAndDeletedFalse(keyword,pageable).getContent();
         List<PostResponseDto> postDtos = postResults.stream()
                 .map(postMapper::mapToPostResponseDto)
                 .toList();
@@ -97,18 +98,19 @@ public class SearchService {
         log.info("posts title 조회 : {}" , postResults.stream().findFirst());
         log.info("posts 결과 개수 조회 : {} ", postDtos.size());
         //User 결과
-        List<User> userResults = userRepository.findAllByNicknameContaining(keyword, PageRequest.of(0, 4)).getContent();
+        List<User> userResults = userRepository.findAllByNicknameContaining(keyword,unsortedPageable).getContent();
         List<UserInfoResponseDto> userDtos = userResults.stream()
                 .map(user -> UserInfoResponseDto.builder()
                         .userId(user.getId())
                         .nickname(user.getNickname())
                         .introduce(user.getIntroduce())
                         .build())
+                .sorted()
                 .toList();
         log.info("user nickname 조회 : {}" , userResults.stream().findFirst());
         log.info("user 결과 개수 조회 : {} ", userDtos.size());
         //Song 결과
-        List<Song> songResults = songRepository.findAllBySongTitleContaining(keyword, PageRequest.of(0, 4)).getContent();
+        List<Song> songResults = songRepository.findAllBySongTitleContaining(keyword,unsortedPageable).getContent();
         List<SongResponseDto> songDtos = songResults.stream()
                 .map(songMapper::entityToResponseDto)
                 .toList();
@@ -116,7 +118,7 @@ public class SearchService {
         log.info("song title 조회 : {}" , songResults.stream().findFirst());
         log.info("song 결과 개수 조회 : {} ", songDtos.size());
 
-        List<Post> locationResults = postRepository.findAllByLocationAddressContainingAndDeletedFalse(keyword, PageRequest.of(0, 4)).getContent();
+        List<Post> locationResults = postRepository.findAllByLocationAddressContainingAndDeletedFalse(keyword, pageable).getContent();
         List<PostResponseDto> loationDtos = locationResults.stream()
                 .map(postMapper::mapToPostResponseDto)
                 .toList();

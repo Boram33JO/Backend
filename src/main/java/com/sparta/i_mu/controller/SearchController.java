@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,13 +31,28 @@ public class SearchController {
     public ResponseEntity<ResponseResource<?>> getSearch(@RequestParam(value = "keyword") String keyword,
                                                          @RequestParam(value = "type") String type,
                                                          @RequestParam int page,
-                                                         @RequestParam int size){
-        Pageable pageable = PageRequest.of(page,size);
+                                                         @RequestParam int size,
+                                                         @RequestParam String sortBy){
+
+        Sort sort = getSortByParameter(sortBy,type);
+        Pageable pageable = PageRequest.of(page,size,sort);
         if("all".equals(type)){
-            SearchResponseDto result = searchService.getSearchAll(keyword);
+            SearchResponseDto result = searchService.getSearchAll(keyword,pageable);
             return ResponseEntity.status(HttpStatus.OK).body(ResponseResource.data(result, HttpStatus.OK, "전체 검색 결과입니다."));
         }
         Page<?> typeResult = searchService.getSearch(keyword,type,pageable);
         return ResponseEntity.ok(ResponseResource.data(typeResult,HttpStatus.OK, keyword + " 에 대한 검색 결과입니다. "));
+    }
+
+    private Sort getSortByParameter(String sortBy, String type) {
+        if ("songName".equals(type)||"nickname".equals(type)){
+            return Sort.unsorted();
+        }
+        return switch (sortBy) {
+            case "wishlist" -> Sort.by(Sort.Direction.DESC, "wishlistCount");
+            case "views" -> Sort.by(Sort.Direction.DESC, "viewCount");
+            case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
     }
 }
