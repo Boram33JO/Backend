@@ -44,6 +44,12 @@ public class SearchController {
         return ResponseEntity.ok(ResponseResource.data(typeResult,HttpStatus.OK, keyword + " 에 대한 검색 결과입니다. "));
     }
 
+    /**
+     * 정렬 기준 메서드
+     * @param sortBy
+     * @param type
+     * @return
+     */
     private Sort getSortByParameter(String sortBy, String type) {
         if ("songName".equals(type)||"nickname".equals(type)){
             return Sort.unsorted();

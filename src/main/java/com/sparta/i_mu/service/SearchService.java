@@ -43,9 +43,6 @@ public class SearchService {
      */
     public Page<?> getSearch(String keyword, String type, Pageable pageable) {
         switch (type) {
-            case "all" -> {
-                return (Page<?>) getSearchAll(keyword,pageable);
-            }
             case "title" -> {
                 Page<Post> posts = postRepository.findAllByPostTitleContainingAndDeletedFalse(keyword, pageable);
                 if(posts.isEmpty()) {
@@ -88,8 +85,9 @@ public class SearchService {
      * @return
      */
     public SearchResponseDto getSearchAll(String keyword, Pageable pageable) {
-        //Post 결과
+        // 노래, 유저는 정렬하지 않음.
         Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.unsorted());
+        //Post 결과
         List<Post> postResults = postRepository.findAllByPostTitleContainingAndDeletedFalse(keyword,pageable).getContent();
         List<PostResponseDto> postDtos = postResults.stream()
                 .map(postMapper::mapToPostResponseDto)
