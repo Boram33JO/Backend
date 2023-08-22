@@ -26,7 +26,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisConnectionFactory redisConnectionFactoryForDB1() {
+    public RedisConnectionFactory redisConnectionFactory1() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         config.setDatabase(1);
         return new LettuceConnectionFactory(config);
@@ -34,12 +34,12 @@ public class RedisConfig {
 
     /**
      * refreshToken
-     *
+     * 노래 검색과 관련한 cached
      * @return
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, String> redisTemplate() {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         // setKeySerializer, setValueSerializer 설정
         // redis-cli을 통해 직접 데이터를 조회 시 알아볼 수 없는 형태로 출력되는 것을 방지
@@ -48,21 +48,4 @@ public class RedisConfig {
 
         return redisTemplate;
     }
-
-    /**
-     * 노래 정보
-     * @return
-     */
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate1() {
-        // redisTemplate 를 받아와서 set, get, delete 를 사용
-        RedisTemplate<String, Object> redisTemplate1 = new RedisTemplate<>();
-
-        redisTemplate1.setKeySerializer(new StringRedisSerializer());
-        redisTemplate1.setValueSerializer(new StringRedisSerializer());
-        redisTemplate1.setConnectionFactory(redisConnectionFactoryForDB1());
-
-        return redisTemplate1;
-    }
-
 }

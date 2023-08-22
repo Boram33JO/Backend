@@ -18,6 +18,7 @@ import com.sparta.i_mu.global.util.AwsS3Util;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,7 @@ public class UserService {
     private final AwsS3Util awsS3Util;
     private final PostMapper postMapper;
     private final WishListMapper wishListMapper;
+    private final RedisConfig redisConfig;
 
     // 회원가입 서비스
     public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto) {
@@ -321,19 +323,21 @@ public class UserService {
         }
 
         // 해당 Access Token 유효시간을 가지고 와서 BlackList 에 저장하기
-        long expiration = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken)).getExpiration().getTime(); //엑세스 토큰 만료시간  가져오기
+        Claims claims = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken));
+        long expiration = claims.getExpiration().getTime(); //엑세스 토큰 만료시간  가져오기
+        String userInfo = claims.getSubject();
         long expirationInMinutes = TimeUnit.MINUTES.convert(expiration, TimeUnit.MILLISECONDS);
+
         log.info("expiration in Minutes : {}", expirationInMinutes);
 
+        redisConfig.redisTemplate().opsForValue().set(userInfo, accessToken , expirationInMinutes, TimeUnit.MINUTES);
+
         log.info("Input refreshToken : {}", refreshToken);
-        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken) );
+        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken));
         // Redis에서 해당 refreshToken 삭제
         if (redisUtil.getRefreshToken(accessToken).equals(refreshToken)){
             redisUtil.removeRefreshToken(accessToken);
         }
-        // redis에 블랙리스트로 저장
-        redisUtil.storeBlacklist(accessToken, expirationInMinutes);
-        log.info("저장된 만료시간 : {}", expirationInMinutes);
         return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
     }
 }
