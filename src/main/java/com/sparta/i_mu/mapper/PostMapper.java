@@ -26,7 +26,6 @@ public class PostMapper {
 
     //기본 Post responseDto -> 댓글/좋아요/팔로우를 제외한
     public PostResponseDto mapToPostResponseDto(Post post) {
-        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong())) // SongResponseDto로의 매핑 로직이 필요합니다
@@ -45,7 +44,7 @@ public class PostMapper {
                 .modifiedAt(post.getModifiedAt())
                 .deletedAt(post.getDeleteAt())
                 .deleted(post.getDeleted())
-                .wishlistCount(wishlistCount)
+                .wishlistCount(post.getWishlistCount())
                 .viewCount(post.getViewCount())
                 .songs(songs)
                 .location(post.getLocation())
@@ -56,8 +55,6 @@ public class PostMapper {
     public PostResponseDto mapToPostResponseDto(Post post, Optional<UserDetailsImpl> userDetails) {
         boolean isWishlist = userDetails.isPresent() && wishlistRepository.existsByPostIdAndUserId(post.getId(), userDetails.get().getUser().getId());
         boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(post.getUser().getId(), userDetails.get().getUser().getId());
-
-        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
 
         List<CommentResponseDto> comments = commentRepository.findAllByPostIdAndDeletedFalse(post.getId())
                 .stream()
@@ -81,7 +78,7 @@ public class PostMapper {
                 .modifiedAt(post.getModifiedAt())
                 .wishlist(isWishlist)
                 .follow(isfollow)
-                .wishlistCount(wishlistCount)
+                .wishlistCount(post.getWishlistCount())
                 .comments(comments)
                 .songs(songs)
                 .location(post.getLocation())
@@ -90,7 +87,6 @@ public class PostMapper {
 
     // 작성자가 작성한 게시글 조회 + 좋아요한 리스트 조회
     public PostListResponseDto mapToPostListResponseDto(Post post) {
-        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
@@ -102,7 +98,7 @@ public class PostMapper {
                 .createdAt(post.getCreatedAt())
                 .content(post.getContent())
                 .category(post.getCategory().getId())
-                .wishlistCount(wishlistCount)
+                .wishlistCount(post.getWishlistCount())
                 .songs(songs)
                 .build();
     }
