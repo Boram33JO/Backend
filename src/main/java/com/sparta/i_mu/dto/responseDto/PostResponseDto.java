@@ -27,7 +27,7 @@ public class PostResponseDto {
     private Boolean deleted;
     private Boolean wishlist;
     private Boolean follow;
-    private Long wishlistCount;
+    private int wishlistCount;
     private List<CommentResponseDto> comments;
     private List<SongResponseDto> songs;
     private Location location;

@@ -42,6 +42,9 @@ public class Post extends Timestamped{
     @Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
     private int viewCount;
 
+    @Column(name = "wishlist_count", columnDefinition = "integer default 0", nullable = false)
+    private int wishlistCount;
+
     @OneToOne
     @JoinColumn(name = "location_id")
     private Location location;
@@ -96,6 +99,13 @@ public class Post extends Timestamped{
 
     public void viewCountUpdate() {
         this.viewCount++;
+    }
 
+    public void downWishlistCount() {
+        this.wishlistCount--;
+    }
+
+    public void upWishlistCount() {
+        this.wishlistCount++;
     }
 }
