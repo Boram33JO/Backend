@@ -5,13 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
     private static final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
     private static final String SEARCH_SONG_KEY = "SEARCH_SONG_";
-    public final RedisTemplate<String, String> redisTemplate;
+    private static final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
+    private final RedisTemplate<String, String> redisTemplate;
 
     //refreshToken 관련 메서드
     public void storeRefreshToken(String accessToken, String refreshToken) {
@@ -39,4 +42,11 @@ public class RedisUtil {
         redisTemplate.delete(SEARCH_SONG_KEY + keyword);
     }
 
+
+    public void storeSearchKeyword(String keyword) {
+        redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD_, keyword , 1);
+    }
+    public Set<String> getSearchKeyword() {
+       return redisTemplate.opsForZSet().reverseRange("SEARCH_KEYWORD_", 0,9);
+    }
 }

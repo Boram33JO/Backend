@@ -1,5 +1,6 @@
 package com.sparta.i_mu.controller;
 
+import com.sparta.i_mu.dto.responseDto.SearchMainResponseDto;
 import com.sparta.i_mu.dto.responseDto.SearchResponseDto;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.service.SearchService;
@@ -27,6 +28,12 @@ public class SearchController {
     // 메인 페이지 - 검색
 
     @GetMapping("/search")
+    @Operation(summary = "메인 페이지 검색", description ="검색 창 아래 뜨는 정보")
+    public SearchMainResponseDto getSearchMain(){
+        return searchService.getSearchMain();
+    }
+
+    @GetMapping("/search/box")
     @Operation(summary = "메인 페이지 검색", description = "메인 페이지 검색")
     public ResponseEntity<ResponseResource<?>> getSearch(@RequestParam(value = "keyword") String keyword,
                                                          @RequestParam(value = "type") String type,
