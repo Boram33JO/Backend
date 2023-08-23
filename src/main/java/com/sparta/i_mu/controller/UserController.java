@@ -21,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,29 +85,35 @@ public class UserController {
     @GetMapping("/profile/{userId}/follow")
     @Operation(summary = "팔로우 조회", description = "팔로우 조회")
     @Parameter(name = "userId", description = "팔로우 조회할 유저의 ID ")
-    public GetFollowResponseDto getUserFollow(@PathVariable Long userId) {
-        return userService.getUserFollow(userId);
+    public GetFollowResponseDto getUserFollow(@PathVariable Long userId,
+                                              Pageable pageable) {
+        return userService.getUserFollow(userId, pageable);
     }
 
     @GetMapping("/profile/{userId}/posts")
     @Operation(summary = "작성글 조회", description = "작성글 조회")
     @Parameter(name = "userId", description = "작성글 조회할 유저의 ID ")
-    public GetPostResponseDto getUserPosts(@PathVariable Long userId) {
-        return userService.getUserPosts(userId);
+    public GetPostResponseDto getUserPosts(@PathVariable Long userId,
+                                           Pageable pageable) {
+        return userService.getUserPosts(userId, pageable);
     }
 
     @GetMapping("/profile/{userId}/comments")
     @Operation(summary = "댓글 조회", description = "댓글 조회")
     @Parameter(name = "userId", description = "댓글 조회할 유저의 ID ")
-    public List<CommentListResponseDto> getUserComments(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.getUserComments(userId, Optional.ofNullable(userDetails));
+    public Page<CommentListResponseDto> getUserComments(@PathVariable Long userId,
+                                                        @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        Pageable pageable) {
+        return userService.getUserComments(userId, Optional.ofNullable(userDetails), pageable);
     }
 
     @GetMapping("/profile/{userId}/wishlist")
     @Operation(summary = "좋아요 조회", description = "좋아요 조회")
     @Parameter(name = "userId", description = "좋아요 조회할 유저의 ID ")
-    public List<WishListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
+    public Page<WishListResponseDto> getUserWishlist(@PathVariable Long userId,
+                                                     @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                     Pageable pageable) {
+        return userService.getUserWishlist(userId, Optional.ofNullable(userDetails), pageable);
     }
 
     @PostMapping("/profile/check")

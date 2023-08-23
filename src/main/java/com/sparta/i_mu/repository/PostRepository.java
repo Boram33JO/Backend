@@ -46,4 +46,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRep
     @Query("SELECT p FROM Post p WHERE p.id = :postId")
     Optional<Post> findByIdAndDeletedFalseForUpdate(Long postId);
 
+    // 내가 쓴 포스팅 조회
+    Page<Post> findAllByUserIdAndDeletedFalse(Long userId, Pageable pageable);
+
 }
