@@ -33,7 +33,6 @@ import org.springframework.context.annotation.Configuration;
 //})
 
 @Configuration
-
 public class SwaggerConfig {
 
     private final String BEARER_TOKEN_PREFIX = "Bearer";
