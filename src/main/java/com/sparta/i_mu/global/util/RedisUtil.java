@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class RedisUtil {
     public void storeSearchKeyword(String keyword) {
         redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD_, keyword , 1);
     }
-//    public Long getSearchKeyword() {
-//       return redisTemplate.opsForZSet().rank("SEARCH_KEYWORD_", keyword);
-//    }
+    public Set<String> getSearchKeyword() {
+       return redisTemplate.opsForZSet().reverseRange("SEARCH_KEYWORD_", 0,9);
+    }
 }
