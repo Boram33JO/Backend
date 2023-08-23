@@ -20,7 +20,6 @@ public class SpotifyUtil {
     private final String CLIENT_SECRET;
     private final SpotifyApi spotifyApi;
     private String accessToken;
-    private String refreshToken;
     private Instant tokenExpiryTime;
 
     @Autowired

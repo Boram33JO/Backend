@@ -26,7 +26,7 @@ public class Post extends Timestamped{
     @Column(nullable = false)
     private String postTitle;
 
-    @Column
+    @Column(length = 500)
     private String content;
 
     @ManyToOne
