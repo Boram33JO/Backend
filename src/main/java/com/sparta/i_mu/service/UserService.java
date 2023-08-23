@@ -4,18 +4,15 @@ import com.sparta.i_mu.config.RedisConfig;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
-import com.sparta.i_mu.dto.responseDto.MessageResponseDto;
-import com.sparta.i_mu.entity.User;
-import com.sparta.i_mu.global.util.JwtUtil;
-import com.sparta.i_mu.global.util.RedisUtil;
-import com.sparta.i_mu.mapper.WishListMapper;
-import com.sparta.i_mu.repository.UserRepository;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.AwsS3Util;
+import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.mapper.PostMapper;
+import com.sparta.i_mu.mapper.WishListMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
@@ -23,6 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -233,11 +232,11 @@ public class UserService {
         return followResponseDto;
     }
 
-    public GetPostResponseDto getUserPosts(Long userId) {
+    public GetPostResponseDto getUserPosts(Long userId, Pageable pageable) {
         User user = findUser(userId);
         String nickname = user.getNickname();
 
-        List<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId);
+        Page<PostListResponseDto> postResponseDtoList = getPostListResponseDtoList(userId, pageable);
 
         GetPostResponseDto postResponseDto = new GetPostResponseDto(nickname, postResponseDtoList);
 
@@ -283,6 +282,18 @@ public class UserService {
 
         return postResponseDtoList;
     }
+
+    private Page<PostListResponseDto> getPostListResponseDtoList(Long userId, Pageable pageable) {
+//        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> postList = postRepository.findAllByUserIdAndDeletedFalse(userId, pageable);
+
+        Page<PostListResponseDto> postResponseDtoList = postList.map(postMapper::mapToPostListResponseDto);
+
+        return postResponseDtoList;
+    }
+
+
 
     // 좋아요 한 리스트 조회 -> deleted false ✅
     private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {

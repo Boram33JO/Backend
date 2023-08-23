@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,8 +91,9 @@ public class UserController {
     @GetMapping("/profile/{userId}/posts")
     @Operation(summary = "작성글 조회", description = "작성글 조회")
     @Parameter(name = "userId", description = "작성글 조회할 유저의 ID ")
-    public GetPostResponseDto getUserPosts(@PathVariable Long userId) {
-        return userService.getUserPosts(userId);
+    public GetPostResponseDto getUserPosts(@PathVariable Long userId,
+                                           Pageable pageable) {
+        return userService.getUserPosts(userId, pageable);
     }
 
     @GetMapping("/profile/{userId}/comments")
