@@ -15,10 +15,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +36,13 @@ public class CommentController {
     @Parameter(name = "postId", description = "작성할 댓글의 게시판 ID ")
     public ResponseResource<?> createComment(@PathVariable Long postId, @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.createComment(postId, requestDto, userDetails.getUser());
+    }
+
+    @GetMapping("/posts/{postId}/comments")
+    @Operation(summary = "댓글 조회", description = "게시글에 댓글 작성")
+    @Parameter(name = "postId", description = "조회 댓글의 게시판 ID ")
+    public Page<CommentResponseDto> getComment(@PathVariable Long postId, Pageable pageable) {
+        return commentService.getComment(postId, pageable);
     }
 
 
