@@ -8,14 +8,17 @@ import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.repository.CommentRepository;
 import com.sparta.i_mu.repository.PostRepository;
+import com.sparta.i_mu.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,13 @@ public class CommentService {
         commentRepository.save(comment);
 
         return ResponseResource.message("댓글 등록 성공", HttpStatus.OK);
+    }
+
+    public Page<CommentResponseDto> getComment(Long postId, Pageable pageable) {
+
+        Page<CommentResponseDto> comments = commentRepository.findAllByPostIdAndDeletedFalse(postId, pageable).map(CommentResponseDto::new);
+
+        return comments;
     }
 
     @Transactional
