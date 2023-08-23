@@ -85,7 +85,7 @@ public class WebSecurityConfig {
                             .requestMatchers(POST, "/api/profile/check").permitAll()
                             .requestMatchers(GET, "/api/song/**").permitAll()
                             .requestMatchers(GET, "/api/popular").permitAll()
-                            .requestMatchers(POST, "/api/send-mail/**").permitAll();
+                            .requestMatchers(POST, "/api/send-mail/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })

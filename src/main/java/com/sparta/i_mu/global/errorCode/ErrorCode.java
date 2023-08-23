@@ -15,7 +15,8 @@ public enum ErrorCode {
     FILE_INVALID(400_7,HttpStatus.BAD_REQUEST, "유효한 파일이 아닙니다."),
     FILE_DECODE_FAIL(400_8,HttpStatus.BAD_REQUEST, "파일 이름 디코딩에 실패했습니다."),
     URL_INVALID(400_9, HttpStatus.BAD_REQUEST, "잘못된 URL 형식입니다."),
-    EXTRACT_INVALID(400_10, HttpStatus.BAD_REQUEST, "확장자를 추출할 수 없습니다.");
+    EXTRACT_INVALID(400_10, HttpStatus.BAD_REQUEST, "확장자를 추출할 수 없습니다."),
+    BLACKLISTED(400_11, HttpStatus.UNAUTHORIZED, "블랙리스트에 있는 토큰입니다.");
 
 
     private final int errorCode;
