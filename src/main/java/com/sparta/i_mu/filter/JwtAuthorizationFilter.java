@@ -41,12 +41,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
         String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-        String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+
         if (StringUtils.hasText(accessToken)) { // accessToken이 없을때
             try {
                 // 블랙리스트 확인
-                if (redisUtil.isBlacklisted(accessToken).equals(accessToken)) {
+                if (!redisUtil.isBlacklisted(accessToken).equals(accessToken)) {
                     ResponseResource.error(ErrorCode.BLACKLISTED.getMessage(), ErrorCode.BLACKLISTED.getStatus());
                     return;
                 }
@@ -57,10 +58,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
                 String userNickname = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
-                log.info("info.Subject nickname :{}", userNickname);
+                log.info("현재 유저 :{}", userNickname);
                 setAuthentication(userNickname);
                 //7일간격으로 refreshToken을 자동으로 재발급
-                authService.refreshTokenRegularly(refreshToken, accessToken, response);
+                authService.refreshTokenRegularly(accessToken, response);
                 log.info("현재 유저 :{}", userNickname);
 
             } catch (Exception e) {

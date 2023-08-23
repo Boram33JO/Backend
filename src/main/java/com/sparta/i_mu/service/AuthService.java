@@ -73,15 +73,14 @@ public class AuthService {
 
     /**
      * refreshToken을 일주일 주기로 재 업로드 하는 코드
-     * @param refreshToken
      * @param accessToken
      * @param response
      */
-    public void refreshTokenRegularly(String refreshToken, String accessToken, HttpServletResponse response) {
-        log.info("일주일 간격으로 refreshToken 갱신메서드 현재 refreshToken : {}", refreshToken);
-        Claims refreshTokenClaims = jwtUtil.getUserInfoFromToken(refreshToken);
-        String nickname = refreshTokenClaims.getSubject();
-        Date issuedAt = refreshTokenClaims.getIssuedAt();
+    public void refreshTokenRegularly(String accessToken, HttpServletResponse response) {
+        log.info("일주일 간격으로 refreshToken 갱신");
+        Claims userInfo = jwtUtil.getUserInfoFromToken(accessToken);
+        String nickname = userInfo.getSubject();
+        Date issuedAt = userInfo.getIssuedAt();
         Date date = new Date();
         long daysSinceLastRefresh = (date.getTime() - issuedAt.getTime()) / (1000 * 60 * 60 * 24);
 //        long minuteSinceLastRefresh = (date.getTime() - issuedAt.getTime()) / (1000*60);
