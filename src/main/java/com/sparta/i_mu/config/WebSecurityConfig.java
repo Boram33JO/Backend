@@ -81,7 +81,8 @@ public class WebSecurityConfig {
                             .requestMatchers(GET, "/api/mostSong").permitAll()
                             .requestMatchers(GET, "/api/popular").permitAll()
                             .requestMatchers(GET, "/swagger-ui/**").permitAll()
-                            .requestMatchers(GET, "/swagger-ui/index.html").permitAll();
+                            .requestMatchers(GET, "/swagger-ui/index.html").permitAll()
+                            .requestMatchers(POST, "/api/send-mail/**").permitAll();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedHandler(accessDeniedHandler())
