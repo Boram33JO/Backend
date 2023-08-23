@@ -56,10 +56,10 @@ public class PostMapper {
         boolean isWishlist = userDetails.isPresent() && wishlistRepository.existsByPostIdAndUserId(post.getId(), userDetails.get().getUser().getId());
         boolean isfollow = userDetails.isPresent() && followReporitory.existsByFollowUserIdAndFollowedUserId(post.getUser().getId(), userDetails.get().getUser().getId());
 
-        List<CommentResponseDto> comments = commentRepository.findAllByPostIdAndDeletedFalse(post.getId())
-                .stream()
-                .map(CommentResponseDto::new)
-                .toList();
+//        List<CommentResponseDto> comments = commentRepository.findAllByPostIdAndDeletedFalse(post.getId())
+//                .stream()
+//                .map(CommentResponseDto::new)
+//                .toList();
 
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
@@ -79,7 +79,6 @@ public class PostMapper {
                 .wishlist(isWishlist)
                 .follow(isfollow)
                 .wishlistCount(post.getWishlistCount())
-                .comments(comments)
                 .songs(songs)
                 .location(post.getLocation())
                 .build();

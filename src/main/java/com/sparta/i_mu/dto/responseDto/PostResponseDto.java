@@ -1,8 +1,6 @@
 package com.sparta.i_mu.dto.responseDto;
 
-import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Location;
-import com.sparta.i_mu.entity.Song;
 import lombok.*;
 
 import java.time.LocalDateTime;
