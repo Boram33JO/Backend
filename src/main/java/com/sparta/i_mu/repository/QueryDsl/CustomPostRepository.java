@@ -50,5 +50,7 @@ public interface CustomPostRepository {
                                      @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS,
                                      Pageable pageable);
 
+    // 조회수
+//    void viewCountUpdate(Long postId);
 
 }

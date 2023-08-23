@@ -20,15 +20,18 @@ public class WishlistService {
     private final PostRepository postRepository;
 
     public ResponseResource<?> createWishlist(Long postId, User user) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시물이 존재하지 않습니다."));
+        Post post = postRepository.findByIdAndDeletedFalse(postId).orElseThrow(() -> new IllegalArgumentException("게시물이 존재하지 않습니다."));
 
         Optional<Wishlist> wishlist = wishlistRepository.findByPostIdAndUserId(post.getId(), user.getId());
 
         if (wishlist.isPresent()) {
+            post.downWishlistCount();
             wishlistRepository.delete(wishlist.get());
+            postRepository.save(post);
             return ResponseResource.message("좋아요 삭제", HttpStatus.OK);
         }
 
+        post.upWishlistCount();
         Wishlist saveWishlist = Wishlist.builder()
                 .post(post)
                 .user(user)

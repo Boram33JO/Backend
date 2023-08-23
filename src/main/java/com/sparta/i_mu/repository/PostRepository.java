@@ -2,9 +2,13 @@ package com.sparta.i_mu.repository;
 
 import com.sparta.i_mu.entity.Post;
 import com.sparta.i_mu.repository.QueryDsl.CustomPostRepository;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,5 +35,15 @@ public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRep
     Page<Post> findAllByLocationAddressContainingAndDeletedFalse(String keyword, Pageable pageable);
 
     List<Post> findAllByUserIdAndDeletedFalse(Long userId);
+
+    // 조회수 쿼리
+//    @Modifying
+//    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
+//    void viewCountUpdate(Long postId);
+
+    // 조회수 비관적락, 베타락
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Post p WHERE p.id = :postId")
+    Optional<Post> findByIdAndDeletedFalseForUpdate(Long postId);
 
 }

@@ -1,9 +1,9 @@
 package com.sparta.i_mu.filter;
 
 import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
 import com.sparta.i_mu.service.AuthService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +30,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthService authService;
+    private final RedisUtil redisUtil;
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping() {
@@ -44,32 +45,32 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             try {
                 if (!authService.isAccessTokenValid(accessToken)) {
                     log.warn("AccessToken 토큰 검증 실패 -> 재발급 시도");
-                    renewAccessTokenByRefreshToken(refreshToken, response);
+                    renewAccessTokenByRefreshToken(accessToken ,refreshToken, response);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json; charset=UTF-8");
+                    response.getWriter().write("토큰이 만료되었습니다. 재발급한 토근으로 재실행 해주세요.");
+                    return;
                 }
                 String userNickname = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
-                try {
-                    log.info("info.Subject nickname :{}", userNickname);
-                    setAuthentication(userNickname);
-                } catch (Exception e){
-                    log.error(e.getMessage());
-
-                }
+                log.info("info.Subject nickname :{}", userNickname);
+                setAuthentication(userNickname);
                 authService.refreshTokenRegularly(refreshToken, accessToken, response);
                 log.info("info.Subject nickname :{}", userNickname);
-            } catch (AccessDeniedException e){
+            } catch (AccessDeniedException e) {
                 log.error(e.getMessage());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json; charset=UTF-8");
                 response.getWriter().write("토큰 인증에 실패하였습니다.");
                 return;
             } catch (Exception e) {
-                log.error("필터 처리 중 오류 발생 : ", e);
+                log.error(e.getMessage());
             }
         }
         // accessToken 이 없을때
         filterChain.doFilter(request, response);
     }
 
-    private void renewAccessTokenByRefreshToken(String refreshToken, HttpServletResponse response) throws Exception {
+    private void renewAccessTokenByRefreshToken(String accessToken,String refreshToken, HttpServletResponse response) throws Exception {
         if (refreshToken == null || !authService.isRefreshTokenValid(refreshToken)) { // refreshToken +  accessToken 둘다 없을 경우
             log.error("AccessToken 및 RefreshToken 모두 유효하지 않습니다. 다시 로그인 해주세요.");
             throw new AccessDeniedException("토큰 인증에 실패하였습니다.");
@@ -77,6 +78,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // refreshToken 이 존재하는 경우
         String newAccessToken = authService.refreshAccessToken(refreshToken);
         response.setHeader(jwtUtil.HEADER_ACCESS_TOKEN, newAccessToken);
+
+        //Redis에서 기존의 accessToken-refreshToken 값 삭제 후 새롭게 저장
+        redisUtil.removeRefreshToken("Bearer " + accessToken);
+        log.info("삭제한 access : {} " ,"Bearer "+ accessToken);
+        log.info("삭제한 refresh : {} " ,"Bearer "+ refreshToken);
+        redisUtil.storeRefreshToken(newAccessToken, "Bearer "+ refreshToken);
+        log.info("발급한 access : {} " ,newAccessToken);
+        log.info("발급한 refresh : {} " ,"Bearer "+ refreshToken);
 
         String userNickname = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(newAccessToken)).getSubject();
         setAuthentication(userNickname);

@@ -47,8 +47,6 @@ public class AuthService {
     /**
      * 클라이언트가 명시적으로 재발급을 원할 때
      * accessToken - refreshToken 재발급
-     * @param accessToken
-     * @param refreshToken
      * @return
      */
     public TokenPair refreshTokenIfNeeded(HttpServletRequest request) {

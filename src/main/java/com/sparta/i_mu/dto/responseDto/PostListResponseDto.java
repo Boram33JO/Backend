@@ -14,7 +14,7 @@ public class PostListResponseDto {
     private String postTitle;
     private Long category;
     private LocalDateTime createdAt;
-    private Long wishlistCount;
+    private int wishlistCount;
     private String content;
     private List<SongResponseDto> songs;
 
