@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -99,8 +100,10 @@ public class UserController {
     @GetMapping("/profile/{userId}/comments")
     @Operation(summary = "댓글 조회", description = "댓글 조회")
     @Parameter(name = "userId", description = "댓글 조회할 유저의 ID ")
-    public List<CommentListResponseDto> getUserComments(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.getUserComments(userId, Optional.ofNullable(userDetails));
+    public Page<CommentListResponseDto> getUserComments(@PathVariable Long userId,
+                                                        @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        Pageable pageable) {
+        return userService.getUserComments(userId, Optional.ofNullable(userDetails), pageable);
     }
 
     @GetMapping("/profile/{userId}/wishlist")

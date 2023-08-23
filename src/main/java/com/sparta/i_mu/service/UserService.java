@@ -243,9 +243,9 @@ public class UserService {
         return postResponseDto;
     }
 
-    public List<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails) {
+    public Page<CommentListResponseDto> getUserComments(Long userId, Optional<UserDetailsImpl> userDetails, Pageable pageable) {
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId);
+            Page<CommentListResponseDto> commentResponseDtoList = getCommentListResponseDtoList(userId, pageable);
 
             return commentResponseDtoList;
         }
@@ -310,6 +310,12 @@ public class UserService {
         List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
                 .map(CommentListResponseDto::new)
                 .toList();
+        return commentResponseDtoList;
+    }
+
+    private Page<CommentListResponseDto> getCommentListResponseDtoList(Long userId, Pageable pageable) {
+        Page<Comment> commentList = commentRepository.findAllByUserIdAndDeletedFalse(userId, pageable);
+        Page<CommentListResponseDto> commentResponseDtoList = commentList.map(CommentListResponseDto::new);
         return commentResponseDtoList;
     }
 
