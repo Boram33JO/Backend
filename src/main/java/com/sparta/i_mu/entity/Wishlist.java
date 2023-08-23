@@ -13,7 +13,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Builder
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
-public class Wishlist {
+public class Wishlist extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

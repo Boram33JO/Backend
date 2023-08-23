@@ -252,9 +252,9 @@ public class UserService {
         return null;
     }
 
-    public List<WishListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails) {
+    public Page<WishListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails, Pageable pageable) {
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
-            List<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId);
+            Page<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId, pageable);
 
             return wishlistResponseDtoList;
         }
@@ -307,6 +307,13 @@ public class UserService {
         List<WishListResponseDto> wishListReponseList = wishList.stream()
                 .map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()))
                 .collect(Collectors.toList());
+
+        return wishListReponseList;
+    }
+
+    private Page<WishListResponseDto> getWishlistResponseDtoList(Long userId, Pageable pageable) {
+        Page<Wishlist> wishList = wishlistRepository.findAllByUserIdAndPostDeletedFalse(userId, pageable);
+        Page<WishListResponseDto> wishListReponseList = wishList.map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()));
 
         return wishListReponseList;
     }

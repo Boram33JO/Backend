@@ -110,8 +110,10 @@ public class UserController {
     @GetMapping("/profile/{userId}/wishlist")
     @Operation(summary = "좋아요 조회", description = "좋아요 조회")
     @Parameter(name = "userId", description = "좋아요 조회할 유저의 ID ")
-    public List<WishListResponseDto> getUserWishlist(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.getUserWishlist(userId, Optional.ofNullable(userDetails));
+    public Page<WishListResponseDto> getUserWishlist(@PathVariable Long userId,
+                                                     @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                     Pageable pageable) {
+        return userService.getUserWishlist(userId, Optional.ofNullable(userDetails), pageable);
     }
 
     @PostMapping("/profile/check")

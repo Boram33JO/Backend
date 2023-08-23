@@ -19,7 +19,6 @@ public class WishListMapper {
     private final SongMapper songMapper;
 
     public WishListResponseDto mapToWishListResponseDto(Post post) {
-        Long wishlistCount = wishlistRepository.countByPostId(post.getId());
         List<SongResponseDto> songs = postSongLinkRepository.findAllByPostId(post.getId())
                 .stream()
                 .map(postSongLink -> songMapper.entityToResponseDto(postSongLink.getSong()))
@@ -28,7 +27,7 @@ public class WishListMapper {
         return WishListResponseDto.builder()
                 .postId(post.getId())
                 .category(post.getCategory().getId())
-                .wishlistCount(wishlistCount)
+                .wishlistCount(post.getWishlistCount())
                 .postTitle(post.getPostTitle())
                 .createdAt(post.getCreatedAt())
                 .content(post.getContent())
