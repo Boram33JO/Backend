@@ -1,14 +1,11 @@
 package com.sparta.i_mu.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.security.SecuritySchemes;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +17,8 @@ import org.springframework.context.annotation.Configuration;
                 description = "P.PLE 프로젝트에 사용되는 API 명세서",
                 version = "v1",
                 contact = @Contact(name = "p.ple", url="https://frontend-three-dun.vercel.app/", email = "test@test.com")
-        )
+        ),
+        servers = {@Server(url = "/", description = "api.pple.today")}
 )
 
 //2안
