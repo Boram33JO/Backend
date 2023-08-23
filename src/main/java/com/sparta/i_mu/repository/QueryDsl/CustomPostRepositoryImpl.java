@@ -188,4 +188,15 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         return new PageImpl<>(posts, pageable, total);
     }
 
+    // 조회수
+//    @Override
+//    public void viewCountUpdate(Long postId) {
+//        QPost qPost = QPost.post;
+//        jpaQueryFactory.update(qPost)
+//                .set(qPost.viewCount, qPost.viewCount.add(1))
+//                .where(qPost.id.eq(postId))
+//                .execute();
+//
+//    };
+
 }

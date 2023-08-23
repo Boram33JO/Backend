@@ -97,10 +97,12 @@ public class Post extends Timestamped{
         this.deleted = deletedPost;
     }
 
+    // 조회수
     public void viewCountUpdate() {
         this.viewCount++;
     }
-
+  
+    // 
     public void downWishlistCount() {
         this.wishlistCount--;
     }
@@ -108,4 +110,5 @@ public class Post extends Timestamped{
     public void upWishlistCount() {
         this.wishlistCount++;
     }
+
 }
