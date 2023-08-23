@@ -221,11 +221,11 @@ public class UserService {
         return ResponseResource.message("사용 가능한 닉네임입니다.", HttpStatus.OK);
     }
 
-    public GetFollowResponseDto getUserFollow(Long userId) {
+    public GetFollowResponseDto getUserFollow(Long userId, Pageable pageable) {
         User user = findUser(userId);
         String nickname = user.getNickname();
 
-        List<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId);
+        Page<FollowListResponseDto> followResponseDtoList = getFollowListResponseDtoList(userId, pageable);
 
         GetFollowResponseDto followResponseDto = new GetFollowResponseDto(nickname, followResponseDtoList);
 
@@ -270,6 +270,12 @@ public class UserService {
         List<FollowListResponseDto> followResponseDtoList = followList.stream()
                 .map(FollowListResponseDto::new)
                 .toList();
+        return followResponseDtoList;
+    }
+
+    private Page<FollowListResponseDto> getFollowListResponseDtoList(Long userId, Pageable pageable) {
+        Page<Follow> followList = followReporitory.findAllByFollowedUserId(userId, pageable);
+        Page<FollowListResponseDto> followResponseDtoList = followList.map(FollowListResponseDto::new);
         return followResponseDtoList;
     }
 

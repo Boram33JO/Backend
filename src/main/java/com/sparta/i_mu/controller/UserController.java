@@ -85,8 +85,9 @@ public class UserController {
     @GetMapping("/profile/{userId}/follow")
     @Operation(summary = "팔로우 조회", description = "팔로우 조회")
     @Parameter(name = "userId", description = "팔로우 조회할 유저의 ID ")
-    public GetFollowResponseDto getUserFollow(@PathVariable Long userId) {
-        return userService.getUserFollow(userId);
+    public GetFollowResponseDto getUserFollow(@PathVariable Long userId,
+                                              Pageable pageable) {
+        return userService.getUserFollow(userId, pageable);
     }
 
     @GetMapping("/profile/{userId}/posts")
