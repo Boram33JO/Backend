@@ -64,7 +64,7 @@ public class WebSecurityConfig {
     }
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter(){
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, authService, redisUtil);
+        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, redisUtil);
     }
 
     @Bean
@@ -77,6 +77,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
+                            .requestMatchers(POST,"/api/refresh/**").permitAll() // 액세스토큰 재발급 요청
                             .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(POST,"/api/posts/map/**").permitAll()

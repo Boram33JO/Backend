@@ -21,7 +21,6 @@ public class RedisUtil {
     //refreshToken 관련 메서드
     public void storeRefreshToken(String accessToken, String refreshToken) {
         redisTemplate.opsForValue().set(REFRESH_TOKEN_KEY + accessToken, refreshToken);
-        log.info("accessToken : {}, refreshToken :{}", accessToken,refreshToken);
     }
 
     public String getRefreshToken(String accessToken) {

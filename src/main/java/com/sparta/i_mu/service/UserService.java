@@ -330,14 +330,15 @@ public class UserService {
 
         log.info("expiration in Minutes : {}", expirationInMinutes);
 
-        redisConfig.redisTemplate().opsForValue().set(userInfo, accessToken , expirationInMinutes, TimeUnit.MINUTES);
-
-        log.info("Input refreshToken : {}", refreshToken);
-        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken));
         // Redis에서 해당 refreshToken 삭제
         if (redisUtil.getRefreshToken(accessToken).equals(refreshToken)){
             redisUtil.removeRefreshToken(accessToken);
         }
+        redisConfig.redisTemplate().opsForValue().set("BLACKLIST_KEY_" + userInfo, accessToken , expirationInMinutes, TimeUnit.MINUTES);
+
+        log.info("Input refreshToken : {}", refreshToken);
+        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken));
+
         return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
     }
 }
