@@ -45,14 +45,14 @@ public class JwtUtil {
 
     /**
      *
-     * @param nickname
+     * @param email
      * @return
      */
-    public String createAccessToken(String nickname) {
+    public String createAccessToken(String email) {
         Date date = new Date();
         return BEARER +
                 Jwts.builder()
-                        .setSubject(nickname) // 토큰(사용자) 식별자 값
+                        .setSubject(email) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
@@ -60,12 +60,12 @@ public class JwtUtil {
 
     }//                        .claim(AUTHORIZATION_KEY,role)
 
-    public String createRefreshToken(String nickname) {
+    public String createRefreshToken(String email) {
         Date date = new Date();
         return BEARER +
                 Jwts.builder()
                         .setIssuedAt(date) // 등록 날
-                        .setSubject(nickname) // 토큰(사용자) 식별자 값
+                        .setSubject(email) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키

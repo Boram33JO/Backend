@@ -179,8 +179,8 @@ public class UserService {
             // redis에서 refreshToken 삭제
             redisUtil.removeRefreshToken(jwtUtil.getAccessTokenFromRequest(request));
 
-            String accessToken = jwtUtil.createAccessToken(findUser.getNickname());
-            String refreshToken = jwtUtil.createRefreshToken(findUser.getNickname());
+            String accessToken = jwtUtil.createAccessToken(findUser.getEmail());
+            String refreshToken = jwtUtil.createRefreshToken(findUser.getEmail());
             jwtUtil.addTokenToHeader(accessToken, refreshToken, response);
             // redis에 새로 발급받은 refreshToken 저장
             redisUtil.storeRefreshToken(accessToken, refreshToken);

@@ -34,17 +34,17 @@ public class AuthService {
             throw new IllegalArgumentException(ErrorCode.REFRESH_TOKEN_INVALID.getMessage());
         }
 
-        String nickname = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
+        String email = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
         String refreshTokenRedis = redisUtil.getRefreshToken(accessToken);
 
         log.info("accessToken : {}", accessToken);
         log.info("refreshToken : {}", refreshToken);
-        log.info("nickname : {}", nickname);
+        log.info("email : {}", email);
         log.info("refreshTokenRedis : {}", refreshTokenRedis);
 
         if (refreshToken.equals(jwtUtil.substringToken(refreshTokenRedis))) {
             // refreshToken이 유효하다면 새로운 accessToken 발급
-            String newAccessToken = jwtUtil.createAccessToken(nickname);
+            String newAccessToken = jwtUtil.createAccessToken(email);
             log.info("newAccessToken : {}", newAccessToken);
             redisUtil.removeRefreshToken(accessToken);
             redisUtil.storeRefreshToken(newAccessToken, refreshTokenRedis);
@@ -63,7 +63,7 @@ public class AuthService {
 //    public void refreshTokenRegularly(String accessToken, HttpServletResponse response) {
 //        log.info("일주일 간격으로 refreshToken 갱신");
 //        Claims userInfo = jwtUtil.getUserInfoFromToken(accessToken);
-//        String nickname = userInfo.getSubject();
+//        String email = userInfo.getSubject();
 //        Date issuedAt = userInfo.getIssuedAt();
 //        Date date = new Date();
 //        accessToken = jwtUtil.BEARER + accessToken;
@@ -77,7 +77,7 @@ public class AuthService {
 //            // 이전 refreshToken 삭제
 //            redisUtil.removeRefreshToken(accessToken);
 //
-//            String newRefreshToken = jwtUtil.createRefreshToken(nickname);
+//            String newRefreshToken = jwtUtil.createRefreshToken(email);
 //            redisUtil.storeRefreshToken(accessToken, newRefreshToken); // Redis에 새 리프레시 토큰 저장
 //            response.setHeader(jwtUtil.HEADER_REFRESH_TOKEN, newRefreshToken); // 응답 헤더에 새 리프레시 토큰 설정
 //        }
