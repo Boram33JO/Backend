@@ -72,7 +72,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 setAuthentication(userEmail);
                 //7일간격으로 refreshToken을 자동으로 재발급
 //                authService.refreshTokenRegularly(accessToken, response);
-                handleRequest(userId);
+//                handleRequest(userId);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -85,9 +85,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     //마지막 request 요청 시간 저장
-    private void handleRequest(String userId) {
-        redisUtil.storeLastRequestTime(userId);
-    }
+//    private void handleRequest(String userId) {
+//        redisUtil.storeLastRequestTime(userId);
+//    }
 
 
     /**
