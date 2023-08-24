@@ -6,6 +6,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,12 +65,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String userEmail = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
+                Claims user = jwtUtil.getUserInfoFromToken(accessToken);
+                String userEmail = user.getSubject();
+                String userId = user.getId();
                 log.info("현재 유저 :{}", userEmail);
                 setAuthentication(userEmail);
                 //7일간격으로 refreshToken을 자동으로 재발급
 //                authService.refreshTokenRegularly(accessToken, response);
-                log.info("현재 유저 :{}", userEmail);
+                handleRequest(userId);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -80,6 +83,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         // accessToken 이 없을때
         filterChain.doFilter(request, response);
     }
+
+    //마지막 request 요청 시간 저장
+    private void handleRequest(String userId) {
+        redisUtil.storeLastRequestTime(userId);
+    }
+
 
     /**
      * filter단 에러문
