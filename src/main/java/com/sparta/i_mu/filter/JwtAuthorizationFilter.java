@@ -64,12 +64,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String userNickname = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
-                log.info("현재 유저 :{}", userNickname);
-                setAuthentication(userNickname);
+                String userEmail = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
+                log.info("현재 유저 :{}", userEmail);
+                setAuthentication(userEmail);
                 //7일간격으로 refreshToken을 자동으로 재발급
 //                authService.refreshTokenRegularly(accessToken, response);
-                log.info("현재 유저 :{}", userNickname);
+                log.info("현재 유저 :{}", userEmail);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -94,15 +94,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
     }
     // 인증 처리
-    private void setAuthentication(String nickname) {
+    private void setAuthentication(String email) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(nickname);
+        Authentication authentication = createAuthentication(email);
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
     //인증 객체 생성
-    private Authentication createAuthentication(String nickname) {
-        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(nickname);
+    private Authentication createAuthentication(String email) {
+        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
     }
 }

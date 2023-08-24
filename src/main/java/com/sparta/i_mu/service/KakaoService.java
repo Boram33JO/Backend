@@ -71,7 +71,7 @@ public class KakaoService {
     }
 
 
-    public String getAccessToken(String code) throws JsonProcessingException  {
+    public String getAccessToken(String code) throws JsonProcessingException {
         log.info("인가 code : {} ", code);
         // 1. "인가 코드"로 "액세스 토큰" 요청
         // 요펑 URL 만들기
@@ -127,7 +127,6 @@ public class KakaoService {
     }
 
 
-
     public KakaoUserInfo getKakaoUserInfo(String accessToken) throws JsonProcessingException {
         log.info("accessToken : {} ", accessToken);
         // 요청 URL 만들기
@@ -162,16 +161,12 @@ public class KakaoService {
         Long id = jsonNode.get("id").asLong();
 
         JsonNode kakaoAccountNode = jsonNode.get("kakao_account");
-
-        String email = null;
-        if (kakaoAccountNode != null && kakaoAccountNode.has("email")) {
-            email = jsonNode.get("kakao_account").get("email").asText(null);
-        }
+        String email = kakaoAccountNode.get("kakao_account").get("email").asText(); // email 필수동의 값
 
         JsonNode profileNode = jsonNode.get("kakao_account").get("profile");
         String nickname = profileNode.get("nickname").asText(); // 닉네임은 필수 동의값
         String userImage = null;
-        if(profileNode.has("profile_image_url")){
+        if (profileNode.has("profile_image_url")) {
             userImage = profileNode.get("profile_image_url").asText(null);
         }
 
@@ -213,7 +208,7 @@ public class KakaoService {
                 String nickname = kakaoUserInfo.getNickname();
 
                 int suffix = 1;
-                while(userRepository.findByNickname(nickname).isPresent()){
+                while (userRepository.findByNickname(nickname).isPresent()) {
                     nickname = kakaoUserInfo.getNickname() + "_" + suffix++;
                 }
                 kakaoUser = User.builder()
@@ -224,7 +219,7 @@ public class KakaoService {
                         .build();
             }
             userRepository.save(kakaoUser);
-            log.info("Kakao User정보 Id : {}",kakaoUser.getId());
+            log.info("Kakao User정보 Id : {}", kakaoUser.getId());
 
         }
         return kakaoUser;
@@ -233,11 +228,11 @@ public class KakaoService {
 
     // kakao로그인 유저는 userId 토큰 생성
     private TokenPair createToken(User kakaoUser) {
-        String accessToken = jwtUtil.createAccessToken(kakaoUser.getNickname());
-        String refreshToken = jwtUtil.createRefreshToken(kakaoUser.getNickname());
+        String accessToken = jwtUtil.createAccessToken(kakaoUser.getEmail());
+        String refreshToken = jwtUtil.createRefreshToken(kakaoUser.getEmail());
 
-        redisUtil.storeRefreshToken(accessToken,refreshToken);
-        return new TokenPair(accessToken,refreshToken);
+        redisUtil.storeRefreshToken(accessToken, refreshToken);
+        return new TokenPair(accessToken, refreshToken);
     }
 
 }
