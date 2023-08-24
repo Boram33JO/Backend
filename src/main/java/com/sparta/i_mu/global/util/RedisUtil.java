@@ -1,13 +1,19 @@
 package com.sparta.i_mu.global.util;
 
+import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+
 import java.util.Map;
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+
 
 @Slf4j
 @Component
@@ -74,4 +80,21 @@ public class RedisUtil {
     public String isBlacklisted(String accessToken) {
        return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
     }
+
+
+    //이메일 인증 관
+    public void setDataExpire(String key, String value, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
+    }
+    
+    public void removeData(String email) {
+        redisTemplate.delete(email);
+    }
+    
+    public String getData(String email) {
+        return (String) redisTemplate.opsForValue().get(email);
+    }
+    
 }

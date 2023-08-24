@@ -161,7 +161,7 @@ public class KakaoService {
         Long id = jsonNode.get("id").asLong();
 
         JsonNode kakaoAccountNode = jsonNode.get("kakao_account");
-        String email = kakaoAccountNode.get("kakao_account").get("email").asText(); // email 필수동의 값
+        String email = kakaoAccountNode.get("email").asText(); // email 필수동의 값
 
         JsonNode profileNode = jsonNode.get("kakao_account").get("profile");
         String nickname = profileNode.get("nickname").asText(); // 닉네임은 필수 동의값

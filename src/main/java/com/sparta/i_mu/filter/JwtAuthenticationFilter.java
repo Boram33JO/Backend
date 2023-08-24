@@ -54,6 +54,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         log.info("로그인 성공 및 JWT 생성");
+        String nickname = ((UserDetailsImpl) authResult.getPrincipal()).getNickname();
         String email = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
         String userImage = ((UserDetailsImpl) authResult.getPrincipal()).getUserImage();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUserId();
@@ -65,7 +66,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("refreshToken 발급 : {}",refreshToken);
         redisUtil.storeRefreshToken(accessToken,refreshToken); // refreshToken redis에 저장
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(email, userImage, introduce, userId);
+        LoginResponseDto loginResponseDto = new LoginResponseDto(nickname, email, userImage, introduce, userId);
         ResponseResource<?> responseDto = new ResponseResource<>(true,loginResponseDto,"로그인 성공", HttpStatus.OK.value(),"null");
 
 
