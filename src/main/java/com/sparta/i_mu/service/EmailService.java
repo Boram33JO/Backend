@@ -35,7 +35,7 @@ public class EmailService {
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
-        if (type.equals("password")) userService.SetTempPassword(emailMessage.getTo(), authNum);
+//        if (type.equals("password")) userService.SetTempPassword(emailMessage.getTo(), authNum);
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
@@ -78,12 +78,13 @@ public class EmailService {
 
     //인증코드 검증
     public Boolean verifyEmailCode(String email, String code) {
-        String codeFoundByEmail = redisUtil.getData(email);
-        System.out.println(codeFoundByEmail);
-        if (codeFoundByEmail == null) {
-            return false;
+        String storedCode = redisUtil.getData(email);
+
+        if (storedCode != null && storedCode.equals(code)) {
+            redisUtil.removeData(email);  // 코드가 일치하면 코드를 제거합니다.
+            return true;  // true를 반환합니다.
         }
-        redisUtil.removeData(email);
-        return codeFoundByEmail.equals(code);
+
+        return false;  // 코드가 일치하지 않거나 데이터가 없으면 false를 반환합니다.
     }
 }

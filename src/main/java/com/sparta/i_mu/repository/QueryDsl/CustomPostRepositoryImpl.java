@@ -1,16 +1,23 @@
 package com.sparta.i_mu.repository.QueryDsl;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.i_mu.entity.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class CustomPostRepositoryImpl implements CustomPostRepository {
 
@@ -29,7 +36,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         List<Post> posts = jpaQueryFactory.selectFrom(qPost)
                 .where(qPost.category.id.eq(category)
                         .and(qPost.deleted.eq(false)))
-                .orderBy(qPost.createdAt.desc())
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -51,7 +58,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 .selectFrom(qPost)
                 .where(MySQLFunctions.stDistanceSphere(qPost.location.longitude, qPost.location.latitude,  longitude, latitude).loe(DISTANCE_IN_METERS)
                         .and(qPost.deleted.eq(false)))
-                .orderBy(qPost.createdAt.desc())
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -65,6 +72,28 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
         return new PageImpl<>(posts, pageable, total);
     }
+
+    /**
+     * 동적 정렬문 -
+     * @param sort
+     * @return
+     */
+    private OrderSpecifier[] getOrderSpecifiers(Sort sort) { // 반환 타입을 변경
+        List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
+
+        sort.stream().forEach(order -> {
+            Order direction = order.isAscending() ? Order.ASC : Order.DESC; //정렬방향 결정
+            String prop = order.getProperty(); // 정렬 대상의 필드
+            log.info("prop : {}" , prop);
+            PathBuilder orderByExpression = new PathBuilder(Post.class, "post");
+            orderSpecifiers.add(new OrderSpecifier<>(direction, orderByExpression.get(prop)));
+            log.info("orderByExpression : {}" ,orderByExpression);
+            log.info("orderSpecifiers : {}" ,orderSpecifiers);
+        });
+
+        return orderSpecifiers.toArray(new OrderSpecifier[0]); // 리스트를 배열로 변환하여 반환
+    }
+
     /**
      * 메인 페이지 - 카테고리별 최신순으로 게시글 조회
      * @param category
@@ -82,7 +111,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     }
 
     /**
-     * 메인페이지 - 좋아요 순을 기준으로 인기 게시글 내림차순 조회 -> 조회수로 바뀔 부분
+     * 메인페이지 - 좋아요 순을 기준으로 인기 게시글 내림차순  & 조회수
      * @return
      */
     public List<Post> findAllByOrderByWishlistCountDesc() {
@@ -158,5 +187,16 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
         return new PageImpl<>(posts, pageable, total);
     }
+
+    // 조회수
+//    @Override
+//    public void viewCountUpdate(Long postId) {
+//        QPost qPost = QPost.post;
+//        jpaQueryFactory.update(qPost)
+//                .set(qPost.viewCount, qPost.viewCount.add(1))
+//                .where(qPost.id.eq(postId))
+//                .execute();
+//
+//    };
 
 }

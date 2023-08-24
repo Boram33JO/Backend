@@ -19,16 +19,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        log.info("확인 :{}", identifier);
-        User user;
-        if (identifier.contains("@")) {
-            user = userRepository.findByEmail(identifier).orElse(null);
-        } else {
-            user = userRepository.findByNickname(identifier)
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info("확인 :{}", email);
+        User user = userRepository.findByNickname(email)
                     .orElseThrow(()-> new UsernameNotFoundException("해당 유저를 찾을 수 없습니다."));
-        }
+
         return new UserDetailsImpl(user);
     }
-
 }

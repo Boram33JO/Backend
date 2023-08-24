@@ -26,13 +26,8 @@ public class JwtUtil {
 
     public final String HEADER_ACCESS_TOKEN = "AccessToken";
     public final String HEADER_REFRESH_TOKEN = "RefreshToken";
-
-    public static final String AUTHORIZATION_HEADER = "AUTHHEADER";
-
-    public static final String TYPE = "type";
-
     public static final String AUTHORIZATION_KEY = "auth";
-    private final String BEARER = "Bearer ";
+    public final String BEARER = "Bearer ";
     private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 1000L; // 1시간 / 1분
     private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주 / 10분
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -50,15 +45,14 @@ public class JwtUtil {
 
     /**
      *
-     * @param nickname
+     * @param email
      * @return
      */
-    public String createAccessToken(String nickname) {
+    public String createAccessToken(String email) {
         Date date = new Date();
-        log.info("createAccessToken");
         return BEARER +
                 Jwts.builder()
-                        .setSubject(nickname) // 토큰(사용자) 식별자 값
+                        .setSubject(email) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
@@ -66,13 +60,12 @@ public class JwtUtil {
 
     }//                        .claim(AUTHORIZATION_KEY,role)
 
-    public String createRefreshToken(String nickname) {
+    public String createRefreshToken(String email) {
         Date date = new Date();
-        log.info("createRefreshToken");
         return BEARER +
                 Jwts.builder()
                         .setIssuedAt(date) // 등록 날
-                        .setSubject(nickname) // 토큰(사용자) 식별자 값
+                        .setSubject(email) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘, 시크릿 키
@@ -154,7 +147,6 @@ public class JwtUtil {
     }
 
     public Claims getUserInfoFromToken(String token) {
-        log.info("user 의 정보 가져오는 메서드 실행");
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody(); //body부분의 claims를 가지고 올 수 잇음
     }
 }

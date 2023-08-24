@@ -1,9 +1,11 @@
 package com.sparta.i_mu.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
+import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.JwtUtil;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
-import com.sparta.i_mu.service.AuthService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +23,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 
 @Slf4j(topic = "JWT 검증 및 인가")
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-    private final AuthService authService;
+    private final RedisUtil redisUtil;
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping() {
@@ -38,61 +39,70 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        // 액세스 토큰 재발급 요청이 들어오면 doFilter 를 지나치게 한다.
+        if(request.getRequestURI().equals("/api/refresh")){
+            filterChain.doFilter(request,response);
+            return;
+        }
         String accessToken = jwtUtil.getAccessTokenFromRequest(request);
-        String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
         if (StringUtils.hasText(accessToken)) { // accessToken이 없을때
             try {
-                if (!authService.isAccessTokenValid(accessToken)) {
-                    log.warn("AccessToken 토큰 검증 실패 -> 재발급 시도");
-                    renewAccessTokenByRefreshToken(refreshToken, response);
+                log.info("블랙리스트 검증");
+                // 블랙리스트 확인
+                String blacklistedValue = redisUtil.isBlacklisted(accessToken);
+                if (blacklistedValue != null && blacklistedValue.equals(accessToken)) {
+                    log.warn("BLACK LIST에 존재하는 회원입니다.");
+                    sendErrorResponse(response, ErrorCode.BLACKLISTED);
+                    return;
                 }
-                String userNickname = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
-                try {
-                    log.info("info.Subject nickname :{}", userNickname);
-                    setAuthentication(userNickname);
-                } catch (Exception e){
-                    log.error(e.getMessage());
+                // 토큰 확인
+                log.info("토큰 검증");
+                if (!jwtUtil.validateAccessToken(accessToken)) {
+                    log.warn("AccessToken 토큰 검증 실패 -> RefreshToken 요청");
+                    sendErrorResponse(response, ErrorCode.TOKEN_INVALID);
+                    return;
+                }
 
-                }
-                authService.refreshTokenRegularly(refreshToken, accessToken, response);
-                log.info("info.Subject nickname :{}", userNickname);
-            } catch (AccessDeniedException e){
-                log.error(e.getMessage());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("토큰 인증에 실패하였습니다.");
-                return;
+                String userEmail = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
+                log.info("현재 유저 :{}", userEmail);
+                setAuthentication(userEmail);
+                //7일간격으로 refreshToken을 자동으로 재발급
+//                authService.refreshTokenRegularly(accessToken, response);
+                log.info("현재 유저 :{}", userEmail);
+
             } catch (Exception e) {
-                log.error("필터 처리 중 오류 발생 : ", e);
+                log.error(e.getMessage());
+                response.setContentType("application/json; charset=UTF-8");
+                response.getWriter().write(e.getMessage());
             }
         }
         // accessToken 이 없을때
         filterChain.doFilter(request, response);
     }
 
-    private void renewAccessTokenByRefreshToken(String refreshToken, HttpServletResponse response) throws Exception {
-        if (refreshToken == null || !authService.isRefreshTokenValid(refreshToken)) { // refreshToken +  accessToken 둘다 없을 경우
-            log.error("AccessToken 및 RefreshToken 모두 유효하지 않습니다. 다시 로그인 해주세요.");
-            throw new AccessDeniedException("토큰 인증에 실패하였습니다.");
-        }
-        // refreshToken 이 존재하는 경우
-        String newAccessToken = authService.refreshAccessToken(refreshToken);
-        response.setHeader(jwtUtil.HEADER_ACCESS_TOKEN, newAccessToken);
-
-        String userNickname = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(newAccessToken)).getSubject();
-        setAuthentication(userNickname);
-        log.info("재발급 한 AccessToken 의 유저 정보 : {}", userNickname);
+    /**
+     * filter단 에러문
+     * @param response
+     * @param errorCode
+     * @throws IOException
+     */
+    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+        ResponseResource<?> errorResponse = ResponseResource.error(errorCode.getMessage(), errorCode.getStatus());
+        response.setStatus(errorResponse.getStatusCode());
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
     }
-
     // 인증 처리
-    private void setAuthentication(String nickname) {
+    private void setAuthentication(String email) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = createAuthentication(nickname);
+        Authentication authentication = createAuthentication(email);
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
     }
     //인증 객체 생성
-    private Authentication createAuthentication(String nickname) {
-        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(nickname);
+    private Authentication createAuthentication(String email) {
+        UserDetails jwtUserDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
     }
 }

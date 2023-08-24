@@ -26,7 +26,7 @@ public class Post extends Timestamped{
     @Column(nullable = false)
     private String postTitle;
 
-    @Column
+    @Column(length = 500)
     private String content;
 
     @ManyToOne
@@ -41,6 +41,9 @@ public class Post extends Timestamped{
 
     @Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
     private int viewCount;
+
+    @Column(name = "wishlist_count", columnDefinition = "integer default 0", nullable = false)
+    private int wishlistCount;
 
     @OneToOne
     @JoinColumn(name = "location_id")
@@ -94,8 +97,18 @@ public class Post extends Timestamped{
         this.deleted = deletedPost;
     }
 
+    // 조회수
     public void viewCountUpdate() {
         this.viewCount++;
-
     }
+  
+    // 
+    public void downWishlistCount() {
+        this.wishlistCount--;
+    }
+
+    public void upWishlistCount() {
+        this.wishlistCount++;
+    }
+
 }

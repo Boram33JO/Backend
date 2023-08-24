@@ -18,7 +18,7 @@ public class WishListResponseDto {
     private String nickname;
     private String userImage;
     private Long category;
-    private Long wishlistCount;
+    private int wishlistCount;
 
     private List<SongResponseDto> songs;
 

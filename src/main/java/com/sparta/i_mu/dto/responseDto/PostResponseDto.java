@@ -1,8 +1,6 @@
 package com.sparta.i_mu.dto.responseDto;
 
-import com.sparta.i_mu.entity.Comment;
 import com.sparta.i_mu.entity.Location;
-import com.sparta.i_mu.entity.Song;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -27,7 +25,7 @@ public class PostResponseDto {
     private Boolean deleted;
     private Boolean wishlist;
     private Boolean follow;
-    private Long wishlistCount;
+    private int wishlistCount;
     private List<CommentResponseDto> comments;
     private List<SongResponseDto> songs;
     private Location location;

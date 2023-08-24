@@ -40,6 +40,11 @@ public class WebSecurityConfig {
     private final WebConfig webConfig;
     private final AuthService authService;
     private final RedisUtil redisUtil;
+
+    private static final String[] SWAGGER_WHITELIST = {
+            "/api/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/api/swagger/**"
+    };
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -59,7 +64,7 @@ public class WebSecurityConfig {
     }
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter(){
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, authService);
+        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, redisUtil);
     }
 
     @Bean
@@ -72,17 +77,18 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
+                            .requestMatchers(POST,"/api/refresh/**").permitAll() // 액세스토큰 재발급 요청
                             .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(POST,"/api/posts/map/**").permitAll()
                             .requestMatchers(GET, "/api/search").permitAll()
                             .requestMatchers(GET, "/api/profile/**").permitAll()
                             .requestMatchers(POST, "/api/profile/check").permitAll()
-                            .requestMatchers(GET, "/api/mostSong").permitAll()
+                            .requestMatchers(GET, "/api/song/**").permitAll()
                             .requestMatchers(GET, "/api/popular").permitAll()
-                            .requestMatchers(GET, "/swagger-ui/**").permitAll()
-                            .requestMatchers(GET, "/swagger-ui/index.html").permitAll()
-                            .requestMatchers(POST, "/api/send-mail/**").permitAll();
+                            .requestMatchers(POST, "/api/send-mail/**").permitAll()
+                            .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                            .anyRequest().authenticated();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedHandler(accessDeniedHandler())
@@ -109,32 +115,6 @@ public class WebSecurityConfig {
 
     private static void stateless(SessionManagementConfigurer<HttpSecurity> SessionManagementConfigurer) {
         SessionManagementConfigurer.sessionCreationPolicy(STATELESS);
-    }
-
-
-    //swagger
-    private static final String[] AUTH_WHITELIST = {
-            "/api/**", "/graphiql", "/graphql",
-            "/swagger-ui/**", "/api-docs", "/swagger-ui-custom.html",
-            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html"
-    };
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .authorizeHttpRequests(
-                        authorize -> authorize
-                                .shouldFilterAllDispatcherTypes(false)
-                                .requestMatchers(AUTH_WHITELIST)
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
-                )
-                .httpBasic().disable()
-                .formLogin().disable()
-                .cors().disable()
-                .csrf().disable()
-                .build();
     }
 
 }
