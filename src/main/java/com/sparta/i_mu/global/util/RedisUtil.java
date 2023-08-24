@@ -62,4 +62,21 @@ public class RedisUtil {
     public String isBlacklisted(String accessToken) {
        return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
     }
+
+
+    //이메일 인증 관
+    public void setDataExpire(String key, String value, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
+    }
+    
+    public void removeData(String email) {
+        redisTemplate.delete(email);
+    }
+    
+    public String getData(String email) {
+        return (String) redisTemplate.opsForValue().get(email);
+    }
+    
 }
