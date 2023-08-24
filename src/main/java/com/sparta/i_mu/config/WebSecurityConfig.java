@@ -38,7 +38,6 @@ public class WebSecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final ObjectMapper objectMapper;
     private final WebConfig webConfig;
-    private final AuthService authService;
     private final RedisUtil redisUtil;
 
     private static final String[] SWAGGER_WHITELIST = {
@@ -77,7 +76,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
                             .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
-                            .requestMatchers(POST,"/api/refresh/**").permitAll() // 액세스토큰 재발급 요청
+                            .requestMatchers(POST,"/api/refresh").permitAll() // 액세스토큰 재발급 요청
                             .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
                             .requestMatchers(GET,"/api/posts/**").permitAll()
                             .requestMatchers(POST,"/api/posts/map/**").permitAll()
