@@ -5,18 +5,18 @@ import com.sparta.i_mu.dto.responseDto.EmailResponseDto;
 import com.sparta.i_mu.entity.EmailMessage;
 import com.sparta.i_mu.service.EmailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/send-mail")
+@RequestMapping("/auth")
 @RestController
 @RequiredArgsConstructor
 public class EmailController {
 
     private final EmailService emailService;
-
-
 
     // 임시 비밀번호 발급
 //    @PostMapping("/password")

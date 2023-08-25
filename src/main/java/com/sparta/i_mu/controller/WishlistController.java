@@ -21,7 +21,7 @@ public class WishlistController {
 
     private final WishlistService wishlistService;
 
-    @PostMapping("/posts/{postId}/wishlist")
+    @PostMapping("/posts/{postId}/wishlists")
     @Operation(summary = "게시글 좋아요", description = "게시글 좋아요")
     @Parameter(name = "postId", description = "좋아요할 게시글의 ID ")
     public ResponseResource<?> createWishlist (@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {

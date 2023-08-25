@@ -5,7 +5,6 @@ import com.sparta.i_mu.filter.JwtAuthenticationFilter;
 import com.sparta.i_mu.filter.JwtAuthorizationFilter;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
-import com.sparta.i_mu.service.AuthService;
 import com.sparta.i_mu.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

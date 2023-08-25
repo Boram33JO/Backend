@@ -25,7 +25,6 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 @Tag(name = "Comment", description = "댓글 API Document")
 public class CommentController {
 
