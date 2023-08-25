@@ -40,12 +40,13 @@ public class RedisUtil {
     }
 
     // user의 로그인 시간 제한 - 액세스 토큰의 마지막 요청을 알기
-//    public void storeLastRequestTime(String userId) {
-//        redisTemplate.opsForHash().put(USER_LAST_REQUEST_TIME, userId, System.currentTimeMillis());
-//    }
-//    public Map<Object, Object> getLastRequestTime() {
-//        return redisTemplate.opsForHash().entries(USER_LAST_REQUEST_TIME);
-//    }
+    public void storeLastRequestTime(String userEmail, String accessToken) {
+        String combinedDate = System.currentTimeMillis() + "_" + accessToken;
+        redisTemplate.opsForHash().put(USER_LAST_REQUEST_TIME, userEmail, combinedDate);
+    }
+    public Map<Object, Object> getLastRequestTime() {
+        return redisTemplate.opsForHash().entries(USER_LAST_REQUEST_TIME);
+    }
 
 
 
