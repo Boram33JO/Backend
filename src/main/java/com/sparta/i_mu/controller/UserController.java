@@ -36,7 +36,6 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api")
 @Tag(name = "User", description = "유저 API Document")
 public class UserController {
     private final UserService userService;
@@ -75,7 +74,7 @@ public class UserController {
         return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId(),response, request);
     }
 
-    @PutMapping("/profile/{userId}/password")
+    @PutMapping("/user/{userId}/password")
     @Operation(summary = "비밀번호 수정", description = "비밀번호 수정")
     @Parameter(name = "userId", description = "비밀번호 수정할 유저의 ID ")
     public ResponseResource<?> updatePassword(@PathVariable Long userId, @RequestBody @Valid PasswordRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "Wishlist", description = "좋아요 API Document")
 public class WishlistController {

@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Song", description = "노래 API Document")
-@RequestMapping("/api/song")
+@RequestMapping("/song")
 public class SongController {
 
     private final SongService songService;

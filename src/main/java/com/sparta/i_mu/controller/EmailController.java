@@ -4,6 +4,8 @@ import com.sparta.i_mu.dto.requestDto.EmailPostDto;
 import com.sparta.i_mu.dto.responseDto.EmailResponseDto;
 import com.sparta.i_mu.entity.EmailMessage;
 import com.sparta.i_mu.service.EmailService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Email", description = "이메일 인증 API Document")
+
 public class EmailController {
 
     private final EmailService emailService;
@@ -45,7 +49,7 @@ public class EmailController {
         EmailResponseDto emailResponseDto = new EmailResponseDto();
         emailResponseDto.setCode(code);
 
-        return ResponseEntity.ok("인증메일을 발송했습니다");
+        return ResponseEntity.ok("인증 메일을 발송했습니다");
     }
 
     @PostMapping("/check")
