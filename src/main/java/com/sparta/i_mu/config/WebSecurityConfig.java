@@ -74,17 +74,16 @@ public class WebSecurityConfig {
                 .sessionManagement(WebSecurityConfig::stateless)
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
-                            .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
-                            .requestMatchers(POST,"/api/refresh").permitAll() // 액세스토큰 재발급 요청
-                            .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
-                            .requestMatchers(GET,"/api/posts/**").permitAll()
-                            .requestMatchers(POST,"/api/posts/map/**").permitAll()
-                            .requestMatchers(GET, "/api/search").permitAll()
-                            .requestMatchers(GET, "/api/profile/**").permitAll()
-                            .requestMatchers(POST, "/api/profile/check").permitAll()
-                            .requestMatchers(GET, "/api/song/**").permitAll()
-                            .requestMatchers(GET, "/api/popular").permitAll()
-                            .requestMatchers(POST, "/api/send-mail/**").permitAll()
+                            .requestMatchers("/user/login", "/user/signup").permitAll() //로그인, 회원가입
+                            .requestMatchers(GET,"/user/**").permitAll()
+                            .requestMatchers(POST,"/user/check").permitAll()
+                            .requestMatchers(POST,"/token/refresh").permitAll() // 액세스토큰 재발급 요청
+                            .requestMatchers(POST, "/oauth/**").permitAll() // 소셜 로그인
+                            .requestMatchers(GET,"/posts/**").permitAll() //게시글 조회,댓글조회
+                            .requestMatchers(POST,"/posts/map/**").permitAll()//지도 조회
+                            .requestMatchers(GET, "/song/**").permitAll()// 노래 검색 및 조회
+                            .requestMatchers(GET, "/top-follows").permitAll()
+                            .requestMatchers(POST, "/auth/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })
