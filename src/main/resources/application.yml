@@ -38,7 +38,7 @@ springdoc:
 
   # 해당 패턴에 매칭되는 controller만 swagger-ui에 노출한다.
   paths-to-match:
-    - /api/**
+    - /**
 
 
 
