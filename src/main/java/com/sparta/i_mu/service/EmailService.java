@@ -1,8 +1,5 @@
 package com.sparta.i_mu.service;
 
-import com.querydsl.core.support.Context;
-import com.sparta.i_mu.dto.requestDto.EmailMessageRequestDto;
-import com.sparta.i_mu.dto.requestDto.EmailPostDto;
 import com.sparta.i_mu.entity.EmailMessage;
 import com.sparta.i_mu.global.util.RedisUtil;
 import jakarta.mail.MessagingException;
@@ -12,12 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Random;
-
-import static com.querydsl.core.alias.Alias.$;
-import static org.springframework.security.core.context.SecurityContextHolder.setContext;
 
 @Slf4j
 @Service
