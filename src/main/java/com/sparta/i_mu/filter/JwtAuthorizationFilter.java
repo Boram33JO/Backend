@@ -6,6 +6,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -64,12 +66,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String userEmail = jwtUtil.getUserInfoFromToken(accessToken).getSubject();
+                Claims user = jwtUtil.getUserInfoFromToken(accessToken);
+                String userEmail = user.getSubject();
                 log.info("현재 유저 :{}", userEmail);
                 setAuthentication(userEmail);
                 //7일간격으로 refreshToken을 자동으로 재발급
 //                authService.refreshTokenRegularly(accessToken, response);
-                log.info("현재 유저 :{}", userEmail);
+//                handleRequest(userId);
 
             } catch (Exception e) {
                 log.error(e.getMessage());
@@ -81,6 +84,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    //마지막 request 요청 시간 저장
+//    private void handleRequest(String userId) {
+//        redisUtil.storeLastRequestTime(userId);
+//    }
+
+
     /**
      * filter단 에러문
      * @param response
@@ -88,10 +97,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
      * @throws IOException
      */
     private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
-        ResponseResource<?> errorResponse = ResponseResource.error(errorCode.getMessage(), errorCode.getStatus());
-        response.setStatus(errorResponse.getStatusCode());
+        log.info("error: {}", errorCode.getErrorCode());
+        log.info("errorCode : {}" , errorCode.getStatus());
+
+        ResponseResource<?> errorResponse2 = ResponseResource.error2(errorCode);
+
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setContentType("application/json; charset=UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse2));
     }
     // 인증 처리
     private void setAuthentication(String email) {

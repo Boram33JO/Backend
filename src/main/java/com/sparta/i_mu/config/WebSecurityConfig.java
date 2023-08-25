@@ -5,7 +5,6 @@ import com.sparta.i_mu.filter.JwtAuthenticationFilter;
 import com.sparta.i_mu.filter.JwtAuthorizationFilter;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.security.UserDetailsServiceImpl;
-import com.sparta.i_mu.service.AuthService;
 import com.sparta.i_mu.global.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +37,6 @@ public class WebSecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final ObjectMapper objectMapper;
     private final WebConfig webConfig;
-    private final AuthService authService;
     private final RedisUtil redisUtil;
 
     private static final String[] SWAGGER_WHITELIST = {
@@ -59,7 +57,7 @@ public class WebSecurityConfig {
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception{
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, objectMapper, redisUtil);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
-        filter.setFilterProcessesUrl("/api/user/login");
+        filter.setFilterProcessesUrl("/user/login");
         return filter;
     }
     @Bean
@@ -76,17 +74,16 @@ public class WebSecurityConfig {
                 .sessionManagement(WebSecurityConfig::stateless)
                 .authorizeHttpRequests(authorizationRequest -> {
                     authorizationRequest
-                            .requestMatchers("/api/user/login", "/api/user/signup").permitAll() //로그인, 회원가입
-                            .requestMatchers(POST,"/api/refresh/**").permitAll() // 액세스토큰 재발급 요청
-                            .requestMatchers(POST, "/api/oauth/**").permitAll() // 소셜 로그인
-                            .requestMatchers(GET,"/api/posts/**").permitAll()
-                            .requestMatchers(POST,"/api/posts/map/**").permitAll()
-                            .requestMatchers(GET, "/api/search").permitAll()
-                            .requestMatchers(GET, "/api/profile/**").permitAll()
-                            .requestMatchers(POST, "/api/profile/check").permitAll()
-                            .requestMatchers(GET, "/api/song/**").permitAll()
-                            .requestMatchers(GET, "/api/popular").permitAll()
-                            .requestMatchers(POST, "/api/send-mail/**").permitAll()
+                            .requestMatchers("/user/login", "/user/signup").permitAll() //로그인, 회원가입
+                            .requestMatchers(GET,"/user/**").permitAll()
+                            .requestMatchers(POST,"/user/check").permitAll()
+                            .requestMatchers(POST,"/token/refresh").permitAll() // 액세스토큰 재발급 요청
+                            .requestMatchers(POST, "/oauth/**").permitAll() // 소셜 로그인
+                            .requestMatchers(GET,"/posts/**").permitAll() //게시글 조회,댓글조회
+                            .requestMatchers(POST,"/posts/map/**").permitAll()//지도 조회
+                            .requestMatchers(GET, "/song/**").permitAll()// 노래 검색 및 조회
+                            .requestMatchers(GET, "/top-follows").permitAll()
+                            .requestMatchers(POST, "/auth/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })

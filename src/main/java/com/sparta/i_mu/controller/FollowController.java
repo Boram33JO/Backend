@@ -15,28 +15,22 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
 @Tag(name = "Follow", description = "팔로우 API Document")
 public class FollowController {
 
     private final FollowService followService;
 
-    @PostMapping("/profile/{userId}/follow")
+    @PostMapping("/user/{userId}/follows")
     @Operation(summary = "유저 팔로우", description = "유저 팔로우")
     @Parameter(name = "userId", description = "팔로우할 유저 ID ")
     public ResponseResource<?> createFollow (@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return followService.createFollow(userId, userDetails.getUser());
     }
 
-    @GetMapping("/popular")
+    @GetMapping("/top-follows")
     @Operation(summary = "인기 팔로워", description = "팔로우 많은 상위 4명 조회")
     public List<FollowPopularResponseDto> createFollow () {
         return followService.getFollowPopular();
     }
-
-//    @GetMapping("/profile/{userId}/follow")
-//    public List<FollowResponseDto> findFollow (@PathVariable Long userId) {
-//        return followService.findFollow(userId);
-//    }
 
 }

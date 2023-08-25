@@ -1,25 +1,30 @@
 package com.sparta.i_mu.global.util;
 
+import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
-    private static final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
-    private static final String SEARCH_SONG_KEY = "SEARCH_SONG_";
-    private static final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
+    private final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
+    private final String SEARCH_SONG_KEY = "SEARCH_SONG_";
+    private final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
+    public  final String USER_LAST_REQUEST_TIME = "LAST_REQUEST_TIME_";
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtUtil jwtUtil;
 
@@ -35,6 +40,17 @@ public class RedisUtil {
     public void removeRefreshToken(String accessToken) {
         redisTemplate.delete(REFRESH_TOKEN_KEY + accessToken);
     }
+
+    // user의 로그인 시간 제한 - 액세스 토큰의 마지막 요청을 알기
+    public void storeLastRequestTime(String userEmail, String accessToken) {
+        String combinedDate = System.currentTimeMillis() + "_" + accessToken;
+        redisTemplate.opsForHash().put(USER_LAST_REQUEST_TIME, userEmail, combinedDate);
+    }
+    public Map<Object, Object> getLastRequestTime() {
+        return redisTemplate.opsForHash().entries(USER_LAST_REQUEST_TIME);
+    }
+
+
 
     // 노래 검색 관련 메서드
 
@@ -67,7 +83,24 @@ public class RedisUtil {
     public String isBlacklisted(String accessToken) {
        return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
     }
+  
+  
+    //이메일 인증 관련
+    public void setDataExpire(String key, String value, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
+    }
+    
+    public void removeData(String email) {
+        redisTemplate.delete(email);
+    }
+    
+    public String getData(String email) {
+        return (String) redisTemplate.opsForValue().get(email);
+    }
 
+    //조회수 ip  관련
     public void storeUserIp(String userIp, Long postId) {
         String key = userIp + "_" + postId;
         redisTemplate.opsForValue().set(key, "true");
@@ -98,5 +131,5 @@ public class RedisUtil {
         return redisTemplate.opsForList().range(userIp, 0, -1);
     }
 
-
 }
+

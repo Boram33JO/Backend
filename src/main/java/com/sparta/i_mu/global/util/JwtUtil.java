@@ -64,7 +64,6 @@ public class JwtUtil {
         Date date = new Date();
         return BEARER +
                 Jwts.builder()
-                        .setIssuedAt(date) // 등록 날
                         .setSubject(email) // 토큰(사용자) 식별자 값
                         .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_EXPIRATION_TIME)) // 만료일
                         .setIssuedAt(date) // 발급일

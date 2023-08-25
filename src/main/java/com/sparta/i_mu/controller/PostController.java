@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/posts")
+@RequestMapping("/posts")
 @Tag(name = "Post", description = "게시글 API Document")
 public class PostController {
     private final PostService postService;
@@ -88,7 +88,7 @@ public class PostController {
     }
 
     // 상세 리스트 페이지 - 내주변
-    @GetMapping("/area")
+    @GetMapping("/nearby")
     @Operation(summary = "내 주변 게시물 리스트 조회", description = "내 주변 게시물 리스트 조회")
     public Page<PostResponseDto> getAllAreaPost(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
@@ -131,20 +131,14 @@ public class PostController {
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
             @RequestParam(required = false) Optional<Long> categoryId,
             @RequestParam int page,
-            @RequestParam int size,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String direction) {
-        Sort sort = Sort.unsorted();
-        if (sortBy != null && direction != null) {
-            sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        }
-        Pageable pageable = PageRequest.of(page, size, sort);
+            @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return postService.getMapPostByCategory(postSearchRequestDto, categoryId, pageable);
 
     }
 
     // 전국 기준 좋아요 순 인기 게시글 조회
-    @GetMapping("/wishlist")
+    @GetMapping("/top-wishlists")
     @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
     public List<PostResponseDto> getPostByWishlist() {
         return postService.getPostByWishlist();
