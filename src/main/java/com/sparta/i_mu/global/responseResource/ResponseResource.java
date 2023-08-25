@@ -36,20 +36,22 @@ public class ResponseResource<T> {
                 .build();
     }
 
-    // 1안
-//    public static <T> ResponseResource<T> error1(ErrorCodeResponse errorResponse){
-//                return ResponseResource.<T>builder()
-//                .success(false)
-//                .error1(errorResponse)
-//                .build();
-//    }
-
-    // 2안
-    public static <T> ResponseResource<T> error(String message, HttpStatus status){
+    public static <T> ResponseResource<T> error2(ErrorCode errorCode){
         return ResponseResource.<T>builder()
                 .success(false)
-                .statusCode(status.value())
+                .message(errorCode.getMessage())
+                .statusCode(errorCode.getErrorCode())//4001
+                .build();
+    }
+
+
+    // 2안
+    public static <T> ResponseResource<T> error(String message, int errorCode) {
+        return ResponseResource.<T>builder()
+                .success(false)
+                .statusCode(errorCode)
                 .error(message)
                 .build();
     }
+
 }
