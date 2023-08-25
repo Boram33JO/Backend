@@ -6,13 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
-
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 
 
 @Slf4j
@@ -81,9 +83,9 @@ public class RedisUtil {
     public String isBlacklisted(String accessToken) {
        return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
     }
-
-
-    //이메일 인증 관
+  
+  
+    //이메일 인증 관련
     public void setDataExpire(String key, String value, long duration) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(duration);
@@ -97,5 +99,37 @@ public class RedisUtil {
     public String getData(String email) {
         return (String) redisTemplate.opsForValue().get(email);
     }
-    
+
+    //조회수 ip  관련
+    public void storeUserIp(String userIp, Long postId) {
+        String key = userIp + "_" + postId;
+        redisTemplate.opsForValue().set(key, "true");
+        redisTemplate.expire(key, 30, TimeUnit.DAYS );
+    }
+
+    public Boolean isUserIp(String userIp, Long postId) {
+        String key = userIp + "_" + postId;
+        if (redisTemplate.hasKey(key)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setUserIpList(String userIp, Long postId) {
+        String value = String.valueOf(postId);
+
+        long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
+        long currentSecond = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+
+        log.info("조회수 남은 시간 : {}", todayEndSecond - currentSecond);
+
+        redisTemplate.opsForList().rightPushAll(userIp, value);
+        redisTemplate.expire(userIp, todayEndSecond - currentSecond, TimeUnit.SECONDS);
+    }
+
+    public List<String> getUserIpList(String userIp) {
+        return redisTemplate.opsForList().range(userIp, 0, -1);
+    }
+
 }
+

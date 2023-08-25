@@ -9,6 +9,7 @@ import com.sparta.i_mu.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,8 +20,9 @@ public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final PostRepository postRepository;
 
+    @Transactional
     public ResponseResource<?> createWishlist(Long postId, User user) {
-        Post post = postRepository.findByIdAndDeletedFalse(postId).orElseThrow(() -> new IllegalArgumentException("게시물이 존재하지 않습니다."));
+        Post post = postRepository.findByIdAndDeletedFalseForUpdate(postId).orElseThrow(() -> new IllegalArgumentException("게시물이 존재하지 않습니다."));
 
         Optional<Wishlist> wishlist = wishlistRepository.findByPostIdAndUserId(post.getId(), user.getId());
 

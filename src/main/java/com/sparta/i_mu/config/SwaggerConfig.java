@@ -6,10 +6,21 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -63,7 +74,23 @@ public class SwaggerConfig {
         // Swagger UI 접속 후, 딱 한 번만 accessToken을 입력해주면 모든 API에 토큰 인증 작업이 적용됩니다.
         return new OpenAPI()
                 .addSecurityItem(securityRequirement)
-                .components(components);
+                .components(components)
+                .path("/user/login", new PathItem()
+                        .post(new Operation()
+                                .tags(List.of(
+                                        "User"
+                                ))
+                                .summary("로그인")
+                                .description("로그인")
+                                .requestBody(new RequestBody().
+                                        content(new Content().addMediaType("application/json", new MediaType().schema(new ObjectSchema()
+                                                        .addProperty("email" ,new StringSchema())
+                                                        .addProperty("password", new StringSchema())))).required(true))
+                                .responses(new ApiResponses()
+                                        .addApiResponse("200", new ApiResponse().description("OK"))
+                                )
+                        )
+                );
     }
 
 }
