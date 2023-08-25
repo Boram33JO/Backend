@@ -16,7 +16,7 @@ public class ResponseResource<T> {
     private final String message;
     private final int statusCode;
     private final String error;
-//    private final ErrorCodeResponse error1;
+    private final ErrorCode errorCode;
 
     public static <T> ResponseResource<T> data(T data, HttpStatus status, String message){
         return ResponseResource.<T>builder()

@@ -67,8 +67,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         redisUtil.storeRefreshToken(accessToken,refreshToken); // refreshToken redis에 저장
 
         LoginResponseDto loginResponseDto = new LoginResponseDto(nickname, email, userImage, introduce, userId);
-        ResponseResource<?> responseDto = new ResponseResource<>(true,loginResponseDto,"로그인 성공", HttpStatus.OK.value(),"null");
-
+        ResponseResource<?> responseDto = ResponseResource.data(loginResponseDto,HttpStatus.OK,"로그인 성공");
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

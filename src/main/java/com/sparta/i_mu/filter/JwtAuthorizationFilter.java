@@ -104,7 +104,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setContentType("application/json; charset=UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse2));
     }
     // 인증 처리
     private void setAuthentication(String email) {
