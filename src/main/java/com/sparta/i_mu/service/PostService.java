@@ -6,6 +6,7 @@ import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
+import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -49,6 +50,7 @@ public class PostService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final PostMapper postMapper;
+    private final RedisUtil redisUtil;
     private static final Double DISTANCE_IN_METERS = 10000.0;
 
     //게시글 생성
@@ -225,13 +227,26 @@ public class PostService {
     @Transactional
     //상세페이지 게시글 조회
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
-//        Post post = findPost(postId);
-
         Post post = postRepository.findByIdAndDeletedFalseForUpdate(postId).orElseThrow(() ->
                 new NotFoundException("해당 아이디의 게시글를 찾을 수 없거나 이미 삭제된 게시글입니다."));
 
-        // redis 추가 되면 전환
-        postViewCountUpdate(post, req, res);
+        String userIp = getUserIp(req);
+        String value = String.valueOf(postId);
+//        1안. key 계속 생성
+//        if(!redisUtil.isUserIp(userIp, postId)) {
+//            post.viewCountUpdate();
+//            redisUtil.storeUserIp(userIp, postId);
+//        }
+
+//        2안. list 형태로 저장
+        if (!redisUtil.getUserIpList(userIp).contains(value)) {
+            redisUtil.setUserIpList(userIp, postId);
+            post.viewCountUpdate();
+        }
+
+//          쿠키형 조회수 메서드, redis 추가 되면 전환
+//        postViewCountUpdate(post, req, res);
+
         return postMapper.mapToPostResponseDto(post, userDetails);
     }
 
@@ -304,5 +319,26 @@ public class PostService {
             newCookie.setMaxAge((int) (todayEndSecond - currentSecond));
             res.addCookie(newCookie);
         }
+    }
+
+    // 접속자 IP 조회
+    private String getUserIp(HttpServletRequest req) {
+        String ip = req.getHeader("X-FORWARDED-FOR");
+        if (ip == null) {
+            ip = req.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null) {
+            ip = req.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null) {
+            ip = req.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null) {
+            ip = req.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null) {
+            ip = req.getRemoteAddr();
+        }
+        return ip;
     }
 }
