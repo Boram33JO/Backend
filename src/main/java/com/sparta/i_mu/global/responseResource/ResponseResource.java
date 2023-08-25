@@ -1,6 +1,7 @@
 package com.sparta.i_mu.global.responseResource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
