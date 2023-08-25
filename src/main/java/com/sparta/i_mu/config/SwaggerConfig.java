@@ -75,7 +75,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .addSecurityItem(securityRequirement)
                 .components(components)
-                .path("/api/user/login", new PathItem()
+                .path("/user/login", new PathItem()
                         .post(new Operation()
                                 .tags(List.of(
                                         "User"
