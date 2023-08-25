@@ -40,6 +40,9 @@ springdoc:
   paths-to-match:
     - /api/**
 
+# filter login 노출
+#  show-login-endpoint: true
+
 
 
 
