@@ -53,7 +53,7 @@ public class EmailController {
         return ResponseEntity.ok("인증 메일을 발송했습니다");
     }
 
-    @PostMapping("/check)")
+    @PostMapping("/check")
     @Operation(summary = "이메일 인증 번호 검증", description ="이메일 인증번호 검증")
     public ResponseEntity<?> Checkcode(@RequestBody EmailPostDto emailPostDto){
         Boolean check = emailService.verifyEmailCode(emailPostDto.getEmail(),emailPostDto.getCode());
