@@ -36,7 +36,6 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api")
 @Tag(name = "User", description = "유저 API Document")
 public class UserController {
     private final UserService userService;
@@ -56,14 +55,14 @@ public class UserController {
         return userService.createUser(signUpRequestDto);
     }
 
-    @GetMapping("/profile/{userId}")
+    @GetMapping("/user/{userId}")
     @Operation(summary = "프로필 조회", description = "상대방 프로필 조회는 팔로우, 작성글 조회, 본인 프로필 조회는 팔로우, 작성글, 좋아요, 댓글 조회")
     @Parameter(name = "userId", description = "조회할 유저의 ID ")
     public UserResponsDto getUser(@PathVariable Long userId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.getUser(userId, Optional.ofNullable(userDetails));
     }
 
-    @PutMapping("/profile/{userId}")
+    @PutMapping("/user/{userId}")
     @Operation(summary = "프로필 수정", description = "프로필 수정")
     @Parameter(name = "userId", description = "수정할 유저의 ID ")
     public ResponseResource<?> updateUser(@PathVariable Long userId,
@@ -75,14 +74,14 @@ public class UserController {
         return userService.updateUser(userId, multipartFile, requestDto, userDetails.getUser().getId(),response, request);
     }
 
-    @PutMapping("/profile/{userId}/password")
+    @PutMapping("/user/{userId}/password")
     @Operation(summary = "비밀번호 수정", description = "비밀번호 수정")
     @Parameter(name = "userId", description = "비밀번호 수정할 유저의 ID ")
     public ResponseResource<?> updatePassword(@PathVariable Long userId, @RequestBody @Valid PasswordRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.updatePassword(userId, requestDto, userDetails.getUser());
     }
 
-    @GetMapping("/profile/{userId}/follow")
+    @GetMapping("/user/{userId}/follow")
     @Operation(summary = "팔로우 조회", description = "팔로우 조회")
     @Parameter(name = "userId", description = "팔로우 조회할 유저의 ID ")
     public GetFollowResponseDto getUserFollow(@PathVariable Long userId,
@@ -90,7 +89,7 @@ public class UserController {
         return userService.getUserFollow(userId, pageable);
     }
 
-    @GetMapping("/profile/{userId}/posts")
+    @GetMapping("/user/{userId}/posts")
     @Operation(summary = "작성글 조회", description = "작성글 조회")
     @Parameter(name = "userId", description = "작성글 조회할 유저의 ID ")
     public GetPostResponseDto getUserPosts(@PathVariable Long userId,
@@ -98,7 +97,7 @@ public class UserController {
         return userService.getUserPosts(userId, pageable);
     }
 
-    @GetMapping("/profile/{userId}/comments")
+    @GetMapping("/user/{userId}/comments")
     @Operation(summary = "댓글 조회", description = "댓글 조회")
     @Parameter(name = "userId", description = "댓글 조회할 유저의 ID ")
     public Page<CommentListResponseDto> getUserComments(@PathVariable Long userId,
@@ -107,7 +106,7 @@ public class UserController {
         return userService.getUserComments(userId, Optional.ofNullable(userDetails), pageable);
     }
 
-    @GetMapping("/profile/{userId}/wishlist")
+    @GetMapping("/user/{userId}/wishlist")
     @Operation(summary = "좋아요 조회", description = "좋아요 조회")
     @Parameter(name = "userId", description = "좋아요 조회할 유저의 ID ")
     public Page<WishListResponseDto> getUserWishlist(@PathVariable Long userId,
@@ -116,7 +115,7 @@ public class UserController {
         return userService.getUserWishlist(userId, Optional.ofNullable(userDetails), pageable);
     }
 
-    @PostMapping("/profile/check")
+    @PostMapping("/user/check")
     @Operation(summary = "닉네임 중복 체크", description = "닉네임 중복 체크")
     public ResponseResource<?> checkNickname(@RequestBody @Valid NicknameRequestDto requestDto) {
         return userService.checkNickname(requestDto);
@@ -130,7 +129,7 @@ public class UserController {
         KakaoResult kakaoResult = kakaoService.kakaoLogin(code);
         HttpHeaders headers = new HttpHeaders();
         headers.add(jwtUtil.HEADER_ACCESS_TOKEN,  kakaoResult.getAccessToken()); // accessToken 토큰을 헤더에 추가
-        headers.add(jwtUtil.HEADER_REFRESH_TOKEN,  kakaoResult.getRefreshToken()); // accessToken 토큰을 헤더에 추가
+        headers.add(jwtUtil.HEADER_REFRESH_TOKEN,  kakaoResult.getRefreshToken()); // refreshToken 토큰을 헤더에 추가
         return new ResponseEntity<>(kakaoResult.getUserInfo(), headers, HttpStatus.OK);
     }
 }

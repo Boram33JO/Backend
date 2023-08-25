@@ -1,6 +1,7 @@
 package com.sparta.i_mu.global.responseResource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +17,7 @@ public class ResponseResource<T> {
     private final String message;
     private final int statusCode;
     private final String error;
-//    private final ErrorCodeResponse error1;
+    private final ErrorCode errorCode;
 
     public static <T> ResponseResource<T> data(T data, HttpStatus status, String message){
         return ResponseResource.<T>builder()
@@ -35,20 +36,22 @@ public class ResponseResource<T> {
                 .build();
     }
 
-    // 1안
-//    public static <T> ResponseResource<T> error1(ErrorCodeResponse errorResponse){
-//                return ResponseResource.<T>builder()
-//                .success(false)
-//                .error1(errorResponse)
-//                .build();
-//    }
-
-    // 2안
-    public static <T> ResponseResource<T> error(String message, HttpStatus status){
+    public static <T> ResponseResource<T> error2(ErrorCode errorCode){
         return ResponseResource.<T>builder()
                 .success(false)
-                .statusCode(status.value())
+                .message(errorCode.getMessage())
+                .statusCode(errorCode.getErrorCode())//4001
+                .build();
+    }
+
+
+    // 2안
+    public static <T> ResponseResource<T> error(String message, int errorCode) {
+        return ResponseResource.<T>builder()
+                .success(false)
+                .statusCode(errorCode)
                 .error(message)
                 .build();
     }
+
 }
