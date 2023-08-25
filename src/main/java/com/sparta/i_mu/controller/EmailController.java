@@ -37,6 +37,7 @@ public class EmailController {
 
     // 회원가입 이메일 인증 - 요청 시 body로 인증번호 반환하도록 작성하였음
     @PostMapping("/email")
+    @Operation(summary = "이메일 인증 번호 전송", description ="이메일 인증 번호 전송")
     public ResponseEntity<?> sendJoinMail(@RequestBody EmailPostDto emailPostDto) {
         System.out.println(emailPostDto.getEmail());
         EmailMessage emailMessage = EmailMessage.builder()
@@ -52,7 +53,8 @@ public class EmailController {
         return ResponseEntity.ok("인증 메일을 발송했습니다");
     }
 
-    @PostMapping("/check")
+    @PostMapping("/check)")
+    @Operation(summary = "이메일 인증 번호 검증", description ="이메일 인증번호 검증")
     public ResponseEntity<?> Checkcode(@RequestBody EmailPostDto emailPostDto){
         Boolean check = emailService.verifyEmailCode(emailPostDto.getEmail(),emailPostDto.getCode());
         return ResponseEntity.ok(check);
