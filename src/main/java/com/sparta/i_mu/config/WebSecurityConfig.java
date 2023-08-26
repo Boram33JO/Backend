@@ -76,6 +76,7 @@ public class WebSecurityConfig {
                     authorizationRequest
                             .requestMatchers("/user/login", "/user/signup").permitAll() //로그인, 회원가입
                             .requestMatchers(GET,"/user/**").permitAll()
+                            .requestMatchers(POST,"/user/logout").permitAll()
                             .requestMatchers(POST,"/user/check").permitAll()
                             .requestMatchers(POST,"/token/refresh").permitAll() // 액세스토큰 재발급 요청
                             .requestMatchers(POST, "/oauth/**").permitAll() // 소셜 로그인
