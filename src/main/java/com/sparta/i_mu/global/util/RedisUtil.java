@@ -1,5 +1,6 @@
 package com.sparta.i_mu.global.util;
 
+import com.sparta.i_mu.dto.responseDto.SmsResponseDto;
 import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,19 +8,22 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 
+import java.util.Map;
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisUtil {
-    private static final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
-    private final UserRepository userRepository;
-    private static final String SEARCH_SONG_KEY = "SEARCH_SONG_";
-    private static final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
+    private final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
+    private final String SEARCH_SONG_KEY = "SEARCH_SONG_";
+    private final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
+    public  final String USER_LAST_REQUEST_TIME = "LAST_REQUEST_TIME_";
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtUtil jwtUtil;
 
@@ -32,25 +36,20 @@ public class RedisUtil {
         return (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + accessToken);
     }
 
-    public String getData(String email) {
-        return (String) redisTemplate.opsForValue().get(email);
-    }
-
     public void removeRefreshToken(String accessToken) {
         redisTemplate.delete(REFRESH_TOKEN_KEY + accessToken);
     }
 
-    public void removeData(String email) {
-        redisTemplate.delete(email);
+    // user의 로그인 시간 제한 - 액세스 토큰의 마지막 요청을 알기
+    public void storeLastRequestTime(String userEmail, String accessToken) {
+        String combinedDate = System.currentTimeMillis() + "_" + accessToken;
+        redisTemplate.opsForHash().put(USER_LAST_REQUEST_TIME, userEmail, combinedDate);
+    }
+    public Map<Object, Object> getLastRequestTime() {
+        return redisTemplate.opsForHash().entries(USER_LAST_REQUEST_TIME);
     }
 
 
-    //유효 시간 동안만 저장
-    public void setDataExpire(String key, String value, long duration) {
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOperations.set(key, value, expireDuration);
-    }
 
     // 노래 검색 관련 메서드
 
@@ -83,4 +82,28 @@ public class RedisUtil {
     public String isBlacklisted(String accessToken) {
        return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
     }
+
+
+    //이메일 인증 관
+    public void setDataExpire(String key, String value, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
+    }
+
+    //sms
+    public void setDataExpir(String confirmNum, String getTo, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(confirmNum, getTo, expireDuration);
+    }
+
+    public void removeData(String email) {
+        redisTemplate.delete(email);
+    }
+
+    public String getData(String email) {
+        return (String) redisTemplate.opsForValue().get(email);
+    }
+
 }

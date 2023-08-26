@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+//sms
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -112,7 +113,7 @@ public class SmsService {
 
         String confirmNum = smsConfirmNum;
         String getTo = messageDto.getTo();
-        redisUtil.setDataExpir(getTo, confirmNum, 60 * 99999999L);
+        redisUtil.setDataExpir(getTo, confirmNum, 60 * 9999999L);
         return smsResponseDto;
     }
 

@@ -34,7 +34,7 @@ public class SmsController {
     }
 
     @PostMapping("/check")
-    @Operation(summary = "전화번호 문자 인증 번호 검증", description ="전화번호 문자 인증번호 검증")
+    @Operation(summary = "전화번호 문자 인증 번호검증", description ="전화번호 문자 인증번호 검증")
     public ResponseEntity<?> verifyPhoneCode(@RequestBody SmsDto smsDto){
         Boolean check = smsService.verifyPhoneCode(smsDto.getTo(),smsDto.getSmsConfirmNum());
         return ResponseEntity.ok(check);
