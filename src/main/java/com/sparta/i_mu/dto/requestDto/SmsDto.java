@@ -2,7 +2,7 @@ package com.sparta.i_mu.dto.requestDto;
 
 import lombok.Getter;
 
-//dto
+//sms
 @Getter
 public class SmsDto {
     private String smsConfirmNum;

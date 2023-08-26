@@ -18,7 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-
+//sms
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/sms")
