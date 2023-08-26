@@ -28,8 +28,10 @@ public class JwtUtil {
     public final String HEADER_REFRESH_TOKEN = "RefreshToken";
     public static final String AUTHORIZATION_KEY = "auth";
     public final String BEARER = "Bearer ";
+  
     private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 60 * 1000L; // 1시간 / 1분
     // private final Long ACCESS_TOKEN_EXPIRATION_TIME = 10 * 60 * 1000L; // 10분
+  
     private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주 / 10분
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
@@ -106,6 +108,17 @@ public class JwtUtil {
             return token.substring(7);
         }
         throw new NullPointerException("토큰의 값이 존재하지 않습니다.");
+    }
+
+    // 토큰의 만료만 확인하고 싶을때
+    public boolean isTokenExpired(String AccessToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(AccessToken); // key로 accessToken 검증
+            return false; // 토큰 검증에 문제가 없으면 만료되지 않았다고 판단
+        } catch (ExpiredJwtException e) {
+            log.error("Expired JWT accessToken, 만료된 JWT accessToken 입니다.");
+            return true;  // 토큰이 만료된 경우에만 true 반환
+        }
     }
 
     public boolean validateAccessToken(String AccessToken) {
