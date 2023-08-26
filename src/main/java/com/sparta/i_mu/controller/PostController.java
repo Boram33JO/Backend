@@ -68,12 +68,21 @@ public class PostController {
         return postService.deletePost(postId, user);
     }
 
-    // 메인페이지 - 카테고리 별 전체 게시글 조회
+    // 메인페이지 - 카테고리 별 전체 게시글 조회 -> 현재 사용 ❌
     @GetMapping
     @Operation(summary = "카테고리 별 전체 게시글 조회", description = "카테고리 별 전체 게시글 조회")
     public List<PostByCategoryResponseDto> getAllPost() {
         return postService.getAllPost();
     }
+
+
+    // 메인페이지 전국 기준 좋아요 순 인기 게시글 조회
+    @GetMapping("/top-wishlists")
+    @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
+    public List<PostResponseDto> getPostByWishlist() {
+        return postService.getPostByWishlist();
+    }
+
 
     // 상세 페이지 - 상세 게시글 조회
     @GetMapping("/{postId}")
@@ -125,22 +134,25 @@ public class PostController {
     }
 
     // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
+//    @PostMapping("/map")
+//    @Operation(summary = "위치 서비스에 따른 카테고리별 게시글 조회", description = "위치 서비스에 따른 카테고리별 게시글 조회")
+//    public Page<PostResponseDto> getMapPostByCategory(
+//            @RequestBody MapPostSearchRequestDto postSearchRequestDto,
+//            @RequestParam(required = false) Optional<Long> categoryId,
+//            @RequestParam int page,
+//            @RequestParam int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        return postService.getMapPostByCategory(postSearchRequestDto, categoryId, pageable);
+//
+//    }
+
+    // 지도페이지 - 위치 서비스에 따른 카테고리별 게시글 조회
     @PostMapping("/map")
     @Operation(summary = "위치 서비스에 따른 카테고리별 게시글 조회", description = "위치 서비스에 따른 카테고리별 게시글 조회")
-    public Page<PostResponseDto> getMapPostByCategory(
+    public List<PostResponseDto> getMapPost(
             @RequestBody MapPostSearchRequestDto postSearchRequestDto,
-            @RequestParam(required = false) Optional<Long> categoryId,
-            @RequestParam int page,
             @RequestParam int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return postService.getMapPostByCategory(postSearchRequestDto, categoryId, pageable);
+        return postService.getMapPost(postSearchRequestDto, size);
 
-    }
-
-    // 전국 기준 좋아요 순 인기 게시글 조회
-    @GetMapping("/top-wishlists")
-    @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
-    public List<PostResponseDto> getPostByWishlist() {
-        return postService.getPostByWishlist();
     }
 }

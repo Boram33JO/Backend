@@ -286,25 +286,35 @@ public class PostService {
 
 
     //지도 페이지
+//
+//    public Page<PostResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto, Optional <Long> categoryId, Pageable pageable) {
+//        Double longitude = postSearchRequestDto.getLongitude();
+//        Double latitude = postSearchRequestDto.getLatitude();
+//
+//        if (categoryId.isPresent()) {
+//            //해당 카테고리 조회
+//            Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
+//                    () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+//
+//            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
+//            return posts.map(postMapper::mapToPostResponseDto);
+//        }
+//        // 전체 카테고리 조회
+//        else {
+//            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
+//            return posts.map(postMapper::mapToPostResponseDto);
+//        }
+//
+//    }
 
-    public Page<PostResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto, Optional <Long> categoryId, Pageable pageable) {
+    //지도 페이지 New Version
+    public List<PostResponseDto> getMapPost(MapPostSearchRequestDto postSearchRequestDto, int size) {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
-
-        if (categoryId.isPresent()) {
-            //해당 카테고리 조회
-            Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
-                    () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
-
-            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
-            return posts.map(postMapper::mapToPostResponseDto);
-        }
-        // 전체 카테고리 조회
-        else {
-            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
-            return posts.map(postMapper::mapToPostResponseDto);
-        }
-
+        List<Post> posts = postRepository.findAllByLocationNear(longitude, latitude, DISTANCE_IN_METERS, size);
+        return posts.stream()
+                .map(postMapper::mapToPostResponseDto)
+                .collect(Collectors.toList());
     }
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드
