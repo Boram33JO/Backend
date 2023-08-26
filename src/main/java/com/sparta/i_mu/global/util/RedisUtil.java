@@ -107,6 +107,13 @@ public class RedisUtil {
         return false;
     }
 
+    // sms
+    public void setDataExpir(String confirmNum, String getTo, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(confirmNum, getTo, expireDuration);
+    }
+
     public void setUserIpList(String userIp, Long postId) {
         String value = String.valueOf(postId);
 

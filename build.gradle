@@ -82,6 +82,9 @@ dependencies {
     //email
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    //sms
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+
 }
 
 tasks.named('test') {

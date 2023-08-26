@@ -85,6 +85,7 @@ public class WebSecurityConfig {
                             .requestMatchers(GET, "/song/**").permitAll()// 노래 검색 및 조회
                             .requestMatchers(GET, "/top-follows").permitAll()
                             .requestMatchers(POST, "/auth/**").permitAll()
+                            .requestMatchers(POST, "/sms/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })
