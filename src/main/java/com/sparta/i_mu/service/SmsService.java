@@ -112,7 +112,7 @@ public class SmsService {
 
         String confirmNum = smsConfirmNum;
         String getTo = messageDto.getTo();
-        redisUtil.setDataExpir(getTo, confirmNum, 60 * 9999999L);
+        redisUtil.setDataExpir(getTo, confirmNum, 60 * 5L);
         return smsResponseDto;
     }
 
@@ -133,7 +133,7 @@ public class SmsService {
         String storedCode = redisUtil.getData(to);
 
         if (storedCode != null && storedCode.equals(confirmNum)) {
-//            redisUtil.removeData(to);  // 코드가 일치하면 코드를 제거합니다.
+            redisUtil.removeData(to);  // 코드가 일치하면 코드를 제거합니다.
             return true;
         }
 
