@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-//sms
+//sm
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

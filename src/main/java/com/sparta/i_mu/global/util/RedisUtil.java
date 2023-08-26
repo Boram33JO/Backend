@@ -91,7 +91,7 @@ public class RedisUtil {
         valueOperations.set(key, value, expireDuration);
     }
 
-    //sms
+    //sm
     public void setDataExpir(String confirmNum, String getTo, long duration) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(duration);
