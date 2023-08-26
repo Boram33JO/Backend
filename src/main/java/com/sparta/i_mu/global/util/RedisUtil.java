@@ -1,18 +1,13 @@
 package com.sparta.i_mu.global.util;
 
-import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+
+import java.time.*;
 import java.util.List;
-import java.util.Map;
-import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -23,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
     private final String REFRESH_TOKEN_KEY = "REFRESH_TOKEN_";
     private final String SEARCH_SONG_KEY = "SEARCH_SONG_";
-    private final String SEARCH_KEYWORD_ = "SEARCH_KEYWORD_";
-    public  final String USER_LAST_REQUEST_TIME = "LAST_REQUEST_TIME_";
+    private final String SEARCH_KEYWORD_KEY = "SEARCH_KEYWORD_";
+    private final String BLACKLIST_KEY= "BLACKLIST_KEY_";
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtUtil jwtUtil;
 
@@ -40,16 +35,6 @@ public class RedisUtil {
     public void removeRefreshToken(String accessToken) {
         redisTemplate.delete(REFRESH_TOKEN_KEY + accessToken);
     }
-
-    // user의 로그인 시간 제한 - 액세스 토큰의 마지막 요청을 알기
-    public void storeLastRequestTime(String userEmail, String accessToken) {
-        String combinedDate = System.currentTimeMillis() + "_" + accessToken;
-        redisTemplate.opsForHash().put(USER_LAST_REQUEST_TIME, userEmail, combinedDate);
-    }
-    public Map<Object, Object> getLastRequestTime() {
-        return redisTemplate.opsForHash().entries(USER_LAST_REQUEST_TIME);
-    }
-
 
 
     // 노래 검색 관련 메서드
@@ -73,15 +58,22 @@ public class RedisUtil {
      * @param keyword
      */
     public void storeSearchKeyword(String keyword) {
-        redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD_, keyword , 1);
+        redisTemplate.opsForZSet().incrementScore(SEARCH_KEYWORD_KEY, keyword , 1);
         redisTemplate.expire("SEARCH_KEYWORD_",1,TimeUnit.DAYS);
     }
     public Set<String> getSearchKeyword() {
        return redisTemplate.opsForZSet().reverseRange("SEARCH_KEYWORD_", 0,9);
     }
 
-    public String isBlacklisted(String accessToken) {
-       return redisTemplate.opsForValue().get(REFRESH_TOKEN_KEY + jwtUtil.BEARER + accessToken);
+
+    //블랙 리스트 등록
+    public void storeBlacklist(String userInfo, String accessToken, Long expirationInSeconds){
+        redisTemplate.opsForValue().set(BLACKLIST_KEY + userInfo,accessToken,expirationInSeconds,TimeUnit.SECONDS);
+    }
+
+    //블랙 리스트 조회
+    public String isBlacklisted(String email) {
+       return redisTemplate.opsForValue().get(BLACKLIST_KEY + email);
     }
   
   
@@ -113,6 +105,12 @@ public class RedisUtil {
             return true;
         }
         return false;
+    }
+
+    public void setDataExpir(String confirmNum, String getTo, long duration) {
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(confirmNum, getTo, expireDuration);
     }
 
     public void setPostViewList(String postViewKey, Long postId) {

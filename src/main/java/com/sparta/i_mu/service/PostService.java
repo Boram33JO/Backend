@@ -6,6 +6,8 @@ import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
 import com.sparta.i_mu.entity.*;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
+import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.mapper.PostMapper;
 import com.sparta.i_mu.repository.*;
@@ -14,10 +16,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +43,7 @@ import static com.sparta.i_mu.mapper.SongMapper.SONG_INSTANCE;
 
 @Service
 @RequiredArgsConstructor
-
+@Slf4j
 public class PostService {
 
     private final PostRepository postRepository;
@@ -55,9 +57,9 @@ public class PostService {
 
     //게시글 생성
     @Transactional
-    public ResponseEntity<?> createPost(PostSaveRequestDto postSaveRequestDto, User user) {
+    public ResponseResource<?> createPost(PostSaveRequestDto postSaveRequestDto, User user) {
         if(user == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 후 이용이 가능합니다.");
+            return ResponseResource.error2(ErrorCode.USER_UNAUTHORIZED);
         }
 
         Location location = Location.builder()
@@ -96,17 +98,18 @@ public class PostService {
         //postId 반환 값 넣어주기
         Map<String, Long> response = new HashMap<>();
         response.put("postId", post.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseResource.data(response,HttpStatus.CREATED,"게시글이 생성되었습니다.");
     }
 
     /**
      * 게시글 수정
+     *
      * @param postId
      * @param postRequestDto
      * @return 수정된 게시글
      */
     @Transactional
-    public ResponseEntity<?> updatePost(Long postId, PostSaveRequestDto postRequestDto, User user) throws AccessDeniedException {
+    public ResponseResource<?> updatePost(Long postId, PostSaveRequestDto postRequestDto, User user) throws AccessDeniedException {
         // post 존재 여부 확인
         Post post = findPost(postId);
         // 사용자 확인
@@ -115,13 +118,32 @@ public class PostService {
         Category newCategory = categoryRepository.findById(postRequestDto.getCategory())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
-        // 현재 post와 연결되어있는 song의 id조회
+        // 1. 현재 post와 연결되어있는 song의 id조회
+        Set<String> songsNum = fetchExistingSongsNum(post);
+        // 2. 업데이트 될 song id 조회 후 없는 것은 추가 후 집합으로 가져오기
+        Set<String> newSongsNum = fetchNewSongsNum(postRequestDto);
+        // 3. 기존 노래 중 새로운 노래 목록에 없는 노래들 postSongLink삭제
+        removeOldSongs(post, newSongsNum);
+        // 4. 기존 노래에 없는 새로운 노래를 postSongLink에 추가
+        addNewSongs(post, newSongsNum, songsNum);
+
+        post.update(postRequestDto, newCategory);
+        postRepository.save(post);
+        return ResponseResource.message("게시물이 업데이트 되었습니다.",HttpStatus.OK);
+    }
+
+
+    // 1. 현재 post와 연결되어있는 song의 id조회
+    private Set<String> fetchExistingSongsNum(Post post) {
         Set<String> songsNum = post.getPostSongLink().stream()
                 .map(postSongLink -> postSongLink.getSong().getSongNum())
                 .collect(Collectors.toSet());
+        return songsNum;
+    }
 
-        // 업데이트 될 song id 조회 후 없는 것은 추가 후 집합으로 가져오기
-        Set<String> newSongsNum = postRequestDto.getSongs().stream()
+    // 2. 업데이트 될 song id 조회 후 없는 것은 추가 후 집합으로 가져오기
+    private Set<String> fetchNewSongsNum(PostSaveRequestDto postRequestDto) {
+        return postRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> songRepository.findBySongNum(songSaveRequestDto.getSongNum())
                         .orElseGet(() -> {
                             Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
@@ -130,33 +152,44 @@ public class PostService {
                         })
                 )
                 .map(Song::getSongNum).collect(Collectors.toSet());
+    }
 
-        // 기존 노래 중 새로운 노래 목록에 없는 노래들 postSongLink삭제
-        post.getPostSongLink().removeIf(postSongLink -> !newSongsNum.contains(postSongLink.getSong().getSongNum()));
+    // 3. 기존 노래 중 새로운 노래 목록에 없는 노래들 postSongLink삭제
+    private void removeOldSongs(Post post, Set<String> newSongsNum) {
+        List<PostSongLink> linksToRemove = post.getPostSongLink().stream()
+                .filter(postSongLink -> !newSongsNum.contains(postSongLink.getSong().getSongNum()))
+                .toList();
 
-        // 기존 노래에 없는 새로운 노래를 postSongLink에 추가
+        linksToRemove.forEach(link -> {
+            post.getPostSongLink().remove(link);
+            postSongLinkRepository.delete(link);
+        });
+    }
+
+    // 4. 기존 노래에 없는 새로운 노래를 postSongLink에 추가
+    private void addNewSongs(Post post, Set<String> newSongsNum, Set<String> songsNum) {
+
         newSongsNum.stream()
                 .filter(songNum -> !songsNum.contains(songNum))
                 .map(songNum -> songRepository.findBySongNum(songNum)
                         .orElseThrow(()-> new IllegalArgumentException("해당 곡은 존재하지 않습니다.")))
                 .map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
-
-        post.update(postRequestDto, newCategory);
-        postRepository.save(post);
-        return ResponseEntity.status(HttpStatus.OK).body("게시물이 업데이트 되었습니다.");
     }
+
+
 
 
     /**
      * 게시글 삭제
+     *
      * @param postId
      * @param user
      * @return 게시글 삭제가 완료되었습니다 응답 메시지
      * @throws AccessDeniedException
      */
     @Transactional
-    public ResponseEntity<String> deletePost(Long postId, User user) throws AccessDeniedException {
+    public ResponseResource<?> deletePost(Long postId, User user) throws AccessDeniedException {
 
         Post post = findPost(postId);
         checkAuthority(post,user);
@@ -168,7 +201,8 @@ public class PostService {
                 });
         post.setDeletedAt(LocalDateTime.now());
         post.setDeleted(true);
-        return ResponseEntity.status(HttpStatus.OK).body("해당 게시글 삭제를 완료하였습니다.");
+        return ResponseResource.message("해당 게시글 삭제를 완료하였습니다.",HttpStatus.OK);
+
     }
 
 
@@ -272,25 +306,35 @@ public class PostService {
 
 
     //지도 페이지
+//
+//    public Page<PostResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto, Optional <Long> categoryId, Pageable pageable) {
+//        Double longitude = postSearchRequestDto.getLongitude();
+//        Double latitude = postSearchRequestDto.getLatitude();
+//
+//        if (categoryId.isPresent()) {
+//            //해당 카테고리 조회
+//            Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
+//                    () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+//
+//            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
+//            return posts.map(postMapper::mapToPostResponseDto);
+//        }
+//        // 전체 카테고리 조회
+//        else {
+//            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
+//            return posts.map(postMapper::mapToPostResponseDto);
+//        }
+//
+//    }
 
-    public Page<PostResponseDto> getMapPostByCategory(MapPostSearchRequestDto postSearchRequestDto, Optional <Long> categoryId, Pageable pageable) {
+    //지도 페이지 New Version
+    public List<PostResponseDto> getMapPost(MapPostSearchRequestDto postSearchRequestDto, int size) {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
-
-        if (categoryId.isPresent()) {
-            //해당 카테고리 조회
-            Category category = categoryRepository.findById(categoryId.get()).orElseThrow(
-                    () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
-
-            Page<Post> posts = postRepository.findAllByCategoryAndLocationNear(category.getId(),longitude,latitude,DISTANCE_IN_METERS, pageable);
-            return posts.map(postMapper::mapToPostResponseDto);
-        }
-        // 전체 카테고리 조회
-        else {
-            Page<Post> posts = postRepository.findAllByLocationNear(longitude,latitude,DISTANCE_IN_METERS,pageable);
-            return posts.map(postMapper::mapToPostResponseDto);
-        }
-
+        List<Post> posts = postRepository.findAllByLocationNear(longitude, latitude, DISTANCE_IN_METERS, size);
+        return posts.stream()
+                .map(postMapper::mapToPostResponseDto)
+                .collect(Collectors.toList());
     }
 
     // 수정, 삭제 할 게시물이 존재하는지 확인하는 메서드

@@ -7,6 +7,7 @@ import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
 import com.sparta.i_mu.dto.requestDto.UserRequestDto;
 import com.sparta.i_mu.dto.responseDto.*;
 import com.sparta.i_mu.entity.*;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.util.AwsS3Util;
 import com.sparta.i_mu.global.util.JwtUtil;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -300,7 +302,6 @@ public class UserService {
     }
 
 
-
     // 좋아요 한 리스트 조회 -> deleted false ✅
     private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
         List<Wishlist> wishList = wishlistRepository.findAllByUserIdAndPostDeletedFalse(userId);
@@ -342,33 +343,37 @@ public class UserService {
     }
 
 
-      //로그아웃
+    //로그아웃
     @Transactional
-    public ResponseResource<?> logout(String accessToken){
+    public ResponseResource<?> logout(String accessToken) {
         // 로그아웃 하고 싶은 토큰이 유효한 지 먼저 검증하기
-        String refreshToken = redisUtil.getRefreshToken(accessToken);
-        log.info("현재 accessToken 을 키 값으로 가지고 있는 refreshToken : {}" , refreshToken);
-        if (!jwtUtil.validateAccessToken(jwtUtil.substringToken(accessToken))){
-            throw new IllegalArgumentException("로그아웃 : 유효하지 않은 토큰입니다.");
-        }
+        try {
+            log.info("AccessToken : {}", accessToken);
+            if (jwtUtil.isTokenExpired(jwtUtil.substringToken(accessToken))) {
+                //토큰이 만료되었을경우
+                redisUtil.removeRefreshToken(accessToken);
+                return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
+            }
+            // 해당 Access Token 유효시간을 가지고 와서 BlackList 에 저장하기
+            Claims claims = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken));
+            Long expiration = claims.getExpiration().getTime() - new Date().getTime(); // 엑세스 토큰 만료시간  가져오기
+            log.info("expiration : {}", expiration);
 
-        // 해당 Access Token 유효시간을 가지고 와서 BlackList 에 저장하기
-        Claims claims = jwtUtil.getUserInfoFromToken(jwtUtil.substringToken(accessToken));
-        long expiration = claims.getExpiration().getTime(); //엑세스 토큰 만료시간  가져오기
-        String userInfo = claims.getSubject();
-        long expirationInMinutes = TimeUnit.MINUTES.convert(expiration, TimeUnit.MILLISECONDS);
+            String userInfo = claims.getSubject();
+            Long expirationInSeconds = TimeUnit.MILLISECONDS.toSeconds(expiration);
 
-        log.info("expiration in Minutes : {}", expirationInMinutes);
+            log.info("expiration in MILLISECONDS : {}", expirationInSeconds);
 
-        // Redis에서 해당 refreshToken 삭제
-        if (redisUtil.getRefreshToken(accessToken).equals(refreshToken)){
+            // 해당 accessToken - RefreshToken 삭제
             redisUtil.removeRefreshToken(accessToken);
+            //새롭게 redis에 블랙리스트 저장 - 만료시간이 지났을때 블랙리스트도 삭제
+            redisUtil.storeBlacklist(userInfo, accessToken,expirationInSeconds);
+            return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("로그아웃 중 오류 발생 : ", e);
+            return ResponseResource.error2(ErrorCode.TOKEN_INVALID);
         }
-        redisConfig.redisTemplate().opsForValue().set("BLACKLIST_KEY_" + userInfo, accessToken , expirationInMinutes, TimeUnit.MINUTES);
-
-        log.info("Input refreshToken : {}", refreshToken);
-        log.info("redis Save refreshToken : {} ",redisUtil.getRefreshToken(accessToken));
-
-        return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
     }
+
 }
