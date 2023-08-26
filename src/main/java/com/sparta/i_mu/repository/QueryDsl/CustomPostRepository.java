@@ -39,16 +39,24 @@ public interface CustomPostRepository {
      * 지도페이지 - 위치에 따른 카테고리별 조회
      */
 
-    Page<Post> findAllByCategoryAndLocationNear(Long categoryId, Double latitude, Double longitude, Double DISTANCE_IN_METERS, Pageable pageable);
+//    Page<Post> findAllByCategoryAndLocationNear(Long categoryId, Double latitude, Double longitude, Double DISTANCE_IN_METERS, Pageable pageable);
 
     /**
      * 지도페이지 - 전체 조회
      * @return
      */
-    Page<Post> findAllByLocationNear(Double latitude,
+//    Page<Post> findAllByLocationNear(Double latitude,
+//                                     Double longitude,
+//                                     @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS,
+//                                     Pageable pageable);
+
+    //**
+
+    List<Post> findAllByLocationNear(Double latitude,
                                      Double longitude,
-                                     @Param("DISTANCE_IN_METERS") Double DISTANCE_IN_METERS,
-                                     Pageable pageable);
+                                     Double DISTANCE_IN_METERS,
+                                     int size);
+
 
     // 조회수
 //    void viewCountUpdate(Long postId);
