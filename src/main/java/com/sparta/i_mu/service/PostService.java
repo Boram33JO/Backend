@@ -263,23 +263,43 @@ public class PostService {
     public PostResponseDto getDetailPost(Long postId, Optional<UserDetailsImpl> userDetails, HttpServletRequest req, HttpServletResponse res) {
         Post post = postRepository.findByIdAndDeletedFalseForUpdate(postId).orElseThrow(() ->
                 new NotFoundException("해당 아이디의 게시글를 찾을 수 없거나 이미 삭제된 게시글입니다."));
-
-        String userIp = getUserIp(req);
         String value = String.valueOf(postId);
+//        String userIp = getUserIp(req);
+
+//      로그인 유저는 USER ID, 비로그인 유저는 IP 주소
+        String key = getUserIp(req);
+        if (userDetails.isPresent()) {
+            key = String.valueOf(userDetails.get().getUserId());
+        }
+
+        if (!redisUtil.getPostViewList(key).contains(value)) {
+            redisUtil.setPostViewList(key, postId);
+            post.viewCountUpdate();
+        }
+//        쿠키형 조회수 메서드. redis 추가 되면 전환
+//        postViewCountUpdate(post, req, res);
+
 //        1안. key 계속 생성
 //        if(!redisUtil.isUserIp(userIp, postId)) {
 //            post.viewCountUpdate();
 //            redisUtil.storeUserIp(userIp, postId);
 //        }
 
-//        2안. list 형태로 저장
-        if (!redisUtil.getUserIpList(userIp).contains(value)) {
-            redisUtil.setUserIpList(userIp, postId);
-            post.viewCountUpdate();
-        }
+//        2안 list 형태로 저장
 
-//          쿠키형 조회수 메서드, redis 추가 되면 전환
-//        postViewCountUpdate(post, req, res);
+//        if(userDetails.isPresent()) {
+//            String userId = String.valueOf(userDetails.get().getUserId());
+//            if (!redisUtil.getPostViewList(userId).contains(value)) {
+//                redisUtil.setPostViewList(userId, postId);
+//                post.viewCountUpdate();
+//            }
+//            return postMapper.mapToPostResponseDto(post, userDetails);
+//        }
+//
+//        if (!redisUtil.getPostViewList(userIp).contains(value)) {
+//            redisUtil.setPostViewList(userIp, postId);
+//            post.viewCountUpdate();
+//        }
 
         return postMapper.mapToPostResponseDto(post, userDetails);
     }

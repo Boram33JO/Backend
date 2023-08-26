@@ -107,14 +107,14 @@ public class RedisUtil {
         return false;
     }
 
-    // sms
     public void setDataExpir(String confirmNum, String getTo, long duration) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(duration);
         valueOperations.set(confirmNum, getTo, expireDuration);
     }
 
-    public void setUserIpList(String userIp, Long postId) {
+    public void setPostViewList(String postViewKey, Long postId) {
+        String key = "POST_VIEW_" + postViewKey;
         String value = String.valueOf(postId);
 
         long todayEndSecond = LocalDate.now().atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC);
@@ -122,12 +122,13 @@ public class RedisUtil {
 
         log.info("조회수 남은 시간 : {}", todayEndSecond - currentSecond);
 
-        redisTemplate.opsForList().rightPushAll(userIp, value);
-        redisTemplate.expire(userIp, todayEndSecond - currentSecond, TimeUnit.SECONDS);
+        redisTemplate.opsForList().rightPushAll(key, value);
+        redisTemplate.expire(key, todayEndSecond - currentSecond, TimeUnit.SECONDS);
     }
 
-    public List<String> getUserIpList(String userIp) {
-        return redisTemplate.opsForList().range(userIp, 0, -1);
+    public List<String> getPostViewList(String postViewKey) {
+        String key = "POST_VIEW_" + postViewKey;
+        return redisTemplate.opsForList().range(key, 0, -1);
     }
 
 }
