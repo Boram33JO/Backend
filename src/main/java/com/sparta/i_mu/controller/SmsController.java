@@ -23,15 +23,22 @@ import java.security.NoSuchAlgorithmException;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/sms")
-@Tag(name = "Sms", description = "")
+@Tag(name = "Sms", description = "휴대폰 인증번호 받아오기")
 public class SmsController {
 
     private final SmsService smsService;
 
+//    @PostMapping("/send")
+//    public SmsResponseDto sendSms(@RequestBody MessageDto messageDto) throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+//        SmsResponseDto responseDto = smsService.sendSms(messageDto);
+//        return responseDto;
+//    }
+
     @PostMapping("/send")
-    public SmsResponseDto sendSms(@RequestBody MessageDto messageDto) throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+    @Operation(summary = "전화번호 문자 인증 보내기", description ="전화번호 문자 인증번호 보내기")
+    public ResponseEntity<?> sendSms(@RequestBody MessageDto messageDto) throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
         SmsResponseDto responseDto = smsService.sendSms(messageDto);
-        return responseDto;
+        return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/check")
