@@ -33,7 +33,7 @@ public class TokenController {
             return ResponseResource.message("AccessToken 재발급이 완료되었습니다.", HttpStatus.OK);
 
         } catch (Exception e) {
-            return ResponseResource.error(ErrorCode.REFRESH_TOKEN_INVALID.getMessage(),ErrorCode.REFRESH_TOKEN_INVALID.getErrorCode());
+            return ResponseResource.error2(ErrorCode.REFRESH_TOKEN_INVALID);
         }
     }
 }
