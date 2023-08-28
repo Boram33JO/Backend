@@ -50,6 +50,7 @@ public class SongService {
      */
     public List<SongResponseDto> getSearch(String keyword) {
 
+        log.info("keyword : {}", keyword);
         // 먼저 값이 있다면 redis 에서 가져오기
         List<SongResponseDto> result = getFromRedis(keyword);
         log.info("Redis에 저장되어있는 검색 값 : {}", result);
@@ -93,9 +94,9 @@ public class SongService {
             log.info("액세스 토큰 발급 완료: {}", accessToken);
 
             //만약 띄워쓰기가 존재한다면 없애줘야함
-            String key = keyword.replace(" ", "");
-            log.info("검색 키워드: 원본 [{}], 수정 [{}]", keyword, key);
-            SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(key)
+//            String key = keyword.replace(" ", "");
+//            log.info("검색 키워드: 원본 [{}], 수정 [{}]", keyword, key);
+            SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(keyword)
                     .market(CountryCode.KR)
                     .limit(30)
                     .offset(0)
@@ -105,44 +106,30 @@ public class SongService {
             Track[] tracks = SearchResult.getItems();
 
             if (tracks == null || tracks.length == 0) {
-                log.warn("검색 결과 없음: 키워드 [{}]", key);
+                log.warn("검색 결과 없음: 키워드 [{}]", keyword);
                 throw new NoContentException("찾으시는 노래가 존재하지 않습니다. 입력 값을 좀 더 자세히 입력해주세요!");
             }
-
             log.info("첫 번째 노래 제목: {}", tracks[0].getName());
-
-            songs = Arrays.stream(tracks)
-                    .map(track -> {
-                        String songId = track.getId();
-                        String title = track.getName();
-                        AlbumSimplified album = track.getAlbum();
-                        String albumName = album.getName();
-                        ArtistSimplified[] artists = album.getArtists();
-                        String artistName = artists[0].getName();
-                        String audio = track.getPreviewUrl();
-                        //앨범이미지
-                        Image[] images = album.getImages();
-                        String thumbnail = (images.length > 0) ? images[0].getUrl() : "NO_IMAGE";
-
-                        ExternalUrl external_url = track.getExternalUrls();
-                        String url = external_url.get("spotify"); // 외부 url 연결 키
-
-                        return SongResponseDto.builder()
-                                .songNum(songId)
-                                .artistName(artistName)
-                                .album(albumName)
-                                .thumbnail(thumbnail)
-                                .songTitle(title)
-                                .audioUrl(audio)
-                                .externalUrl(url)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
+            songs = Arrays.stream(tracks).map(this::convertTrackToSongResponseDto).collect(Collectors.toList());
         } catch (IOException | SpotifyWebApiException |
                  ParseException e) {
             throw new IllegalArgumentException("Error: " + e.getMessage());
         }
         return songs;
+    }
+
+    private SongResponseDto convertTrackToSongResponseDto(Track track) {
+        AlbumSimplified album = track.getAlbum();
+        String thumbnail = (album.getImages().length > 0) ? album.getImages()[0].getUrl() : "NO_IMAGE";
+        return SongResponseDto.builder()
+                .songNum(track.getId())
+                .artistName(album.getArtists()[0].getName())
+                .album(album.getName())
+                .thumbnail(thumbnail)
+                .songTitle(track.getName())
+                .audioUrl(track.getPreviewUrl())
+                .externalUrl(track.getExternalUrls().get("spotify"))
+                .build();
     }
 
     /**
