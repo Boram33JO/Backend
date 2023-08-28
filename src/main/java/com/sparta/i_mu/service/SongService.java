@@ -54,10 +54,12 @@ public class SongService {
         // 먼저 값이 있다면 redis 에서 가져오기
         List<SongResponseDto> result = getFromRedis(keyword);
         log.info("Redis에 저장되어있는 검색 값 : {}", result);
-        if (result == null) {
+        if (result == null || result.isEmpty()) {
             log.info("저장된 검색 결과가 존재하지 않을 때");
             result = searchFromSpotify(keyword);
-            saveToRedis(keyword, result);
+            if(result != null && !result.isEmpty()){
+                saveToRedis(keyword, result);
+            }
         }
         return result;
     }
