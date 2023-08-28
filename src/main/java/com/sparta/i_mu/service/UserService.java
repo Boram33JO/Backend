@@ -254,11 +254,14 @@ public class UserService {
         return null;
     }
 
-    public Page<WishListResponseDto> getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails, Pageable pageable) {
+    public GetWishListResponseDto getUserWishlist(Long userId, Optional<UserDetailsImpl> userDetails, Pageable pageable) {
         if (userDetails.isPresent() && userDetails.get().getUser().getId().equals(userId)) {
             Page<WishListResponseDto> wishlistResponseDtoList = getWishlistResponseDtoList(userId, pageable);
+            String nickname = userDetails.get().getNickname();
 
-            return wishlistResponseDtoList;
+            GetWishListResponseDto wishListResponseDto = new GetWishListResponseDto(nickname, wishlistResponseDtoList);
+
+            return wishListResponseDto;
         }
         return null;
     }
