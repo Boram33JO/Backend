@@ -30,9 +30,11 @@ public class JwtUtil {
     public final String BEARER = "Bearer ";
   
     // private final Long ACCESS_TOKEN_EXPIRATION_TIME = 3 * 60 * 60 * 1000L; // 1시간 / 1분
-    private final Long ACCESS_TOKEN_EXPIRATION_TIME = 5 * 60 * 1000L; // 5분
+    private final Long ACCESS_TOKEN_EXPIRATION_TIME = 60 * 1000L; // 5분
   
-    private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주 / 10분
+    // private final Long REFRESH_TOKEN_EXPIRATION_TIME = 14 * 24 * 60 * 60 * 1000L; // 2주 / 10분 
+    private final Long REFRESH_TOKEN_EXPIRATION_TIME = 2 * 60 * 1000L; // 2주 / 10분
+    
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
