@@ -283,7 +283,7 @@ public class UserService {
 
     // 내가 작성한 리스트 조회 -> deleted false ✅
     private List<PostListResponseDto> getPostListResponseDtoList(Long userId) {
-        List<Post> postList = postRepository.findAllByUserIdAndDeletedFalse(userId);
+        List<Post> postList = postRepository.findAllByUserIdAndDeletedFalseOrderByCreatedAtDesc(userId);
         List<PostListResponseDto> postResponseDtoList = postList.stream()
                 .map(postMapper::mapToPostListResponseDto)
                 .collect(Collectors.toList());
@@ -304,7 +304,7 @@ public class UserService {
 
     // 좋아요 한 리스트 조회 -> deleted false ✅
     private List<WishListResponseDto> getWishlistResponseDtoList(Long userId) {
-        List<Wishlist> wishList = wishlistRepository.findAllByUserIdAndPostDeletedFalse(userId);
+        List<Wishlist> wishList = wishlistRepository.findAllByUserIdAndPostDeletedFalseOrderByCreatedAtDesc(userId);
         List<WishListResponseDto> wishListReponseList = wishList.stream()
                 .map(wishlist -> wishListMapper.mapToWishListResponseDto(wishlist.getPost()))
                 .collect(Collectors.toList());
@@ -320,7 +320,7 @@ public class UserService {
     }
 
     private List<CommentListResponseDto> getCommentListResponseDtoList(Long userId) {
-        List<Comment> commentList = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+        List<Comment> commentList = commentRepository.findAllByUserIdAndDeletedFalseOrderByCreatedAtDesc(userId);
         List<CommentListResponseDto> commentResponseDtoList = commentList.stream()
                 .map(CommentListResponseDto::new)
                 .toList();
