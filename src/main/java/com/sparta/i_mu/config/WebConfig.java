@@ -13,10 +13,12 @@ public class WebConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("http://localhost:3001");
+        config.addAllowedOrigin("https://pple.today");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-        config.addExposedHeader("*"); // https://iyk2h.tistory.com/184?category=875351 // 헤더값 보내줄 거 설정.
+        config.addExposedHeader("*");
         source.registerCorsConfiguration("/**",config);
         return new CorsFilter(source);
     }
