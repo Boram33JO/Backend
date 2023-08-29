@@ -20,7 +20,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 
     boolean existsByPostIdAndUserId(Long postId, Long userId);
 
-    List<Wishlist> findAllByUserIdAndPostDeletedFalse(Long userId);
+    List<Wishlist> findAllByUserIdAndPostDeletedFalseOrderByCreatedAtDesc(Long userId);
 
     Page<Wishlist> findAllByUserIdAndPostDeletedFalse(Long userId, Pageable pageable);
 }
