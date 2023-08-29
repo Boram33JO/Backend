@@ -26,14 +26,19 @@ public class TokenService {
 
         String accessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(request);
         String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
+        // -> CORS OPTION 으로 인해 먼저 초기 요청이 들어와짐 -> refreshToken = null
+        // -> refreshToken 이 null 인 채로 들어와서 if가 유효하지 않게 되서 삭제가 먼저 되어버린다.
+        // -> 그러니 refreshToken != null을 앞에 붙이면? 그제야 저 if문으로 들어가질 수 있지 않을까?
 
         // 1. 먼저 refreshToken의 유효성을 검사합니다.
-        if (jwtUtil.isTokenExpired(refreshToken)) { //토큰이 유효하지 않을 때 삭제? 토큰이 만료되었을 때 삭제?
+        if (refreshToken != null && !jwtUtil.validateAccessToken(refreshToken)) {
+//        if (jwtUtil.isTokenExpired(refreshToken)) {
             log.info("RefreshToken 이 유효하지 않습니다.");
             redisUtil.removeRefreshToken(accessToken); // 필요한 경우 Redis에서 토큰 삭제
             throw new IllegalArgumentException(ErrorCode.REFRESH_TOKEN_INVALID.getMessage());
         }
 
+        // 2. refreshToken이 만료되지 않았을 때
         String email = jwtUtil.getUserInfoFromToken(refreshToken).getSubject();
         String refreshTokenRedis = redisUtil.getRefreshToken(accessToken);
 

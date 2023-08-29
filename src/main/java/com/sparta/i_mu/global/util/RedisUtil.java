@@ -21,11 +21,12 @@ public class RedisUtil {
     private final String SEARCH_KEYWORD_KEY = "SEARCH_KEYWORD_";
     private final String BLACKLIST_KEY= "BLACKLIST_KEY_";
     private final RedisTemplate<String, String> redisTemplate;
-    private final JwtUtil jwtUtil;
+
 
     //refreshToken 관련 메서드
     public void storeRefreshToken(String accessToken, String refreshToken) {
         redisTemplate.opsForValue().set(REFRESH_TOKEN_KEY + accessToken, refreshToken);
+        redisTemplate.expire(REFRESH_TOKEN_KEY + accessToken, 14, TimeUnit.DAYS);
     }
 
     public String getRefreshToken(String accessToken) {
@@ -46,7 +47,7 @@ public class RedisUtil {
      */
     public void storeSearchedSong(String keyword, String serializedSongs) {
         redisTemplate.opsForValue().set(SEARCH_SONG_KEY + keyword, serializedSongs);
-        redisTemplate.expire(SEARCH_SONG_KEY + keyword, 30, TimeUnit.DAYS );
+        redisTemplate.expire(SEARCH_SONG_KEY + keyword, 12, TimeUnit.HOURS );
     }
 
     public String getSearchedSong(String keyword){
