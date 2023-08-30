@@ -16,15 +16,17 @@ import com.sparta.i_mu.repository.PostSongLinkRepository;
 import com.sparta.i_mu.repository.SongRepository;
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.specification.*;
+import com.wrapper.spotify.model_objects.specification.AlbumSimplified;
+import com.wrapper.spotify.model_objects.specification.Paging;
+import com.wrapper.spotify.model_objects.specification.Track;
 import com.wrapper.spotify.requests.data.search.simplified.SearchTracksRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +44,8 @@ public class SongService {
     private final SongMapper songMapper;
     private final RedisUtil redisUtil;
 
+    @Value("${default.image.2}")
+    private String imageUrl;
     /**
      * spotify 에서 노래 찾기
      *
@@ -122,7 +126,7 @@ public class SongService {
 
     private SongResponseDto convertTrackToSongResponseDto(Track track) {
         AlbumSimplified album = track.getAlbum();
-        String thumbnail = (album.getImages().length > 0) ? album.getImages()[0].getUrl() : "NO_IMAGE";
+        String thumbnail = (album.getImages().length > 0) ? album.getImages()[0].getUrl() : imageUrl ;
         return SongResponseDto.builder()
                 .songNum(track.getId())
                 .artistName(album.getArtists()[0].getName())
