@@ -217,7 +217,7 @@ public class UserService {
         boolean checkNicknameDuplicate = userRepository.existsByNickname(requestDto.getNickname());
         // status code 수정 필요
         if (checkNicknameDuplicate) {
-            return ResponseResource.message("닉네임 중복입니다.", HttpStatus.BAD_REQUEST);
+            return ResponseResource.error("닉네임 중복입니다.", HttpStatus.BAD_REQUEST.value());
         }
 
         return ResponseResource.message("사용 가능한 닉네임입니다.", HttpStatus.OK);
