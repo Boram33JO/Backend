@@ -17,12 +17,15 @@ public class CommentResponseDto {
 
     private LocalDateTime createdAt;
 
+    private Long userId;
+
     public CommentResponseDto (Comment comment) {
         this.commentId = comment.getId();
         this.content = comment.getContent();
         this.createdAt = comment.getCreatedAt();
         this.nickname = comment.getUser().getNickname();
         this.userImage = comment.getUser().getUserImage();
+        this.userId = comment.getUser().getId();
     }
 
 }
