@@ -46,8 +46,6 @@ public class GlobalExceptionHandler {
 //        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST);
 
 
-
-
         BindingResult bindingResult = e.getBindingResult();
 
         List<String> errorList = new ArrayList<>();
@@ -57,10 +55,9 @@ public class GlobalExceptionHandler {
         }
 
         Collections.sort(errorList);
-        String error = errorList.toString();
-        String errorSubstring = error.substring(1, error.length()-1);
+        String errorString = String.join("\n", errorList);
 
-        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST.value());
+        return ResponseResource.error(errorString, HttpStatus.BAD_REQUEST.value());
     }
 
     // 사용자가 제출한 데이터로 해당 객체를 찾을 수 없을 때
