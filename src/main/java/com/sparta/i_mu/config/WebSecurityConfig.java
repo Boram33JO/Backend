@@ -86,6 +86,7 @@ public class WebSecurityConfig {
                             .requestMatchers(GET, "/top-follows").permitAll()
                             .requestMatchers(POST, "/auth/**").permitAll()
                             .requestMatchers(POST, "/sms/**").permitAll()
+                            .requestMatchers(POST, "/user/change-password/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })
