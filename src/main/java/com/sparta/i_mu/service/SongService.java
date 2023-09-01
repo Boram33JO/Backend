@@ -103,7 +103,7 @@ public class SongService {
 //            String key = keyword.replace(" ", "");
 //            log.info("검색 키워드: 원본 [{}], 수정 [{}]", keyword, key);
             SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(keyword)
-                    .market(CountryCode.KR)
+                    // .market(CountryCode.KR)
                     .limit(30)
                     .offset(0)
                     .build();
