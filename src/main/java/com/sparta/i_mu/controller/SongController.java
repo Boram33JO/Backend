@@ -32,7 +32,7 @@ public class SongController {
         return songService.getSearch(keyword);
     }
 
-    @GetMapping("/top4")
+    @GetMapping("/top10")
     @Operation(summary = "가장 많이 포스팅된 노래 조회", description = "가장 많이 포스팅된 노래 조회")
     public List<SongResponseDto> getMostAllPostSong(){
         return songService.getMostAllPostSong();
