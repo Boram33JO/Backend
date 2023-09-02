@@ -11,9 +11,12 @@ public class FollowPopularResponseDto {
 
     private String userImage;
 
-    public FollowPopularResponseDto(User user) {
+    private Long followCount;
+
+    public FollowPopularResponseDto(User user, Long followCount) {
         this.id = user.getId();
         this.nickname = user.getNickname();
         this.userImage = user.getUserImage();
+        this.followCount = followCount;
     }
 }

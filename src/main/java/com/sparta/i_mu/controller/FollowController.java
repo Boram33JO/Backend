@@ -29,7 +29,7 @@ public class FollowController {
 
     @GetMapping("/top-follows")
     @Operation(summary = "인기 팔로워", description = "팔로우 많은 상위 4명 조회")
-    public List<FollowPopularResponseDto> createFollow () {
+    public List<FollowPopularResponseDto> getFollowPopular () {
         return followService.getFollowPopular();
     }
 
