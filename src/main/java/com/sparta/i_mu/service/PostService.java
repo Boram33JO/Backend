@@ -5,6 +5,7 @@ import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
+import com.sparta.i_mu.dto.responseDto.TopPostResponseDto;
 import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
@@ -229,13 +230,25 @@ public class PostService {
     }
 
     // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
-    public List<PostResponseDto> getPostByTopList() {
-        return postRepository.findAllByOrderByWishlistCountDesc() .stream()
+    public TopPostResponseDto getPostByTopList() {
+        List<PostResponseDto> wishlistTopPosts = getTopPostsByWishlist();
+        List<PostResponseDto> viewCountTopPosts = getTopPostsByViewCount();
+        return new TopPostResponseDto(wishlistTopPosts, viewCountTopPosts);
+    }
+
+    public List<PostResponseDto> getTopPostsByWishlist() {
+       return postRepository.findAllByOrderByWishlistCountDesc() .stream()
                 .map(postMapper::mapToPostResponseDto)
                 .limit(5)
                 .collect(Collectors.toList());
     }
 
+    public List<PostResponseDto> getTopPostsByViewCount() {
+        return postRepository.findAllByOrderByViewCountDesc() .stream()
+                .map(postMapper::mapToPostResponseDto)
+                .limit(5)
+                .collect(Collectors.toList());
+    }
     // 서브게시물 페이지
 
     // 서브 게시글 조회 - 내 주변 -> queryDsl 적용✅

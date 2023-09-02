@@ -148,7 +148,7 @@ public class SearchService {
                 .topLocations(locationService.getTopLocations())
                 .topSearchKeywords(redisUtil.getSearchKeyword())
                 .topSongs(songService.getMostByCategoryPostSong())
-                .topPosts(postService.getPostByTopList()).build();
+                .topPosts(postService.getTopPostsByWishlist()).build();
 
         return searchMainResponseDto;
     }
