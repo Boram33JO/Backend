@@ -30,6 +30,12 @@ public interface CustomPostRepository {
     List<Post> findAllByOrderByWishlistCountDesc();
 
     /**
+     * 메인 페이지 - 조회수 순을 기준으로 인기 게시글 조회
+     * @return
+     */
+    List<Post> findAllByOrderByViewCountDesc();
+
+    /**
      * 상세 게시물 페이지 내 주변
      */
     Page<Post> findAllByLocationNearOrderByCreatedAtDesc(Double longitude, Double latitude,  Double DISTANCE_IN_METERS, Pageable pageable);
