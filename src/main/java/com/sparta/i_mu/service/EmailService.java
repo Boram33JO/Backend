@@ -29,7 +29,7 @@ public class EmailService {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isPresent()) {
-            throw new EmailService.UserNotFoundException("User with email " + email + " not found");
+            throw new EmailService.UserNotFoundException("User with email " + email + " Already exist");
         }
         String authNum = createCode();
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
