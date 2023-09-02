@@ -11,6 +11,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @Setter
 @Builder
+@Setter
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class User {
