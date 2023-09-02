@@ -17,5 +17,6 @@ public class PostListResponseDto {
     private int wishlistCount;
     private String content;
     private List<SongResponseDto> songs;
+    private int viewCount;
 
 }
