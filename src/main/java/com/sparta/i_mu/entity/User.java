@@ -41,8 +41,6 @@ public class User {
     @Column
     private String userImage;
 
-    @Column(nullable = false, unique = true)
-
     private Long kakaoId;
 
 

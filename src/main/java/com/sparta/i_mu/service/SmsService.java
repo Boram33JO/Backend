@@ -84,7 +84,7 @@ public class SmsService {
 
         Optional<User> optionalUser = userRepository.findByPhonenumber(messageDto.getTo());
 
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isPresent()) {
             throw new SmsService.UserNotFoundException("User with phonenumber " + messageDto + " not found");
         }
 

@@ -28,7 +28,7 @@ public class EmailService {
     public String sendMail(EmailMessage emailMessage, String email, String type) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
-        if (!optionalUser.isPresent()) {
+        if (optionalUser.isPresent()) {
             throw new EmailService.UserNotFoundException("User with email " + email + " not found");
         }
         String authNum = createCode();
