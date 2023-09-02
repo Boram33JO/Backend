@@ -9,8 +9,8 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
-@Builder
 @Setter
+@Builder
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class User {
@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Column(nullable = false, unique = true)
+    private String phonenumber;
+
     @Enumerated(STRING)
     private Role role;
 
@@ -38,7 +41,10 @@ public class User {
     @Column
     private String userImage;
 
+    @Column(nullable = false, unique = true)
+
     private Long kakaoId;
+
 
     public void update(User user) {
         this.nickname = user.getNickname();

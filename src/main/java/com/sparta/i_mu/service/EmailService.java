@@ -1,7 +1,9 @@
 package com.sparta.i_mu.service;
 
 import com.sparta.i_mu.entity.EmailMessage;
+import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.RedisUtil;
+import com.sparta.i_mu.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Random;
 
 @Slf4j
@@ -18,17 +21,20 @@ import java.util.Random;
 public class EmailService {
 
     private final JavaMailSender javaMailSender;
-
-    private final UserService userService;
     private  final RedisUtil redisUtil;
+    private  final UserRepository userRepository;
 
 
     public String sendMail(EmailMessage emailMessage, String email, String type) {
-        String authNum = createCode();
+        Optional<User> optionalUser = userRepository.findByEmail(email);
 
+        if (!optionalUser.isPresent()) {
+            throw new EmailService.UserNotFoundException("User with email " + email + " not found");
+        }
+        String authNum = createCode();
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
-//        if (type.equals("password")) userService.SetTempPassword(emailMessage.getTo(), authNum); 임시 비밀번호 생성
+//        if (type.equals("password")) userService.SetTempPassword(emailMessage.getTo(), authNum);
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
@@ -72,12 +78,16 @@ public class EmailService {
     //인증코드 검증
     public Boolean verifyEmailCode(String email, String code) {
         String storedCode = redisUtil.getData(email);
-
         if (storedCode != null && storedCode.equals(code)) {
             redisUtil.removeData(email);  // 코드가 일치하면 코드를 제거합니다.
             return true;  
         }
-
         return false;  // 코드가 일치하지 않거나 데이터가 없으면 false
+    }
+
+    public class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) {
+            super(message);
+        }
     }
 }

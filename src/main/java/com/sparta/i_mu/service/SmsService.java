@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.i_mu.dto.requestDto.SmsRequestDto;
 import com.sparta.i_mu.dto.requestDto.MessageDto;
 import com.sparta.i_mu.dto.responseDto.SmsResponseDto;
+import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.RedisUtil;
+import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.utils.Base64;
@@ -27,6 +29,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 // sms
@@ -35,6 +38,7 @@ import java.util.Random;
 @Service
 public class SmsService {
     private final RedisUtil redisUtil;
+    private final UserRepository userRepository;
 
     @Value("${naver-cloud-sms.accessKey}")
     private String accessKey;
@@ -77,6 +81,13 @@ public class SmsService {
     }
 
     public SmsResponseDto sendSms(MessageDto messageDto) throws JsonProcessingException, RestClientException, URISyntaxException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        Optional<User> optionalUser = userRepository.findByPhonenumber(messageDto.getTo());
+
+        if (!optionalUser.isPresent()) {
+            throw new SmsService.UserNotFoundException("User with phonenumber " + messageDto + " not found");
+        }
+
         String time = Long.toString(System.currentTimeMillis());
         String smsConfirmNum = createSmsKey();
 
@@ -136,8 +147,13 @@ public class SmsService {
             redisUtil.removeData(to);  // 코드가 일치하면 코드를 제거합니다.
             return true;
         }
-
         return false;  // 코드가 일치하지 않거나 데이터가 없으면 false
+    }
+
+    public class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) {
+            super(message);
+        }
     }
 }
 

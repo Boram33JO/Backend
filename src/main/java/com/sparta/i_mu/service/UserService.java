@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -58,13 +60,13 @@ public class UserService {
     private final AwsS3Util awsS3Util;
     private final PostMapper postMapper;
     private final WishListMapper wishListMapper;
-    private final RedisConfig redisConfig;
 
     // 회원가입 서비스
     public ResponseEntity<MessageResponseDto> createUser(SignUpRequestDto signUpRequestDto) {
         String nickname = signUpRequestDto.getNickname();
         String password = passwordEncoder.encode(signUpRequestDto.getPassword());
         String email = signUpRequestDto.getEmail();
+        String phonenumber = signUpRequestDto.getPhonenumber();
 
 
 //        checkDuplicatedEmail(email);
@@ -83,11 +85,18 @@ public class UserService {
             throw new IllegalArgumentException("중복된 email 입니다.");
         }
 
+
         // 회원 nickname 중복 확인
         Optional<User> checkNickname = userRepository.findByNickname(nickname);
         if (checkNickname.isPresent()) {
             throw new IllegalArgumentException("중복된 nickname 입니다.");
         }
+
+        Optional<User> checkPhonenumber = userRepository.findByPhonenumber(phonenumber);
+        if (checkPhonenumber.isPresent()) {
+            throw new IllegalArgumentException("중복된 전화번호 입니다.");
+        }
+
 
         // 사용자 등록
 
@@ -95,7 +104,8 @@ public class UserService {
                 .email(email)
                 .nickname(nickname)
                 .password(password)
-//                .role(role)
+                .phonenumber(phonenumber)
+//              .role(role)
                 .build();
 
         userRepository.save(user);
@@ -375,5 +385,4 @@ public class UserService {
             return ResponseResource.error2(ErrorCode.TOKEN_INVALID);
         }
     }
-
 }
