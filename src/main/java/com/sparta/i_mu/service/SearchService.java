@@ -143,13 +143,12 @@ public class SearchService {
     }
 
 
-
     public SearchMainResponseDto getSearchMain() {
         SearchMainResponseDto searchMainResponseDto = SearchMainResponseDto.builder()
                 .topLocations(locationService.getTopLocations())
                 .topSearchKeywords(redisUtil.getSearchKeyword())
                 .topSongs(songService.getMostByCategoryPostSong())
-                .topPosts(postService.getPostByWishlist()).build();
+                .topPosts(postService.getPostByTopList()).build();
 
         return searchMainResponseDto;
     }
