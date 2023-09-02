@@ -229,24 +229,12 @@ public class PostService {
     }
 
     // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
-    public List<PostResponseDto> getPostByTopList(String sortBy) {
-        List<Post> posts;
-        if ("viewCount".equals(sortBy)) {
-            posts = postRepository.findAllByOrderByViewCountDesc();
-        } else {
-            posts = postRepository.findAllByOrderByWishlistCountDesc();
-        }
-        return posts.stream()
+    public List<PostResponseDto> getPostByTopList() {
+        return postRepository.findAllByOrderByWishlistCountDesc() .stream()
                 .map(postMapper::mapToPostResponseDto)
                 .limit(5)
                 .collect(Collectors.toList());
     }
-
-    //오버로딩
-    public List<PostResponseDto> getPostByTopList() {
-        return getPostByTopList("wishlistCount");
-    }
-
 
     // 서브게시물 페이지
 
@@ -257,13 +245,13 @@ public class PostService {
         Double longitude = postSearchRequestDto.getLongitude();
         Double latitude = postSearchRequestDto.getLatitude();
 
-        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(longitude, latitude, DISTANCE_IN_METERS, pageable);
+        Page<Post> posts = postRepository.findAllByLocationNearOrderByCreatedAtDesc(longitude,latitude, DISTANCE_IN_METERS, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
     }
 
     //서브 게시글 조회 - 카테고리 별 전체 조회 기본(최신순) -> queryDsl 적용✅
     public Page<PostResponseDto> getPostByCategory(Long category, Pageable pageable) {
-        Page<Post> posts = postRepository.findSubPostsByCategoryWithOrder(category, pageable);
+        Page <Post> posts = postRepository.findSubPostsByCategoryWithOrder(category, pageable);
         return posts.map(postMapper::mapToPostResponseDto);
 
     }
