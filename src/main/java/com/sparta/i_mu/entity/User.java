@@ -9,6 +9,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
@@ -27,6 +28,9 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String nickname;
+
+    @Column(nullable = false, unique = true)
+    private String phonenumber;
 
     @Enumerated(STRING)
     private Role role;

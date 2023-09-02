@@ -24,4 +24,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 검색 시 -> 검색 키워드와 일치하는 user 리스트를 나오게 한다.
     Page<User> findAllByNicknameContaining(String keyword, Pageable pageable);
 
+    Optional<User> findByPhonenumber(String phonenumber);
 }
