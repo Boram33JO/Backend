@@ -11,7 +11,6 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @Setter
 @Builder
-@Setter
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
 public class User {
@@ -42,7 +41,10 @@ public class User {
     @Column
     private String userImage;
 
+    @Column(nullable = false, unique = true)
+
     private Long kakaoId;
+
 
     public void update(User user) {
         this.nickname = user.getNickname();
