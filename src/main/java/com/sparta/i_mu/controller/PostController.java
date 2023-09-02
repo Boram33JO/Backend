@@ -77,7 +77,7 @@ public class PostController {
 
 
     // 메인페이지 전국 기준 좋아요 순 인기 게시글 조회
-    @GetMapping("/top-wishlist")
+    @GetMapping("/top-wishlists")
     @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
     public List<PostResponseDto> getPostBylist() {
         return postService.getPostByTopList();
