@@ -28,6 +28,7 @@ public class WishListMapper {
                 .postId(post.getId())
                 .category(post.getCategory().getId())
                 .wishlistCount(post.getWishlistCount())
+                .viewCount(post.getViewCount())
                 .postTitle(post.getPostTitle())
                 .createdAt(post.getCreatedAt())
                 .content(post.getContent())
