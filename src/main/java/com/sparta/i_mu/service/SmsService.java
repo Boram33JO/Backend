@@ -85,7 +85,7 @@ public class SmsService {
         Optional<User> optionalUser = userRepository.findByPhonenumber(messageDto.getTo());
 
         if (optionalUser.isPresent()) {
-            throw new SmsService.UserNotFoundException("User with phonenumber " + messageDto + " not found");
+            throw new SmsService.UserNotFoundException("User with phonenumber " + messageDto + " Already exist");
         }
 
         String time = Long.toString(System.currentTimeMillis());
