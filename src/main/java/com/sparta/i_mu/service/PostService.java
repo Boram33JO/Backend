@@ -5,6 +5,7 @@ import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
+import com.sparta.i_mu.dto.responseDto.TopPostResponseDto;
 import com.sparta.i_mu.entity.*;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
@@ -58,7 +59,7 @@ public class PostService {
     //게시글 생성
     @Transactional
     public ResponseResource<?> createPost(PostSaveRequestDto postSaveRequestDto, User user) {
-        if(user == null){
+        if (user == null) {
             return ResponseResource.error2(ErrorCode.USER_UNAUTHORIZED);
         }
 
@@ -70,7 +71,7 @@ public class PostService {
                 .build();
 
         Category category = categoryRepository.findById(postSaveRequestDto.getCategory()).orElseThrow(
-                ()-> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
+                () -> new IllegalArgumentException("해당 카테고리가 존재하지 않습니다."));
 
         locationRepository.save(location);
         // post 생성
@@ -88,17 +89,18 @@ public class PostService {
         // 노래 list Song에 저장 후 각 PostSongLink 생성
         postSaveRequestDto.getSongs().stream()
                 .map(songSaveRequestDto -> songRepository.findBySongNum(songSaveRequestDto.getSongNum())
-                .orElseGet(()->{
-                    Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
-                    songRepository.save(newSong);
-                    return newSong;})
+                        .orElseGet(() -> {
+                            Song newSong = SONG_INSTANCE.requestDtoToEntity(songSaveRequestDto);
+                            songRepository.save(newSong);
+                            return newSong;
+                        })
                 ).map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
 
         //postId 반환 값 넣어주기
         Map<String, Long> response = new HashMap<>();
         response.put("postId", post.getId());
-        return ResponseResource.data(response,HttpStatus.CREATED,"게시글이 생성되었습니다.");
+        return ResponseResource.data(response, HttpStatus.CREATED, "게시글이 생성되었습니다.");
     }
 
     /**
@@ -129,7 +131,7 @@ public class PostService {
 
         post.update(postRequestDto, newCategory);
         postRepository.save(post);
-        return ResponseResource.message("게시물이 업데이트 되었습니다.",HttpStatus.OK);
+        return ResponseResource.message("게시물이 업데이트 되었습니다.", HttpStatus.OK);
     }
 
 
@@ -172,12 +174,10 @@ public class PostService {
         newSongsNum.stream()
                 .filter(songNum -> !songsNum.contains(songNum))
                 .map(songNum -> songRepository.findBySongNum(songNum)
-                        .orElseThrow(()-> new IllegalArgumentException("해당 곡은 존재하지 않습니다.")))
+                        .orElseThrow(() -> new IllegalArgumentException("해당 곡은 존재하지 않습니다.")))
                 .map(post::addPostSongLink)
                 .forEach(postSongLinkRepository::save);
     }
-
-
 
 
     /**
@@ -192,7 +192,7 @@ public class PostService {
     public ResponseResource<?> deletePost(Long postId, User user) throws AccessDeniedException {
 
         Post post = findPost(postId);
-        checkAuthority(post,user);
+        checkAuthority(post, user);
         post.getComment().stream()
                 .filter(comment -> !comment.getDeleted())
                 .forEach(comment -> {
@@ -201,7 +201,7 @@ public class PostService {
                 });
         post.setDeletedAt(LocalDateTime.now());
         post.setDeleted(true);
-        return ResponseResource.message("해당 게시글 삭제를 완료하였습니다.",HttpStatus.OK);
+        return ResponseResource.message("해당 게시글 삭제를 완료하였습니다.", HttpStatus.OK);
 
     }
 
@@ -213,7 +213,7 @@ public class PostService {
 
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().sorted(Comparator.comparing(Category::getId))
-                .map(category ->{
+                .map(category -> {
                     List<Post> posts = postRepository.findMainPostsByCategory(category);
                     List<PostResponseDto> postResponseDtoList = posts.stream()
                             .map(postMapper::mapToPostResponseDto)
@@ -230,14 +230,25 @@ public class PostService {
     }
 
     // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
-    public List<PostResponseDto> getPostByWishlist() {
-        return postRepository.findAllByOrderByWishlistCountDesc().stream()
+    public TopPostResponseDto getPostByTopList() {
+        List<PostResponseDto> wishlistTopPosts = getTopPostsByWishlist();
+        List<PostResponseDto> viewCountTopPosts = getTopPostsByViewCount();
+        return new TopPostResponseDto(wishlistTopPosts, viewCountTopPosts);
+    }
+
+    public List<PostResponseDto> getTopPostsByWishlist() {
+       return postRepository.findAllByOrderByWishlistCountDesc() .stream()
                 .map(postMapper::mapToPostResponseDto)
                 .limit(5)
                 .collect(Collectors.toList());
-
     }
 
+    public List<PostResponseDto> getTopPostsByViewCount() {
+        return postRepository.findAllByOrderByViewCountDesc() .stream()
+                .map(postMapper::mapToPostResponseDto)
+                .limit(5)
+                .collect(Collectors.toList());
+    }
     // 서브게시물 페이지
 
     // 서브 게시글 조회 - 내 주변 -> queryDsl 적용✅

@@ -4,6 +4,7 @@ import com.sparta.i_mu.dto.requestDto.MapPostSearchRequestDto;
 import com.sparta.i_mu.dto.requestDto.PostSaveRequestDto;
 import com.sparta.i_mu.dto.responseDto.PostByCategoryResponseDto;
 import com.sparta.i_mu.dto.responseDto.PostResponseDto;
+import com.sparta.i_mu.dto.responseDto.TopPostResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.security.UserDetailsImpl;
@@ -77,10 +78,10 @@ public class PostController {
 
 
     // 메인페이지 전국 기준 좋아요 순 인기 게시글 조회
-    @GetMapping("/top-wishlists")
+    @GetMapping("/top-lists")
     @Operation(summary = "전국 기준 좋아요 순 인기 게시글 조회", description = "전국 기준 좋아요 순 인기 게시글 조회")
-    public List<PostResponseDto> getPostByWishlist() {
-        return postService.getPostByWishlist();
+    public TopPostResponseDto getPostByTopList() {
+        return postService.getPostByTopList();
     }
 
 
