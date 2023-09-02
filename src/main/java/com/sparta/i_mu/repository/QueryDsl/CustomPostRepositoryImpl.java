@@ -135,15 +135,15 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
      * 메인페이지 - 조회수 순을 기준으로 인기 게시글 내림차순
      * @return
      */
-    public List<Post> findAllByOrderByViewCountDesc() {
-        QPost qPost = QPost.post;
-
-        return jpaQueryFactory
-                .selectFrom(qPost)
-                .where(qPost.deleted.eq(false))
-                .orderBy(qPost.viewCount.desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
-                .fetch();
-    }
+//    public List<Post> findAllByOrderByViewCountDesc() {
+//        QPost qPost = QPost.post;
+//
+//        return jpaQueryFactory
+//                .selectFrom(qPost)
+//                .where(qPost.deleted.eq(false))
+//                .orderBy(qPost.viewCount.desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
+//                .fetch();
+//    }
 
 
 //    지도페이지 -> 위치 + 카테고리 별 조회
