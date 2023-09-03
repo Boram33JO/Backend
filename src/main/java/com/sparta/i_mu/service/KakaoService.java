@@ -105,6 +105,10 @@ public class KakaoService {
                 .body(body);
 
         log.info("HTTP 요청");
+        log.info("URI :{} " , uri);
+        log.info("HEADER:{} " , headers);
+        log.info("BODY:{}" , body);
+
         log.info("redirect_uri used 전 : {}", frontUrl);
         // HTTP 요청 보내기;
         ResponseEntity<String> response = restTemplate.exchange(
