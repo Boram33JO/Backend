@@ -3,13 +3,13 @@ package com.sparta.i_mu.entity;
 import com.nimbusds.oauth2.sdk.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import static jakarta.persistence.EnumType.STRING;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
@@ -45,7 +45,8 @@ public class User extends Timestamped {
     private Long kakaoId;
 
     @Column
-    private boolean deleted; // 삭제 여부 판별 필드
+    @Builder.Default
+    private Boolean deleted = false; // 삭제 여부 판별 필드
 
 
     public void update(User user) {
@@ -65,5 +66,9 @@ public class User extends Timestamped {
 
     public void setDeleted(boolean deletedUser) {
         this.deleted = deletedUser;
+    }
+
+    public void setPassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }
