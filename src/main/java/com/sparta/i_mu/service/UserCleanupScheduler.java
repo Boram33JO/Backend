@@ -22,12 +22,12 @@ public class UserCleanupScheduler {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-//    @Scheduled(cron = "0 0 0 * * ?")
-    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
+//    @Scheduled(cron = "0 */3 * * * ?")
     public void cleanupUsers() {
         LocalDateTime now = LocalDateTime.now();
         // 1. 삭제할 유저 리스트 조회
-        List<User> usersToBeDeleted = userRepository.findAllByDeletedTrueAndDeleteAtBefore(now.minusMinutes(1));
+        List<User> usersToBeDeleted = userRepository.findAllByDeletedTrueAndDeleteAtBefore(now.minusMonths(1));
         log.info("삭제 될 유저의 리스트 : {}", usersToBeDeleted);
 
         // 2. 삭제할 유저의 ID 목록 추출
