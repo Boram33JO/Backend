@@ -19,10 +19,12 @@ public class Follow {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 내가 팔로우를 당한
     @ManyToOne
     @JoinColumn(name = "follow_user_id")
     private User followUser;
 
+    // 내가 팔로우를 한
     @ManyToOne
     @JoinColumn(name = "follwed_user_id")
     private User followedUser;

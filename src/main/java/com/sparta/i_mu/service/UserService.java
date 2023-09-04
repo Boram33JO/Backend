@@ -409,13 +409,26 @@ public class UserService {
             });
 
             List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
-
             posts.forEach(post -> {
                 post.setDeletedAt(LocalDateTime.now());
                 post.setDeleted(true);
                 postRepository.save(post);
             });
+
+            List<Wishlist> wishlists = wishlistRepository.findAllByUserId(userId);
+            log.info("wishlists: {}", wishlists);
+            wishlistRepository.deleteAll(wishlists);
+
+            List<Follow> follows = followReporitory.findAllByFollowUserId(userId);
+            log.info("follows :{}",follows);
+            followReporitory.deleteAll(follows);
+
+            List<Follow> followed = followReporitory.findAllByFollowedUserId(userId);
+            log.info("followed :{}",followed);
+            followReporitory.deleteAll(followed);
+
             // 그다음 회원을 삭제? - 아예 유저의 데이터를 삭제해야하나?
+
             cancelUser.setDeleted(true);
             cancelUser.setDeletedAt(LocalDateTime.now());
             userRepository.save(cancelUser);
