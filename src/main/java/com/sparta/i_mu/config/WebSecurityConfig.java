@@ -88,6 +88,8 @@ public class WebSecurityConfig {
                             .requestMatchers(POST, "/sms/**").permitAll()
                             .requestMatchers(POST, "/user/msg-revise-password/**").permitAll()
                             .requestMatchers(POST, "/user/msg-check/**").permitAll()
+                            .requestMatchers(POST, "/user/msg-check/**").permitAll()
+                            .requestMatchers(POST, "/user/find-email/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })

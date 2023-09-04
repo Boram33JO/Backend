@@ -14,9 +14,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class FindService {
-
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     public void changePassword(String email, String newPassword) {
@@ -27,12 +25,18 @@ public class FindService {
         }
 
         User user = optionalUser.get();
-
         // 새로운 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(encodedPassword);
 
         userRepository.save(user);
+    }
+
+    public String findemail(String to){
+        Optional<User> userinfo = userRepository.findByTo(to);
+        User user = userinfo.get();
+        String useremail = user.getEmail();
+        return useremail;
     }
 
     public class UserNotFoundException extends RuntimeException {
