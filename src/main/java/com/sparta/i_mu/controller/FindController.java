@@ -2,6 +2,7 @@ package com.sparta.i_mu.controller;
 
 
 import com.sparta.i_mu.dto.requestDto.ChangePasswordRequest;
+import com.sparta.i_mu.dto.requestDto.FindEmailRequestDto;
 import com.sparta.i_mu.service.FindService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,9 +19,15 @@ public class FindController {
     private final FindService findService;
 
     @PostMapping("/change-password")
-    @Operation(summary = "비밀번호 수정", description = "비밀번호 수정")
+    @Operation(summary = "잃어버린 비밀번호 수정", description = "잃어버린 비밀번호 수정")
     public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
         findService.changePassword(request.getEmail(), request.getNewPassword());
         return ResponseEntity.ok("Password changed successfully");
+    }
+
+    @GetMapping("/find-email")
+    public ResponseEntity<?> findemail(@RequestBody FindEmailRequestDto findEmailRequestDto) {
+        String useremail = findService.findemail(findEmailRequestDto.getTo());
+        return ResponseEntity.ok(useremail);
     }
 }
