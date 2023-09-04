@@ -13,7 +13,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Builder
 @AllArgsConstructor(access = PROTECTED)
 @NoArgsConstructor(access = PROTECTED)
-public class User {
+public class User extends Timestamped {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -41,7 +41,11 @@ public class User {
     @Column
     private String userImage;
 
+    @Column
     private Long kakaoId;
+
+    @Column
+    private Boolean deleted; // 삭제 여부 판별 필드
 
 
     public void update(User user) {
@@ -57,5 +61,9 @@ public class User {
     public User kakaoIdUpdate(Long kakaoId) {
         this.kakaoId = kakaoId;
         return this;
+    }
+
+    public void setDeleted(boolean deletedUser) {
+        this.deleted = deletedUser;
     }
 }

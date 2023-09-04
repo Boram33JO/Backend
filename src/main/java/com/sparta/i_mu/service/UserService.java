@@ -1,6 +1,5 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.config.RedisConfig;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
@@ -21,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -31,10 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -377,12 +376,60 @@ public class UserService {
             // 해당 accessToken - RefreshToken 삭제
             redisUtil.removeRefreshToken(accessToken);
             //새롭게 redis에 블랙리스트 저장 - 만료시간이 지났을때 블랙리스트도 삭제
-            redisUtil.storeBlacklist(userInfo, accessToken,expirationInSeconds);
+            redisUtil.storeBlacklist(userInfo, accessToken, expirationInSeconds);
             return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
 
         } catch (Exception e) {
             log.error("로그아웃 중 오류 발생 : ", e);
             return ResponseResource.error2(ErrorCode.TOKEN_INVALID);
         }
+    }
+
+    /**
+     * 회원 탈퇴 로직
+     *
+     * @param user
+     * @return
+     */
+    @Transactional
+    public ResponseResource<?> cancelUser(User user) {
+        // 먼저 회원이 데이터 베이스에 존재하는지
+        try {
+            Long userId = user.getId();
+
+            User cancelUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
+
+            // 그다음 회원이 쓴 게시글들, 댓글들을 전부 deleted 처리하기
+            List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+
+            comments.forEach(comment -> {
+                comment.setDeletedAt(LocalDateTime.now());
+                comment.setDeleted(true);
+                commentRepository.save(comment);
+            });
+
+            List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
+
+            posts.forEach(post -> {
+                post.setDeletedAt(LocalDateTime.now());
+                post.setDeleted(true);
+                postRepository.save(post);
+            });
+            // 그다음 회원을 삭제? - 아예 유저의 데이터를 삭제해야하나?
+            cancelUser.setDeleted(true);
+            cancelUser.setDeletedAt(LocalDateTime.now());
+            userRepository.save(cancelUser);
+
+        } catch (DataAccessException e) {
+            // DB 관련 예외 처리
+            log.error("DB를 처리하는 과정에서 error 발생 : ", e);
+            return ResponseResource.error2(ErrorCode.DATABASE_PROCESSING_ERROR);
+
+        } catch (Exception e) {
+            // 그 외의 예외 처리
+            log.error("알 수 없는 오류가 발생 : " , e);
+            return ResponseResource.error("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return ResponseResource.message("회원 탈퇴 처리가 완료되었습니다.", HttpStatus.OK);
     }
 }
