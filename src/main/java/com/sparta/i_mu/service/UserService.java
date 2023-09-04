@@ -392,7 +392,7 @@ public class UserService {
      * @return
      */
     @Transactional
-    public ResponseResource<?> cancelUser(User user) {
+    public ResponseResource<?> cancelUser(User user, String AccessToken) {
         // 먼저 회원이 데이터 베이스에 존재하는지
         try {
             Long userId = user.getId();
@@ -419,6 +419,8 @@ public class UserService {
             cancelUser.setDeleted(true);
             cancelUser.setDeletedAt(LocalDateTime.now());
             userRepository.save(cancelUser);
+
+            redisUtil.removeRefreshToken(AccessToken);
 
         } catch (DataAccessException e) {
             // DB 관련 예외 처리
