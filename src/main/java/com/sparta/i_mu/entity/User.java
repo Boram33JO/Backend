@@ -45,7 +45,7 @@ public class User extends Timestamped {
     private Long kakaoId;
 
     @Column
-    private Boolean deleted; // 삭제 여부 판별 필드
+    private boolean deleted; // 삭제 여부 판별 필드
 
 
     public void update(User user) {

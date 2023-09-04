@@ -33,4 +33,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return
      */
     List<User> findAllByDeletedTrueAndDeleteAtBefore(LocalDateTime localDateTime);
+
+    Optional<User> findByEmailAndDeletedFalse(String email);
 }
