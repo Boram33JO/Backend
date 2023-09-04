@@ -41,6 +41,13 @@ public class SmsController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @PostMapping("/send2")
+    @Operation(summary = "전화번호 문자 인증 보내기", description ="전화번호 문자 인증번호 보내기")
+    public ResponseEntity<?> sendSMS(@RequestBody MessageDto messageDto) throws UnsupportedEncodingException, URISyntaxException, NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+        SmsResponseDto responseDto = smsService.sendSMS(messageDto);
+        return ResponseEntity.ok(responseDto);
+    }
+
     @PostMapping("/check")
     @Operation(summary = "전화번호 문자 인증 번호검증", description ="전화번호 문자 인증번호 검증")
     public ResponseEntity<?> verifyPhoneCode(@RequestBody SmsDto smsDto){

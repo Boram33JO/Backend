@@ -90,6 +90,7 @@ public class WebSecurityConfig {
                             .requestMatchers(POST, "/user/msg-check/**").permitAll()
                             .requestMatchers(POST, "/user/msg-check/**").permitAll()
                             .requestMatchers(POST, "/user/find-email/**").permitAll()
+                            .requestMatchers(POST, "/sms/send2/**").permitAll()
                             .requestMatchers(SWAGGER_WHITELIST).permitAll()
                             .anyRequest().authenticated();
                 })

@@ -127,6 +127,53 @@ public class SmsService {
         return smsResponseDto;
     }
 
+    public SmsResponseDto sendSMS(MessageDto messageDto) throws JsonProcessingException, RestClientException, URISyntaxException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        Optional<User> optionalUser = userRepository.findByPhonenumber(messageDto.getTo());
+
+        if (!optionalUser.isPresent()) {
+            throw new SmsService.UserNotFoundException("User with phonenumber " + messageDto + " Already exist");
+        }
+
+        String time = Long.toString(System.currentTimeMillis());
+        String smsConfirmNum = createSmsKey();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-ncp-apigw-timestamp", time);
+        headers.set("x-ncp-iam-access-key", accessKey);
+        headers.set("x-ncp-apigw-signature-v2", getSignature(time)); // signature 서명
+
+        List<MessageDto> messages = new ArrayList<>();
+        messages.add(messageDto);
+
+        SmsRequestDto request = SmsRequestDto.builder()
+                .type("SMS")
+                .contentType("COMM")
+                .countryCode("82")
+                .from(phone)
+                .content("[P.PLE] 인증번호 [" + smsConfirmNum + "]를 입력해주세요")
+                .messages(messages)
+                .build();
+
+        //쌓은 바디를 json형태로 반환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = objectMapper.writeValueAsString(request);
+        // jsonBody와 헤더 조립
+        HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+        //restTemplate로 post 요청 보내고 오류가 없으면 202코드 반환
+        SmsResponseDto smsResponseDto = restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, SmsResponseDto.class);
+        SmsResponseDto responseDto = new SmsResponseDto(smsConfirmNum);
+
+        String confirmNum = smsConfirmNum;
+        String getTo = messageDto.getTo();
+        redisUtil.setDataExpir(getTo, confirmNum, 60 * 5L);
+        return smsResponseDto;
+    }
+
 
 
     // 인증코드 만들기
