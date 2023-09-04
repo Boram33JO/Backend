@@ -27,7 +27,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPhonenumber(String phonenumber);
 
-    Optional<User> findByTo(String to);
 
     /**
      * 회원 탈퇴 시 일정기간이 지난 후 자동삭제 로직

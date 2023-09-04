@@ -33,7 +33,7 @@ public class FindService {
     }
 
     public String findemail(String to){
-        Optional<User> userinfo = userRepository.findByTo(to);
+        Optional<User> userinfo = userRepository.findByPhonenumber(to);
         User user = userinfo.get();
         String useremail = user.getEmail();
         return useremail;
