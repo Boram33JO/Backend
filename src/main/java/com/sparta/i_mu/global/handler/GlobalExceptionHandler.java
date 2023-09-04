@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
@@ -22,6 +23,7 @@ public class GlobalExceptionHandler {
 
     // 일반적인 클라이언트의 잘못된 요청 시
     @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseResource<?> handleException(IllegalArgumentException e){
         return ResponseResource.error(e.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
