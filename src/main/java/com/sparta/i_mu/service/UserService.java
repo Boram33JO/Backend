@@ -1,6 +1,5 @@
 package com.sparta.i_mu.service;
 
-import com.sparta.i_mu.config.RedisConfig;
 import com.sparta.i_mu.dto.requestDto.NicknameRequestDto;
 import com.sparta.i_mu.dto.requestDto.PasswordRequestDto;
 import com.sparta.i_mu.dto.requestDto.SignUpRequestDto;
@@ -21,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -31,10 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -59,6 +58,7 @@ public class UserService {
     private final RedisUtil redisUtil;
     private final AwsS3Util awsS3Util;
     private final PostMapper postMapper;
+    private final KakaoService kakaoService;
     private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
@@ -377,12 +377,102 @@ public class UserService {
             // 해당 accessToken - RefreshToken 삭제
             redisUtil.removeRefreshToken(accessToken);
             //새롭게 redis에 블랙리스트 저장 - 만료시간이 지났을때 블랙리스트도 삭제
-            redisUtil.storeBlacklist(userInfo, accessToken,expirationInSeconds);
+            redisUtil.storeBlacklist(userInfo, accessToken, expirationInSeconds);
             return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
 
         } catch (Exception e) {
             log.error("로그아웃 중 오류 발생 : ", e);
             return ResponseResource.error2(ErrorCode.TOKEN_INVALID);
         }
+    }
+
+    /**
+     * 회원 탈퇴 로직
+     *
+     * @param user
+     * @return
+     */
+    @Transactional
+    public ResponseResource<?> cancelUser(User user, HttpServletRequest req) {
+
+        String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
+        try {
+            // 카카오 아이디가 있는데 연결해제가 안됬을 때
+            if (user.getKakaoId() != null && !unlinkKakao(AccessToken)) {
+                return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
+            }
+            // 1. 카카오 아이디가 있고 연결해제가 됬을 때
+            // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때
+
+            // 먼저 회원이 데이터 베이스에 존재하는지
+            Long userId = user.getId();
+            User cancelUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
+
+            // 그다음 회원이 쓴 게시글들, 댓글들을 전부 deleted 처리하기
+            deleteCommentsByUser(userId);
+            deletePostsByUser(userId);
+            deleteWishlistsByUser(userId);
+            deletedFollowByUser(userId);
+            // 그다음 회원을 삭제? - 아예 유저의 데이터를 삭제해야하나?
+            markUserAsDeleted(cancelUser);
+            // redis에서 삭제
+            redisUtil.removeRefreshToken(AccessToken);
+
+        } catch (DataAccessException e) {
+            // DB 관련 예외 처리
+            log.error("DB를 처리하는 과정에서 error 발생 : ", e);
+            return ResponseResource.error2(ErrorCode.DATABASE_PROCESSING_ERROR);
+
+        } catch (Exception e) {
+            // 그 외의 예외 처리
+            log.error("알 수 없는 오류가 발생 : ", e);
+            return ResponseResource.error("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+        return ResponseResource.message("회원 탈퇴 처리가 완료되었습니다.", HttpStatus.OK);
+    }
+
+    private boolean unlinkKakao(String AccessToken) {
+        return kakaoService.unlinkKakaoAccount(AccessToken);
+    }
+
+    private void deleteCommentsByUser(Long userId) {
+        List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+        comments.forEach(comment -> {
+            comment.setDeletedAt(LocalDateTime.now());
+            comment.setDeleted(true);
+            commentRepository.save(comment);
+        });
+    }
+
+    private void deletePostsByUser(Long userId) {
+        List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
+        posts.forEach(post -> {
+            post.setDeletedAt(LocalDateTime.now());
+            post.setDeleted(true);
+            postRepository.save(post);
+        });
+    }
+
+    private void deleteWishlistsByUser(Long userId) {
+        List<Wishlist> wishlists = wishlistRepository.findAllByUserId(userId);
+        log.info("wishlists: {}", wishlists);
+        wishlistRepository.deleteAll(wishlists);
+    }
+
+    private void deletedFollowByUser(Long userId) {
+        List<Follow> follows = followReporitory.findAllByFollowUserId(userId);
+        log.info("follows :{}", follows);
+        followReporitory.deleteAll(follows);
+
+        List<Follow> followed = followReporitory.findAllByFollowedUserId(userId);
+        log.info("followed :{}", followed);
+        followReporitory.deleteAll(followed);
+    }
+
+    private void markUserAsDeleted(User cancelUser) {
+
+        cancelUser.setDeleted(true);
+        cancelUser.setDeletedAt(LocalDateTime.now());
+        userRepository.save(cancelUser);
     }
 }

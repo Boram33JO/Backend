@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -49,4 +48,17 @@ public interface PostRepository extends JpaRepository<Post, Long>, CustomPostRep
     // 내가 쓴 포스팅 조회
     Page<Post> findAllByUserIdAndDeletedFalse(Long userId, Pageable pageable);
 
+    /**
+     *
+     * @param userId
+     * @return
+     */
+    List<Post> findAllByUserIdAndDeletedFalse(Long userId);
+
+    /**
+     * 탈퇴한 유저의 일정 시간이후 게시글을 자동삭제 되게 하기 위해 해당 유저의 아이디로 조회
+     * @param userIdsToBeDeleted
+     * @return
+     */
+    List<Post> findAllByUserIdIn(List<Long> userIdsToBeDeleted);
 }

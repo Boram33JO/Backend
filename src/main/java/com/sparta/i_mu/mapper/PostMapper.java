@@ -99,6 +99,7 @@ public class PostMapper {
                 .content(post.getContent())
                 .category(post.getCategory().getId())
                 .wishlistCount(post.getWishlistCount())
+                .viewCount(post.getViewCount())
                 .songs(songs)
                 .build();
     }

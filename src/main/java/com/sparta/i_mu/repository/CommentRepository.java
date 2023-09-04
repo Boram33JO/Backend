@@ -12,7 +12,24 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Page<Comment> findAllByUserIdAndDeletedFalse(Long userId, Pageable pageable);
 
-    List<Comment> findAllByPostIdAndDeletedFalse(Long id);
+
 
     Page<Comment> findAllByPostIdAndDeletedFalse(Long id, Pageable pageable);
+
+
+    // 회원 탈퇴
+
+    /**
+     * 회원 탈퇴한 유저가 일정 시간이 지났을 때 아예 삭제처리를 위한 처리
+     * @param userIdsToBeDeleted
+     * @return
+     */
+    List<Comment> findAllByUserIdIn(List<Long> userIdsToBeDeleted);
+
+    /**
+     * 회원 탈퇴 시 찾는 용도
+     * @param userId
+     * @return
+     */
+    List<Comment> findAllByUserIdAndDeletedFalse(Long userId);
 }

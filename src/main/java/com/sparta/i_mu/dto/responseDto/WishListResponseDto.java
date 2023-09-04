@@ -1,6 +1,5 @@
 package com.sparta.i_mu.dto.responseDto;
 
-import com.sparta.i_mu.entity.Wishlist;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,6 +18,7 @@ public class WishListResponseDto {
     private String userImage;
     private Long category;
     private int wishlistCount;
+    private int viewCount;
 
     private List<SongResponseDto> songs;
 
