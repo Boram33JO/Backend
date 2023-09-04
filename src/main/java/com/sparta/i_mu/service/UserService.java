@@ -58,6 +58,7 @@ public class UserService {
     private final RedisUtil redisUtil;
     private final AwsS3Util awsS3Util;
     private final PostMapper postMapper;
+    private final KakaoService kakaoService;
     private final WishListMapper wishListMapper;
 
     // 회원가입 서비스
@@ -392,47 +393,29 @@ public class UserService {
      * @return
      */
     @Transactional
-    public ResponseResource<?> cancelUser(User user, String AccessToken) {
-        // 먼저 회원이 데이터 베이스에 존재하는지
-        try {
-            Long userId = user.getId();
+    public ResponseResource<?> cancelUser(User user, HttpServletRequest req) {
 
+        String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
+        try {
+            // 카카오 아이디가 있는데 연결해제가 안됬을 때
+            if (user.getKakaoId() != null && !unlinkKakao(AccessToken)) {
+                return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
+            }
+            // 1. 카카오 아이디가 있고 연결해제가 됬을 때
+            // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때
+
+            // 먼저 회원이 데이터 베이스에 존재하는지
+            Long userId = user.getId();
             User cancelUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
 
             // 그다음 회원이 쓴 게시글들, 댓글들을 전부 deleted 처리하기
-            List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
-
-            comments.forEach(comment -> {
-                comment.setDeletedAt(LocalDateTime.now());
-                comment.setDeleted(true);
-                commentRepository.save(comment);
-            });
-
-            List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
-            posts.forEach(post -> {
-                post.setDeletedAt(LocalDateTime.now());
-                post.setDeleted(true);
-                postRepository.save(post);
-            });
-
-            List<Wishlist> wishlists = wishlistRepository.findAllByUserId(userId);
-            log.info("wishlists: {}", wishlists);
-            wishlistRepository.deleteAll(wishlists);
-
-            List<Follow> follows = followReporitory.findAllByFollowUserId(userId);
-            log.info("follows :{}",follows);
-            followReporitory.deleteAll(follows);
-
-            List<Follow> followed = followReporitory.findAllByFollowedUserId(userId);
-            log.info("followed :{}",followed);
-            followReporitory.deleteAll(followed);
-
+            deleteCommentsByUser(userId);
+            deletePostsByUser(userId);
+            deleteWishlistsByUser(userId);
+            deletedFollowByUser(userId);
             // 그다음 회원을 삭제? - 아예 유저의 데이터를 삭제해야하나?
-
-            cancelUser.setDeleted(true);
-            cancelUser.setDeletedAt(LocalDateTime.now());
-            userRepository.save(cancelUser);
-
+            markUserAsDeleted(cancelUser);
+            // redis에서 삭제
             redisUtil.removeRefreshToken(AccessToken);
 
         } catch (DataAccessException e) {
@@ -442,9 +425,54 @@ public class UserService {
 
         } catch (Exception e) {
             // 그 외의 예외 처리
-            log.error("알 수 없는 오류가 발생 : " , e);
+            log.error("알 수 없는 오류가 발생 : ", e);
             return ResponseResource.error("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return ResponseResource.message("회원 탈퇴 처리가 완료되었습니다.", HttpStatus.OK);
+    }
+
+    private boolean unlinkKakao(String AccessToken) {
+        return kakaoService.unlinkKakaoAccount(AccessToken);
+    }
+
+    private void deleteCommentsByUser(Long userId) {
+        List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+        comments.forEach(comment -> {
+            comment.setDeletedAt(LocalDateTime.now());
+            comment.setDeleted(true);
+            commentRepository.save(comment);
+        });
+    }
+
+    private void deletePostsByUser(Long userId) {
+        List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
+        posts.forEach(post -> {
+            post.setDeletedAt(LocalDateTime.now());
+            post.setDeleted(true);
+            postRepository.save(post);
+        });
+    }
+
+    private void deleteWishlistsByUser(Long userId) {
+        List<Wishlist> wishlists = wishlistRepository.findAllByUserId(userId);
+        log.info("wishlists: {}", wishlists);
+        wishlistRepository.deleteAll(wishlists);
+    }
+
+    private void deletedFollowByUser(Long userId) {
+        List<Follow> follows = followReporitory.findAllByFollowUserId(userId);
+        log.info("follows :{}", follows);
+        followReporitory.deleteAll(follows);
+
+        List<Follow> followed = followReporitory.findAllByFollowedUserId(userId);
+        log.info("followed :{}", followed);
+        followReporitory.deleteAll(followed);
+    }
+
+    private void markUserAsDeleted(User cancelUser) {
+
+        cancelUser.setDeleted(true);
+        cancelUser.setDeletedAt(LocalDateTime.now());
+        userRepository.save(cancelUser);
     }
 }

@@ -59,8 +59,7 @@ public class UserController {
     @Operation(summary = "회원탈퇴", description = "회원탈퇴")
     public ResponseResource<?> cancelUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                           HttpServletRequest req) {
-        String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
-        return userService.cancelUser(userDetails.getUser(), AccessToken);
+        return userService.cancelUser(userDetails.getUser(), req);
     }
 
     @GetMapping("/user/{userId}")
