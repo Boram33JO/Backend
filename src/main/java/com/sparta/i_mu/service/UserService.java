@@ -54,6 +54,8 @@ public class UserService {
 
     private final CommentRepository commentRepository;
 
+    private final EmitterRepository emitterRepository;
+
     private final JwtUtil jwtUtil;
     private final RedisUtil redisUtil;
     private final AwsS3Util awsS3Util;
@@ -377,7 +379,16 @@ public class UserService {
             // 해당 accessToken - RefreshToken 삭제
             redisUtil.removeRefreshToken(accessToken);
             //새롭게 redis에 블랙리스트 저장 - 만료시간이 지났을때 블랙리스트도 삭제
-            redisUtil.storeBlacklist(userInfo, accessToken, expirationInSeconds);
+
+            redisUtil.storeBlacklist(userInfo, accessToken,expirationInSeconds);
+
+            // sse 로그아웃 임시 
+//             Optional<User> findUser = userRepository.findByEmail(userInfo);
+//             String id = String.valueOf(findUser.get().getId());
+//             emitterRepository.deleteAllStartWithId(id);
+//             emitterRepository.deleteAllEventCacheStartWithId(id);
+
+
             return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
 
         } catch (Exception e) {

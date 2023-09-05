@@ -33,6 +33,9 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "post_id")
     private Post post;
 
+//    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+//    private Set<Notification> notifications = new HashSet<>();
+
     public void update(CommentRequestDto requestDto) {
         this.content = requestDto.getContent();
     }
