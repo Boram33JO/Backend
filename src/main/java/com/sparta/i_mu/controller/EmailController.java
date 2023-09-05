@@ -53,6 +53,26 @@ public class EmailController {
         return ResponseEntity.ok("인증 메일을 발송했습니다");
     }
 
+
+    @PostMapping("/before-email")
+    @Operation(summary = "로그인 전 이메일 인증 번호 전송", description ="로그인 전 이메일 인증 번호 전송")
+    public ResponseEntity<?> sendmail(@RequestBody EmailPostDto emailPostDto) {
+        System.out.println(emailPostDto.getEmail());
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(emailPostDto.getEmail())
+                .subject("[P.PLE] 이메일 인증을 위한 인증 코드 발송")
+                .build();
+
+        String code = emailService.sendeMail(emailMessage, emailPostDto.getEmail(), "email");
+
+        EmailResponseDto emailResponseDto = new EmailResponseDto();
+        emailResponseDto.setCode(code);
+
+        return ResponseEntity.ok("인증 메일을 발송했습니다");
+    }
+
+
+
     @PostMapping("/check")
     @Operation(summary = "이메일 인증 번호 검증", description ="이메일 인증번호 검증")
     public ResponseEntity<?> Checkcode(@RequestBody EmailPostDto emailPostDto){
