@@ -103,7 +103,7 @@ public class SongService {
 //            String key = keyword.replace(" ", "");
 //            log.info("검색 키워드: 원본 [{}], 수정 [{}]", keyword, key);
             SearchTracksRequest searchTracksRequest = spotifyApi.searchTracks(keyword)
-                    .market(CountryCode.KR)
+                    // .market(CountryCode.KR)
                     .limit(30)
                     .offset(0)
                     .build();
@@ -154,14 +154,14 @@ public class SongService {
     }
 
     /**
-     * 전체에서 포스팅이 가장 많이 된 top4 노래 조회 - 노래 검색 페이지에서 사용
+     * 전체에서 포스팅이 가장 많이 된 top10 노래 조회 - 노래 검색 페이지에서 사용
      *
-     * @return 인기노래 4개
+     * @return 인기노래 10개
      */
     public List<SongResponseDto> getMostAllPostSong() {
         return postSongLinkRepository.findTopSong().stream()
                 .map(songMapper::entityToResponseDto)
-                .limit(4)
+                .limit(10)
                 .collect(Collectors.toList());
     }
 

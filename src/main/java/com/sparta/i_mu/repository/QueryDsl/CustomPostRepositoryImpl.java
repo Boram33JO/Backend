@@ -115,8 +115,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     }
 
     /**
-     * 메인페이지 - 좋아요 순을 기준으로 인기 게시글 내림차순  & 조회수
-     *
+     * 메인페이지 - 좋아요 순을 기준으로 인기 게시글 내림차순
      * @return
      */
     public List<Post> findAllByOrderByWishlistCountDesc() {
@@ -129,6 +128,20 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 .where(qPost.deleted.eq(false))
                 .groupBy(qPost) //그룹화 한 후 개수조회
                 .orderBy(qWishlist.count().desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
+                .fetch();
+    }
+
+    /**
+     * 메인페이지 - 조회수 순을 기준으로 인기 게시글 내림차순
+     * @return
+     */
+    public List<Post> findAllByOrderByViewCountDesc() {
+        QPost qPost = QPost.post;
+
+        return jpaQueryFactory
+                .selectFrom(qPost)
+                .where(qPost.deleted.eq(false))
+                .orderBy(qPost.viewCount.desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
                 .fetch();
     }
 

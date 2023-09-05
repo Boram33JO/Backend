@@ -42,7 +42,10 @@ public class FollowService {
 
     public List<FollowPopularResponseDto> getFollowPopular() {
 
-        List<FollowPopularResponseDto> followPopularList = userRepository.findAllByOrderByFollowCountDesc().stream().map(FollowPopularResponseDto::new).limit(4).toList();
+        List<FollowPopularResponseDto> followPopularList = userRepository.findAllByOrderByFollowCountDesc().stream()
+                .map(user -> new FollowPopularResponseDto(user, followReporitory.countByFollowUserId(user.getId())))
+                .limit(4)
+                .toList();
 
         return followPopularList;
     }

@@ -8,7 +8,6 @@ import com.sparta.i_mu.dto.KakaoResult;
 import com.sparta.i_mu.dto.KakaoUserInfo;
 import com.sparta.i_mu.dto.KakaoUserResponseDto;
 import com.sparta.i_mu.dto.TokenPair;
-import com.sparta.i_mu.dto.responseDto.UserInfoResponseDto;
 import com.sparta.i_mu.entity.User;
 import com.sparta.i_mu.global.util.JwtUtil;
 import com.sparta.i_mu.global.util.RedisUtil;
@@ -16,6 +15,7 @@ import com.sparta.i_mu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -105,6 +105,10 @@ public class KakaoService {
                 .body(body);
 
         log.info("HTTP 요청");
+        log.info("URI :{} ", uri);
+        log.info("HEADER:{} ", headers);
+        log.info("BODY:{}", body);
+
         log.info("redirect_uri used 전 : {}", frontUrl);
         // HTTP 요청 보내기;
         ResponseEntity<String> response = restTemplate.exchange(
@@ -235,4 +239,31 @@ public class KakaoService {
         return new TokenPair(accessToken, refreshToken);
     }
 
+    public boolean unlinkKakaoAccount(String accessToken) {
+        // 카카오 연결 해제 API URL
+        String unlinkURL = "https://kapi.kakao.com/v1/user/unlink";
+
+        log.info("카카오 연결 해제에 필요한 AccessToken : {}" , accessToken);
+        // HTTP 요청 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", accessToken);
+        RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
+                .post(unlinkURL)
+                .headers(headers)
+                .body(new LinkedMultiValueMap<>()); //바디가 비어있을 때
+        try {
+            // API 호출
+            ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                log.info("카카오 소셜 로그인 탈퇴 성공.");
+                return true;
+            } else {
+                log.error("카카오 소셜 로그인 탈퇴 실패. 응답 코드: {}", response.getStatusCode());
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("카카오 소셜 로그인 탈퇴 중 오류 발생", e);
+            return false;
+        }
+    }
 }

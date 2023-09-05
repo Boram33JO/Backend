@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
@@ -22,6 +23,7 @@ public class GlobalExceptionHandler {
 
     // 일반적인 클라이언트의 잘못된 요청 시
     @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseResource<?> handleException(IllegalArgumentException e){
         return ResponseResource.error(e.getMessage(), HttpStatus.BAD_REQUEST.value());
     }
@@ -46,8 +48,6 @@ public class GlobalExceptionHandler {
 //        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST);
 
 
-
-
         BindingResult bindingResult = e.getBindingResult();
 
         List<String> errorList = new ArrayList<>();
@@ -57,10 +57,9 @@ public class GlobalExceptionHandler {
         }
 
         Collections.sort(errorList);
-        String error = errorList.toString();
-        String errorSubstring = error.substring(1, error.length()-1);
+        String errorString = String.join("\n", errorList);
 
-        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST.value());
+        return ResponseResource.error(errorString, HttpStatus.BAD_REQUEST.value());
     }
 
     // 사용자가 제출한 데이터로 해당 객체를 찾을 수 없을 때

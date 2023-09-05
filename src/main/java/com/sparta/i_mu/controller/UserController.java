@@ -55,6 +55,13 @@ public class UserController {
         return userService.createUser(signUpRequestDto);
     }
 
+    @PostMapping("/user/cancel")
+    @Operation(summary = "회원탈퇴", description = "회원탈퇴")
+    public ResponseResource<?> cancelUser(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          HttpServletRequest req) {
+        return userService.cancelUser(userDetails.getUser(), req);
+    }
+
     @GetMapping("/user/{userId}")
     @Operation(summary = "프로필 조회", description = "상대방 프로필 조회는 팔로우, 작성글 조회, 본인 프로필 조회는 팔로우, 작성글, 좋아요, 댓글 조회")
     @Parameter(name = "userId", description = "조회할 유저의 ID ")

@@ -22,7 +22,9 @@ public class SignUpRequestDto {
 
     private String email; //loginId
 
+    @NotBlank(message = "전화번호는 공백일 수 없습니다.")
+    private String phonenumber;
+
     private boolean admin = false;
     private String adminToken = "";
-
 }
