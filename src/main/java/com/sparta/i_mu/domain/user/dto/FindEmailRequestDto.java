@@ -1,0 +1,16 @@
+package com.sparta.i_mu.domain.user.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Builder
+public class FindEmailRequestDto {
+
+    private String phoneNumber;
+
+}

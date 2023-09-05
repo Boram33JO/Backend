@@ -1,6 +1,7 @@
 package com.sparta.i_mu.global.handler;
 
 import com.sparta.i_mu.global.exception.NoContentException;
+import com.sparta.i_mu.global.exception.UserNotFoundException;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
@@ -30,23 +31,8 @@ public class GlobalExceptionHandler {
 
     //Validation 검증 실패 시
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseResource<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
-//        // 1안
-//        StringBuilder sb = new StringBuilder();
-//
-//        BindingResult bindingResult = e.getBindingResult();
-//
-//        for (FieldError fieldError : bindingResult.getFieldErrors()) {
-//            sb.append(fieldError.getDefaultMessage()).append("/");
-//        }
-//
-//        String[] errorArray = sb.toString().split("/");
-//        Arrays.sort(errorArray);
-//        String error = Arrays.toString(errorArray);
-//        String errorSubstring = error.substring(1, error.length()-1);
-//
-//        return ResponseResource.error(errorSubstring, HttpStatus.BAD_REQUEST);
-
 
         BindingResult bindingResult = e.getBindingResult();
 
@@ -64,24 +50,36 @@ public class GlobalExceptionHandler {
 
     // 사용자가 제출한 데이터로 해당 객체를 찾을 수 없을 때
     @ExceptionHandler(NullPointerException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseResource<?> handleException(NullPointerException e){
         return ResponseResource.error(e.getMessage(), HttpStatus.NOT_FOUND.value());
     }
 
     // 권한 요청이 잘못들어왔을 경우
     @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseResource<?> handleException(AccessDeniedException e){
         return ResponseResource.error(e.getMessage(), HttpStatus.UNAUTHORIZED.value());
     }
     // 이미지 용량 초과
     @ExceptionHandler(SizeLimitExceededException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseResource<?> handleException(SizeLimitExceededException e){
         return ResponseResource.error(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
     // HTTP 204 status code -> Song 검색 시 콘텐츠가 존재하지 않습니다.
     @ExceptionHandler(NoContentException.class)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseResource<?> handleNoContentException(NoContentException e) {
         return ResponseResource.error(e.getMessage(), HttpStatus.NO_CONTENT.value());
     }
+
+    // 이메일, 문자 인증
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseResource<?> handleUserNotFoundException(UserNotFoundException e) {
+        return ResponseResource.error(e.getMessage(), HttpStatus.NOT_FOUND.value());
+    }
+
 }
