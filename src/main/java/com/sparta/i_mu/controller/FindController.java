@@ -25,6 +25,8 @@ public class FindController {
         return ResponseEntity.ok("Password changed successfully");
     }
 
+
+    @Operation(summary = "잃어버린 이메일 찾기", description = "잃어버린 이메일 찾기")
     @GetMapping("/find-email")
     public ResponseEntity<?> findemail(@RequestBody FindEmailRequestDto findEmailRequestDto) {
         String useremail = findService.findemail(findEmailRequestDto.getTo());

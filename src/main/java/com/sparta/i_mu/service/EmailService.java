@@ -55,6 +55,34 @@ public class EmailService {
         }
     }
 
+    public String sendeMail(EmailMessage emailMessage, String email, String type) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (!optionalUser.isPresent()) {
+            throw new EmailService.UserNotFoundException("User with email " + email + " Already exist");
+        }
+        String authNum = createCode();
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setTo(emailMessage.getTo()); //메일 수신자
+            mimeMessageHelper.setSubject(emailMessage.getSubject()); // 메일 제목
+            mimeMessageHelper.setText(authNum, true); // 메일 본문 내용, HTML 여부
+            javaMailSender.send(mimeMessage); // 메일 본문 내용
+
+            log.info("Success");
+
+            redisUtil.setDataExpire(email, authNum, 60 * 5L);
+
+            return null;
+
+        } catch (MessagingException e) {
+            log.info("fail");
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
     // 인증번호 및 임시 비밀번호 생성 메서드
