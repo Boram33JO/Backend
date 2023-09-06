@@ -28,7 +28,7 @@ public class TokenService {
         String refreshToken = jwtUtil.getRefreshTokenFromRequest(request);
 
         // 1. 먼저 refreshToken의 유효성을 검사합니다.
-        if (refreshToken != null && !jwtUtil.validateAccessToken(refreshToken)) {
+        if (refreshToken != null && !jwtUtil.validateRefreshToken(refreshToken)) {
             log.info("RefreshToken 이 유효하지 않습니다.");
             redisUtil.removeRefreshToken(accessToken); // 필요한 경우 Redis에서 토큰 삭제
             throw new IllegalArgumentException(ErrorCode.REFRESH_TOKEN_INVALID.getMessage());

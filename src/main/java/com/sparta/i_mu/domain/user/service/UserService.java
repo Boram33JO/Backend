@@ -407,7 +407,7 @@ public class UserService {
         String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
         try {
             // 카카오 아이디가 있는데 연결해제가 안됬을 때
-            if (user.getKakaoId() != null && !unlinkKakao(AccessToken)) {
+            if (user.getKakaoId() != null && !unlinkKakao(user.getKakaoId())) {
                 return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
             }
             // 1. 카카오 아이디가 있고 연결해제가 됬을 때
@@ -440,8 +440,8 @@ public class UserService {
         return ResponseResource.message("회원 탈퇴 처리가 완료되었습니다.", HttpStatus.OK);
     }
 
-    private boolean unlinkKakao(String AccessToken) {
-        return kakaoService.unlinkKakaoAccount(AccessToken);
+    private boolean unlinkKakao(Long kakaoId) {
+        return kakaoService.unlinkKakaoAccount(kakaoId);
     }
 
     private void deleteCommentsByUser(Long userId) {

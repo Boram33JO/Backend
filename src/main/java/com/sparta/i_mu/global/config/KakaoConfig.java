@@ -17,4 +17,7 @@ public class KakaoConfig {
     @Value("${kakao.client-secret}")
     private String clientSecret;
 
+    @Value("${kakao.admin-key}")
+    private String adminKey;
+
 }
