@@ -7,6 +7,7 @@ import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.domain.notification.repository.EmitterRepository;
 import com.sparta.i_mu.domain.notification.repository.NotificationRepository;
+import com.sparta.i_mu.global.util.NotificationType;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -67,11 +68,12 @@ public class NotificationService {
     }
     // 좋아요, 팔로우, 댓글 반환값이 다다르다.
     @Transactional
-    public void commentSend(User receiver, User sender, String content, Long postId, String type) {
+    public void commentSend(User receiver, User sender, String content, NotificationType notificationType, Long postId, String type) {
         Notification notification = Notification.builder()
                 .receiver(receiver)
                 .sender(sender)
                 .content(content)
+                .notificationType(notificationType)
                 .postId(postId)
                 .isRead(false)
                 .build();
@@ -90,10 +92,11 @@ public class NotificationService {
     }
 
     @Transactional
-    public void followSend(User receiver, User sender, String type) {
+    public void followSend(User receiver, User sender, NotificationType notificationType, String type) {
         Notification notification = Notification.builder()
                 .receiver(receiver)
                 .sender(sender)
+                .notificationType(notificationType)
                 .isRead(false)
                 .build();
 
@@ -111,10 +114,11 @@ public class NotificationService {
     }
 
     @Transactional
-    public void wishlistSend(User receiver, User sender, Long postId,String postTitle, String type) {
+    public void wishlistSend(User receiver, User sender, NotificationType notificationType, Long postId,String postTitle, String type) {
         Notification notification = Notification.builder()
                 .receiver(receiver)
                 .sender(sender)
+                .notificationType(notificationType)
                 .postId(postId)
                 .postTitle(postTitle)
                 .isRead(false)
@@ -133,16 +137,9 @@ public class NotificationService {
         );
     }
 
-//    private Notification createNotification(User receiver, NotificationType notificationType, String content, String url) {
-//        return Notification.builder()
-//                .receiver(receiver)
-//                .content(content)
-//                .notificationType(notificationType)
-//                .url(url)
-//                .isRead(false)
-//                .build();
-//    }
-
+    // 타이틀 있으면 좋아요
+    // 댓글 컨텐츠
+    // 팔로우 둘다 없고
     @Transactional
     public NotificationsResponse findAllById(Long userId) {
         List<NotificationResponse> responses = notificationRepository.findAllByReceiverId(userId).stream()

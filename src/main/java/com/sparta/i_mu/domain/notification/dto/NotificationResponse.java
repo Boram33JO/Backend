@@ -1,6 +1,7 @@
 package com.sparta.i_mu.domain.notification.dto;
 
 import com.sparta.i_mu.domain.notification.entity.Notification;
+import com.sparta.i_mu.global.util.NotificationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,8 @@ public class NotificationResponse {
     private Long id;
 
     private String content;
+
+    private NotificationType notificationType;
 
     private Long postId;
 
@@ -31,9 +34,10 @@ public class NotificationResponse {
 
 
     @Builder
-    public NotificationResponse(Long id, String content, Long postId,String postTitle, Long userId, String nickname, String userImage, LocalDateTime createdAt, boolean read) {
+    public NotificationResponse(Long id, String content, NotificationType notificationType, Long postId, String postTitle, Long userId, String nickname, String userImage, LocalDateTime createdAt, boolean read) {
         this.id = id;
         this.content = content;
+        this.notificationType = notificationType;
         this.postId = postId;
         this.postTitle = postTitle;
         this.userId = userId;
@@ -47,6 +51,7 @@ public class NotificationResponse {
         return NotificationResponse.builder()
                 .id(notification.getId())
                 .content(notification.getContent())
+                .notificationType(notification.getNotificationType())
                 .postId(notification.getPostId())
                 .postTitle(notification.getPostTitle())
                 .userId(notification.getSender().getId())

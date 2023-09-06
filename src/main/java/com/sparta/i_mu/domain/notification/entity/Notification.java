@@ -1,6 +1,7 @@
 package com.sparta.i_mu.domain.notification.entity;
 
 import com.sparta.i_mu.domain.user.entity.User;
+import com.sparta.i_mu.global.util.NotificationType;
 import com.sparta.i_mu.global.util.Timestamped;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -28,6 +29,10 @@ public class Notification extends Timestamped {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User sender;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationType notificationType;
+
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(nullable = false, name = "comment_id")
 //    private Comment comment;
@@ -42,9 +47,10 @@ public class Notification extends Timestamped {
     private boolean isRead;
 
     @Builder
-    public Notification(User receiver, User sender, String content, Long postId, String postTitle, boolean isRead) {
+    public Notification(User receiver, User sender, NotificationType notificationType, String content, Long postId, String postTitle, boolean isRead) {
         this.receiver = receiver;
         this.sender = sender;
+        this.notificationType = notificationType;
         this.content = content;
         this.postId = postId;
         this.postTitle = postTitle;

@@ -8,6 +8,7 @@ import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.domain.post.repository.PostRepository;
 import com.sparta.i_mu.domain.wishlist.repository.WishlistRepository;
+import com.sparta.i_mu.global.util.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class WishlistService {
                 .build();
 
         wishlistRepository.save(saveWishlist);
-        notificationService.wishlistSend(post.getUser(), user, postId, post.getPostTitle(), "wishlist");
+        notificationService.wishlistSend(post.getUser(), user, NotificationType.WISHLIST,postId, post.getPostTitle(),"wishlist");
 
         return ResponseResource.message("좋아요 성공", HttpStatus.OK);
     }
