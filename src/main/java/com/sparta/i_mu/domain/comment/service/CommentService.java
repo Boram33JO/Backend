@@ -40,7 +40,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
-        notificationService.send(post.getUser(), NotificationType.COMMENT , "게시글에 댓글이 작성 되었습니다.", "/posts/" + postId);
+        notificationService.send(post.getUser(), NotificationType.COMMENT , "게시글에 댓글이 작성 되었습니다.", "/detail/" + postId, "comment");
 
         return ResponseResource.message("댓글 등록 성공", HttpStatus.OK);
     }

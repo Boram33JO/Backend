@@ -40,7 +40,7 @@ public class NotificationService {
         emitter.onError((e) -> emitterRepository.deleteById(id));
 
         // 503 에러 방지, 더미 전송
-        sendToClient(emitter, id, "연결되었습니다. userId: " + userId);
+        sendToClient(emitter, id, "연결되었습니다. userId: " + userId, "sse");
         // NGINX PROXY 에서의 필요설정, 불필요한 버퍼링방지
         response.setHeader("X-Accel-Buffering", "no");
 
@@ -49,17 +49,17 @@ public class NotificationService {
             Map<String, Object> events = emitterRepository.findAllEventCacheStartWithId(String.valueOf(userId));
             events.entrySet().stream()
                     .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-                    .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue()));
+                    .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue(), "sse"));
         }
 
         return emitter;
     }
 
-    private void sendToClient(SseEmitter emitter, String id, Object data) {
+    private void sendToClient(SseEmitter emitter, String id, Object data, String type) {
         try {
             emitter.send(SseEmitter.event()
                     .id(id)
-                    .name("sse")
+                    .name(type)
                     .data(data));
         } catch (IOException exception) {
             emitterRepository.deleteById(id);
@@ -68,18 +68,17 @@ public class NotificationService {
     }
 
     @Transactional
-    public void send(User receiver, NotificationType notificationType, String content, String url) {
+    public void send(User receiver, NotificationType notificationType, String content, String url, String type) {
         Notification notification = createNotification(receiver, notificationType, content, url);
         String id = String.valueOf(receiver.getId());
-        log.info("알림 받을 사람 ID: {}", id);
-        log.info("알림 받을 내용: {}", content);
-        log.info("알림 받을 url: {}", url);
+
         notificationRepository.save(notification);
+
         Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
         sseEmitters.forEach(
                 (key, emitter) -> {
                     emitterRepository.saveEventCache(key, notification);
-                    sendToClient(emitter, key, NotificationResponse.from(notification));
+                    sendToClient(emitter, key, NotificationResponse.from(notification), type);
                 }
         );
     }
