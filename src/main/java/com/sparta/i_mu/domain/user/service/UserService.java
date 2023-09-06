@@ -20,6 +20,7 @@ import com.sparta.i_mu.domain.wishlist.entity.Wishlist;
 import com.sparta.i_mu.domain.wishlist.mapper.WishListMapper;
 import com.sparta.i_mu.domain.wishlist.repository.WishlistRepository;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
+import com.sparta.i_mu.global.exception.UserNotFoundException;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.global.security.UserDetailsImpl;
 import com.sparta.i_mu.global.util.AwsS3Util;
@@ -406,18 +407,19 @@ public class UserService {
 
         String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
         try {
+            // 먼저 회원이 데이터 베이스에 존재하는지
+            Long userId = user.getId();
+            User cancelUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
+
             // 카카오 아이디가 있는데 연결해제가 안됬을 때
             if (user.getKakaoId() != null && !unlinkKakao(user.getKakaoId())) {
                 return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
             }
-            // 1. 카카오 아이디가 있고 연결해제가 됬을 때
-            // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때
-
-            // 먼저 회원이 데이터 베이스에 존재하는지
-            Long userId = user.getId();
-            User cancelUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
-
-            // 그다음 회원이 쓴 게시글들, 댓글들을 전부 deleted 처리하기
+            // 1. 카카오 아이디가 있고 연결해제가 됬을 때 - 모두 완전 삭제
+            else if (user.getKakaoId() != null && unlinkKakao(user.getKakaoId())) {
+                KakaoAllDelete(userId);
+            }
+            // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때 - 게시글, 댓글 delted처리
             deleteCommentsByUser(userId);
             deletePostsByUser(userId);
             deleteWishlistsByUser(userId);
@@ -479,10 +481,21 @@ public class UserService {
     }
 
     private void markUserAsDeleted(User cancelUser) {
-
         cancelUser.setDeleted(true);
         cancelUser.setDeletedAt(LocalDateTime.now());
         userRepository.save(cancelUser);
+    }
+
+    private void KakaoAllDelete(Long userId) {
+
+        List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
+        postRepository.deleteAll(posts);
+
+        List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+        commentRepository.deleteAll(comments);
+
+        deleteWishlistsByUser(userId);
+        deletedFollowByUser(userId);
     }
 
 }
