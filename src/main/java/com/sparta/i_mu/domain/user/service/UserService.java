@@ -408,34 +408,33 @@ public class UserService {
         String AccessToken = jwtUtil.BEARER + jwtUtil.getAccessTokenFromRequest(req);
         try {
             // 먼저 회원이 데이터 베이스에 존재하는지
-            Long userId = user.getId();
-            User cancelUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
-
-            // 카카오 아이디가 있는데 연결해제가 안됬을 때
-            if (user.getKakaoId() != null && !unlinkKakao(user.getKakaoId())) {
-                return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
+            User cancelUser = userRepository.findById(user.getId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_AUTHENTICATED.getMessage()));
+            Long cancelUserId = cancelUser.getId();
+            log.info("삭제 할 User 의 아이디 : {}", cancelUser.getId());
+            // 카카오 아이디가가 존재할 때
+            if (cancelUser.getKakaoId() != null) {
+                log.info("소셜 로그인 한 User 의 KakaoId {} :", cancelUser.getKakaoId());
+                if (!unlinkKakao(cancelUser.getKakaoId())) {
+                    return ResponseResource.error2(ErrorCode.KAKAO_UNLINK_FAILED);
+                }
+                if (!KakaoAllDelete(cancelUserId)) { // 변경된 부분
+                    log.error("연결 해제 O / 데이터 삭제 X");
+                    return ResponseResource.error("카카오 계정 연결 해제는 성공했으나, 회원 데이터 삭제에 실패하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
+                }
+                log.info("연결 해제 O / 데이터 삭제 O");
+                return ResponseResource.message("카카오 계정 연결 해제 및 회원 탈퇴 처리가 완료되었습니다.", HttpStatus.OK);
+            } else {
+                log.info("일반 회원의 회원 탈퇴 로직");
+                // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때 - 게시글, 댓글 deleted처리
+                deleteRegularUser(cancelUserId);
+                markUserAsDeleted(cancelUser);
+                redisUtil.removeRefreshToken(AccessToken);
             }
-            // 1. 카카오 아이디가 있고 연결해제가 됬을 때 - 모두 완전 삭제
-            else if (user.getKakaoId() != null && unlinkKakao(user.getKakaoId())) {
-                KakaoAllDelete(userId);
-            }
-            // 2. 카카오 아이디가 존재하지 않는 일반 회원일 때 - 게시글, 댓글 delted처리
-            deleteCommentsByUser(userId);
-            deletePostsByUser(userId);
-            deleteWishlistsByUser(userId);
-            deletedFollowByUser(userId);
-            // 그다음 회원을 삭제? - 아예 유저의 데이터를 삭제해야하나?
-            markUserAsDeleted(cancelUser);
-            // redis에서 삭제
-            redisUtil.removeRefreshToken(AccessToken);
 
         } catch (DataAccessException e) {
-            // DB 관련 예외 처리
             log.error("DB를 처리하는 과정에서 error 발생 : ", e);
             return ResponseResource.error2(ErrorCode.DATABASE_PROCESSING_ERROR);
-
         } catch (Exception e) {
-            // 그 외의 예외 처리
             log.error("알 수 없는 오류가 발생 : ", e);
             return ResponseResource.error("알 수 없는 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
@@ -483,23 +482,36 @@ public class UserService {
     private void markUserAsDeleted(User cancelUser) {
         cancelUser.setDeleted(true);
         cancelUser.setDeletedAt(LocalDateTime.now());
+        cancelUser.setNickname();
         userRepository.save(cancelUser);
     }
 
-    private void KakaoAllDelete(Long userId) {
+    private boolean KakaoAllDelete(Long userId) {
+        try {
+            List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
+            postRepository.deleteAll(posts);
 
-        List<Post> posts = postRepository.findAllByUserIdAndDeletedFalse(userId);
-        postRepository.deleteAll(posts);
+            List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
+            commentRepository.deleteAll(comments);
 
-        List<Comment> comments = commentRepository.findAllByUserIdAndDeletedFalse(userId);
-        commentRepository.deleteAll(comments);
+            deleteWishlistsByUser(userId);
+            deletedFollowByUser(userId);
 
+            User user = userRepository.findById(userId).orElseThrow(() ->
+                    new UserNotFoundException("존재하지 않는 유저입니다."));
+
+            userRepository.delete(user);
+            return true; // 성공적으로 삭제될 경우
+        } catch (Exception e) {
+            log.error("KakaoAllDelete 중 오류가 발생", e);
+            return false; // 예외 발생시 false 반환
+        }
+    }
+
+    private void deleteRegularUser(Long userId) {
+        deleteCommentsByUser(userId);
+        deletePostsByUser(userId);
         deleteWishlistsByUser(userId);
         deletedFollowByUser(userId);
-
-        User user = userRepository.findByIdAndDeletedFalse(userId).orElseThrow(()->
-                new UserNotFoundException("존재하지 않는 유저입니다."));
-
-        userRepository.delete(user);
     }
 }
