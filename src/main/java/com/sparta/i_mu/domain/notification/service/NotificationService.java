@@ -3,10 +3,10 @@ package com.sparta.i_mu.domain.notification.service;
 import com.sparta.i_mu.domain.notification.dto.NotificationResponse;
 import com.sparta.i_mu.domain.notification.dto.NotificationsResponse;
 import com.sparta.i_mu.domain.notification.entity.Notification;
-import com.sparta.i_mu.domain.user.entity.User;
-import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.domain.notification.repository.EmitterRepository;
 import com.sparta.i_mu.domain.notification.repository.NotificationRepository;
+import com.sparta.i_mu.domain.user.entity.User;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.util.NotificationType;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,18 +54,19 @@ public class NotificationService {
         return emitter;
     }
 
+    // java.lang.IllegalStateException: The response object has been recycled and is no longer associated with this facade
     private void sendToClient(SseEmitter emitter, String id, Object data, String type) {
         try {
             emitter.send(SseEmitter.event()
                     .id(id)
                     .name(type)
                     .data(data));
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             emitterRepository.deleteById(id);
 //            throw new RuntimeException("SSE 연결 오류");
         }
     }
-    // 좋아요, 팔로우, 댓글 반환값이 다다르다.
+
     @Transactional
     public void commentSend(User receiver, User sender, String content, NotificationType notificationType, Long postId, String type) {
         Notification notification = Notification.builder()

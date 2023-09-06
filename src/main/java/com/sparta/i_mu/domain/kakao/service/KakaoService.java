@@ -219,6 +219,7 @@ public class KakaoService {
                         .email(kakaoEmail)
                         .nickname(nickname)
                         .userImage(profile)
+                        .kakaoId(kakaoId)
                         .password(encodedPassword)
                         .build();
             }
