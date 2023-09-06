@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
 
     //Validation 검증 실패 시
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseResource<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
 
         BindingResult bindingResult = e.getBindingResult();
