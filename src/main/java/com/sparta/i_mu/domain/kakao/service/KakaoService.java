@@ -249,7 +249,7 @@ public class KakaoService {
         // HTTP 요청 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded" );
-        headers.add("Authorization", "Bearer " + adminKey);
+        headers.add("Authorization", "KakaoAK " + adminKey);
 
         LinkedMultiValueMap<String,String> bodyMap = new LinkedMultiValueMap<>();
         bodyMap.add("target_id_type", "user_id");
