@@ -1,5 +1,6 @@
 package com.sparta.i_mu.domain.wishlist.service;
 
+import com.sparta.i_mu.domain.notification.service.NotificationService;
 import com.sparta.i_mu.domain.post.entity.Post;
 import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.domain.wishlist.entity.Wishlist;
@@ -7,6 +8,7 @@ import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.domain.post.repository.PostRepository;
 import com.sparta.i_mu.domain.wishlist.repository.WishlistRepository;
+import com.sparta.i_mu.global.util.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class WishlistService {
 
     private final WishlistRepository wishlistRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ResponseResource<?> createWishlist(Long postId, User user) {
@@ -41,6 +44,7 @@ public class WishlistService {
                 .build();
 
         wishlistRepository.save(saveWishlist);
+        notificationService.send(post.getUser(), NotificationType.WISHLIST , "게시글에 좋아요가 올라갔습니다.", "/detail/" + postId, "wishlist");
 
         return ResponseResource.message("좋아요 성공", HttpStatus.OK);
     }
