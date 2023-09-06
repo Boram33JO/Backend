@@ -66,4 +66,7 @@ public class User extends Timestamped {
         this.password = encodedPassword;
     }
 
+    public void setNickname() {
+        this.nickname = null;
+    }
 }
