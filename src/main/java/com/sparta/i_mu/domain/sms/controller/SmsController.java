@@ -48,9 +48,9 @@ public class SmsController {
 
     @PostMapping("/check")
     @Operation(summary = "휴대폰 문자 인증 번호검증", description ="휴대폰 문자 인증번호 검증")
-    public ResponseEntity<?> verifyPhoneCode_signUp(@RequestBody SmsRequestDto smsRequestDto){
+    public ResponseResource<?> verifyPhoneCode_signUp(@RequestBody SmsRequestDto smsRequestDto){
         Boolean check = smsService.verifyPhoneCode_signUp(smsRequestDto.getPhoneNumber(), smsRequestDto.getSmsConfirmNum());
-        return ResponseEntity.ok(check);
+        return ResponseResource.data(check, HttpStatus.OK, "인증이 완료되었습니다.");
     }
 
     @Operation(summary = "잃어버린 아이디 찾기", description = "잃어버린 아이디 찾기")

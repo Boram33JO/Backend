@@ -1,6 +1,7 @@
 package com.sparta.i_mu.domain.email.service;
 
 import com.sparta.i_mu.domain.email.dto.EmailMessage;
+import com.sparta.i_mu.domain.email.dto.EmailRequestDto;
 import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.domain.user.repository.UserRepository;
 import com.sparta.i_mu.global.exception.UserNotFoundException;
@@ -30,7 +31,10 @@ public class EmailService {
     private final PasswordEncoder passwordEncoder;
 
 
-    public String sendEmail_sign(EmailMessage emailMessage, String email, String type) {
+    public String sendEmail_sign(EmailRequestDto emailRequestDto) {
+
+        EmailMessage emailMessage = createdMessage(emailRequestDto);
+        String email = emailMessage.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isPresent()) {
@@ -58,7 +62,10 @@ public class EmailService {
         }
     }
 
-    public String sendEmail_pw(EmailMessage emailMessage, String email, String type) {
+    public String sendEmail_pw(EmailRequestDto emailRequestDto) {
+
+        EmailMessage emailMessage = createdMessage(emailRequestDto);
+        String email = emailMessage.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (!optionalUser.isPresent()) {
@@ -69,7 +76,7 @@ public class EmailService {
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-            mimeMessageHelper.setTo(emailMessage.getEmail()); //메일 수신자
+            mimeMessageHelper.setTo(email); //메일 수신자
             mimeMessageHelper.setSubject(emailMessage.getSubject()); // 메일 제목
             mimeMessageHelper.setText(authNum, true); // 메일 본문 내용, HTML 여부
             javaMailSender.send(mimeMessage); // 메일 본문 내용
@@ -84,6 +91,22 @@ public class EmailService {
             log.info("fail");
             throw new RuntimeException(e);
         }
+    }
+
+
+    /**
+     * EmailMessage 객체 생성
+     *
+     * @param emailRequestDto
+     * @return
+     */
+    private EmailMessage createdMessage(EmailRequestDto emailRequestDto) {
+        EmailMessage emailMessage = EmailMessage.builder()
+                .email(emailRequestDto.getEmail())
+                .subject("[P.PLE] 이메일 인증을 위한 인증 코드 발송")
+                .build();
+
+        return emailMessage;
     }
 
 

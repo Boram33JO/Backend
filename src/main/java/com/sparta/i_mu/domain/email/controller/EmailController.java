@@ -1,6 +1,5 @@
 package com.sparta.i_mu.domain.email.controller;
 
-import com.sparta.i_mu.domain.email.dto.EmailMessage;
 import com.sparta.i_mu.domain.email.dto.EmailRequestDto;
 import com.sparta.i_mu.domain.email.service.EmailService;
 import com.sparta.i_mu.domain.user.dto.ChangePasswordRequest;
@@ -9,7 +8,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,39 +27,25 @@ public class EmailController {
     // 회원가입 이메일 인증
     @PostMapping("/send-sign")
     @Operation(summary = "회원가입 이메일 인증 번호 전송", description = "회원가입 이메일 인증 번호 전송")
-    public ResponseEntity<?> sendEmail_sign(@RequestBody EmailRequestDto emailRequestDto) {
-
-        EmailMessage emailMessage = EmailMessage.builder()
-                .email(emailRequestDto.getEmail())
-                .subject("[P.PLE] 이메일 인증을 위한 인증 코드 발송")
-                .build();
-
-        emailService.sendEmail_sign(emailMessage, emailRequestDto.getEmail(), "email");
-
-        return ResponseEntity.ok("인증 메일을 발송했습니다");
+    public ResponseResource<?> sendEmail_sign(@RequestBody EmailRequestDto emailRequestDto) {
+        emailService.sendEmail_sign(emailRequestDto);
+        return ResponseResource.message("인증 메일을 발송했습니다", HttpStatus.OK);
     }
 
 
     @PostMapping("/send-pw")
     @Operation(summary = "비밀번호 찾기 이메일 인증 번호 전송", description = "비밀번호 찾기 이메일 인증 번호 전송")
-    public ResponseEntity<?> sendEmail_pw(@RequestBody EmailRequestDto emailRequestDto) {
-
-        EmailMessage emailMessage = EmailMessage.builder()
-                .email(emailRequestDto.getEmail())
-                .subject("[P.PLE] 이메일 인증을 위한 인증 코드 발송")
-                .build();
-
-        emailService.sendEmail_pw(emailMessage, emailRequestDto.getEmail(), "email");
-
-        return ResponseEntity.ok("인증 메일을 발송했습니다");
+    public ResponseResource<?> sendEmail_pw(@RequestBody EmailRequestDto emailRequestDto) {
+        emailService.sendEmail_pw(emailRequestDto);
+        return ResponseResource.message("인증 메일을 발송했습니다", HttpStatus.OK);
     }
 
     //회원 가입 시 사용
     @PostMapping("/sign-check")
     @Operation(summary = "이메일 인증 번호 검증", description = "이메일 인증번호 검증")
-    public ResponseEntity<?> checkCode(@RequestBody EmailRequestDto emailRequestDto) {
+    public ResponseResource<?> checkCode(@RequestBody EmailRequestDto emailRequestDto) {
         Boolean check = emailService.verifyEmailCode(emailRequestDto.getEmail(), emailRequestDto.getCode());
-        return ResponseEntity.ok(check);
+        return ResponseResource.data(check, HttpStatus.OK, "인증이 완료되었습니다.");
     }
 
     /*
@@ -73,9 +58,9 @@ public class EmailController {
     //비밀번호 찾기 시 사용
     @PostMapping("/pw-check")
     @Operation(summary = "이메일 인증 번호 검증", description = "이메일 인증번호 검증")
-    public ResponseEntity<?> checkCode_pw(@RequestBody EmailRequestDto emailRequestDto) {
+    public ResponseResource<?> checkCode_pw(@RequestBody EmailRequestDto emailRequestDto) {
         Boolean check = emailService.verifyEmailCode_pw(emailRequestDto.getEmail(), emailRequestDto.getCode());
-        return ResponseEntity.ok(check);
+        return ResponseResource.data(check, HttpStatus.OK, "인증이 완료되었습니다.");
     }
 
     // 비밀 번호 찾기 시
