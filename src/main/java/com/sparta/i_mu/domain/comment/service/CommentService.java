@@ -7,7 +7,6 @@ import com.sparta.i_mu.domain.post.entity.Post;
 import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
-import com.sparta.i_mu.global.util.NotificationType;
 import com.sparta.i_mu.domain.comment.repository.CommentRepository;
 import com.sparta.i_mu.domain.post.repository.PostRepository;
 import com.sparta.i_mu.domain.notification.service.NotificationService;
@@ -40,7 +39,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
-        notificationService.send(post.getUser(), NotificationType.COMMENT , "게시글에 댓글이 작성 되었습니다.", "/detail/" + postId, "comment");
+        notificationService.commentSend(post.getUser(),user, requestDto.getContent(), postId, "comment");
 
         return ResponseResource.message("댓글 등록 성공", HttpStatus.OK);
     }
