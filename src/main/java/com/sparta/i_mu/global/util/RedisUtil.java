@@ -20,6 +20,7 @@ public class RedisUtil {
     private final String SEARCH_SONG_KEY = "SEARCH_SONG_";
     private final String SEARCH_KEYWORD_KEY = "SEARCH_KEYWORD_";
     private final String BLACKLIST_KEY= "BLACKLIST_KEY_";
+    private final String AUTH_NUM = "AUTH_NUM_";
     private final RedisTemplate<String, String> redisTemplate;
 
 
@@ -79,40 +80,20 @@ public class RedisUtil {
   
   
     //이메일 인증 관련
-    public void setDataExpire(String key, String value, long duration) {
+    public void setAuthNumData(String key, String value, long duration) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(duration);
-        valueOperations.set(key, value, expireDuration);
+        valueOperations.set(AUTH_NUM + key, value, expireDuration);
     }
     
-    public void removeData(String email) {
-        redisTemplate.delete(email);
+    public void removeAuthNumData(String authType) {
+        redisTemplate.delete(AUTH_NUM + authType);
     }
     
-    public String getData(String email) {
-        return (String) redisTemplate.opsForValue().get(email);
+    public String getAuthNumData(String authType) {
+        return (String) redisTemplate.opsForValue().get(AUTH_NUM + authType);
     }
 
-    //조회수 ip  관련
-    public void storeUserIp(String userIp, Long postId) {
-        String key = userIp + "_" + postId;
-        redisTemplate.opsForValue().set(key, "true");
-        redisTemplate.expire(key, 30, TimeUnit.DAYS );
-    }
-
-    public Boolean isUserIp(String userIp, Long postId) {
-        String key = userIp + "_" + postId;
-        if (redisTemplate.hasKey(key)) {
-            return true;
-        }
-        return false;
-    }
-
-    public void setDataExpir(String confirmNum, String getTo, long duration) {
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOperations.set(confirmNum, getTo, expireDuration);
-    }
 
     public void setPostViewList(String postViewKey, Long postId) {
         String key = "POST_VIEW_" + postViewKey;

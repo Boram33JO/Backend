@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
 
-    TOKEN_INVALID(4001 ,HttpStatus.BAD_REQUEST, "유효한 토큰이 아닙니다."),
+    TOKEN_INVALID(4001 , HttpStatus.BAD_REQUEST, "유효한 토큰이 아닙니다."),
     TOKEN_EXPIRED(4002, HttpStatus.BAD_REQUEST, "토큰이 만료되었습니다."),
     USER_NOT_AUTHENTICATED(4003, HttpStatus.BAD_REQUEST, "인증된 사용자가 아닙니다."),
     POST_NOT_EXIST(4004, HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
@@ -19,9 +19,9 @@ public enum ErrorCode {
     BLACKLISTED(40011, HttpStatus.UNAUTHORIZED, "블랙리스트에 있는 토큰입니다."),
     REFRESH_TOKEN_INVALID(40012, HttpStatus.BAD_REQUEST, "REFRESH TOKEN 이 유효하지 않습니다."),
     REFRESH_TOKEN_MISMATCH(40013, HttpStatus.CONFLICT, "Redis에 저장된 REFRESH TOKEN과 동일하지 않습니다."),
-    DATABASE_PROCESSING_ERROR(40014, HttpStatus.INTERNAL_SERVER_ERROR, "데이터를 deleted 처리하는 과정에서 오류가 발생했습니다."),
     USER_UNAUTHORIZED(40014, HttpStatus.UNAUTHORIZED, "로그인 후 사용이 가능합니다."),
-    KAKAO_UNLINK_FAILED(40015, HttpStatus.BAD_REQUEST, "카카오 연결 해제에 실패했습니다.");
+    KAKAO_UNLINK_FAILED(40015, HttpStatus.BAD_REQUEST, "카카오 연결 해제에 실패했습니다."),
+    DATABASE_PROCESSING_ERROR(5001, HttpStatus.INTERNAL_SERVER_ERROR, "데이터를 deleted 처리하는 과정에서 오류가 발생했습니다.");
 
     private final int errorCode;
     private final HttpStatus status;
