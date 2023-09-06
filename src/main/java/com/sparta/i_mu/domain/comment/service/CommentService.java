@@ -10,6 +10,7 @@ import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.domain.comment.repository.CommentRepository;
 import com.sparta.i_mu.domain.post.repository.PostRepository;
 import com.sparta.i_mu.domain.notification.service.NotificationService;
+import com.sparta.i_mu.global.util.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,7 +40,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
-        notificationService.commentSend(post.getUser(),user, requestDto.getContent(), postId, "comment");
+        notificationService.commentSend(post.getUser(),user, requestDto.getContent(),NotificationType.COMMENT,postId, "comment");
 
         return ResponseResource.message("댓글 등록 성공", HttpStatus.OK);
     }
