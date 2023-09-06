@@ -239,18 +239,27 @@ public class KakaoService {
         return new KakaoTokenPair(accessToken, refreshToken);
     }
 
-    public boolean unlinkKakaoAccount(String accessToken) {
+
+    public boolean unlinkKakaoAccount(Long kakaoId) {
         // 카카오 연결 해제 API URL
         String unlinkURL = "https://kapi.kakao.com/v1/user/unlink";
 
-        log.info("카카오 연결 해제에 필요한 AccessToken : {}" , accessToken);
+        String adminKey = kakaoConfig.getAdminKey();
+        log.info("카카오 연결 해제에 필요한 AdminKey : {}" , adminKey);
         // HTTP 요청 생성
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", accessToken);
+        headers.add("Content-Type", "application/x-www-form-urlencoded" );
+        headers.add("Authorization", "Bearer " + adminKey);
+
+        LinkedMultiValueMap<String,String> bodyMap = new LinkedMultiValueMap<>();
+        bodyMap.add("target_id_type", "user_id");
+        bodyMap.add("target_id", String.valueOf(kakaoId));
+
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
                 .post(unlinkURL)
                 .headers(headers)
-                .body(new LinkedMultiValueMap<>()); //바디가 비어있을 때
+                .body(bodyMap); //바디가 비어있을 때
+
         try {
             // API 호출
             ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
