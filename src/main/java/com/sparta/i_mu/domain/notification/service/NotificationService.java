@@ -137,12 +137,10 @@ public class NotificationService {
         );
     }
 
-    // 타이틀 있으면 좋아요
-    // 댓글 컨텐츠
-    // 팔로우 둘다 없고
     @Transactional
     public NotificationsResponse findAllById(Long userId) {
         List<NotificationResponse> responses = notificationRepository.findAllByReceiverId(userId).stream()
+                .filter(notification -> !notification.isRead())
                 .map(NotificationResponse::from)
                 .collect(Collectors.toList());
         long unreadCount = responses.stream()
