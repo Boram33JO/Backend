@@ -1,7 +1,6 @@
 package com.sparta.i_mu.domain.notification.dto;
 
 import com.sparta.i_mu.domain.notification.entity.Notification;
-import com.sparta.i_mu.global.util.NotificationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,32 +15,45 @@ public class NotificationResponse {
 
     private String content;
 
-    private String url;
+    private Long postId;
+
+    private String postTitle;
+
+    private Long userId;
+
+    private String nickname;
+
+    private String userImage;
 
     private LocalDateTime createdAt;
 
     private boolean read;
 
-    private NotificationType notificationType;
 
     @Builder
-    public NotificationResponse(Long id, String content, String url, LocalDateTime createdAt, boolean read, NotificationType notificationType) {
+    public NotificationResponse(Long id, String content, Long postId,String postTitle, Long userId, String nickname, String userImage, LocalDateTime createdAt, boolean read) {
         this.id = id;
         this.content = content;
-        this.url = url;
+        this.postId = postId;
+        this.postTitle = postTitle;
+        this.userId = userId;
+        this.nickname = nickname;
+        this.userImage = userImage;
         this.createdAt = createdAt;
         this.read = read;
-        this.notificationType = notificationType;
     }
 
     public static NotificationResponse from(Notification notification) {
         return NotificationResponse.builder()
                 .id(notification.getId())
                 .content(notification.getContent())
-                .url(notification.getUrl())
+                .postId(notification.getPostId())
+                .postTitle(notification.getPostTitle())
+                .userId(notification.getSender().getId())
+                .nickname(notification.getSender().getNickname())
+                .userImage(notification.getSender().getUserImage())
                 .createdAt(notification.getCreatedAt())
                 .read(notification.isRead())
-                .notificationType(notification.getNotificationType())
                 .build();
     }
 }

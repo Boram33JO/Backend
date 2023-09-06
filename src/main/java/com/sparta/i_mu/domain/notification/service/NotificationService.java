@@ -5,7 +5,6 @@ import com.sparta.i_mu.domain.notification.dto.NotificationsResponse;
 import com.sparta.i_mu.domain.notification.entity.Notification;
 import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.global.errorCode.ErrorCode;
-import com.sparta.i_mu.global.util.NotificationType;
 import com.sparta.i_mu.domain.notification.repository.EmitterRepository;
 import com.sparta.i_mu.domain.notification.repository.NotificationRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -66,10 +65,17 @@ public class NotificationService {
 //            throw new RuntimeException("SSE 연결 오류");
         }
     }
-
+    // 좋아요, 팔로우, 댓글 반환값이 다다르다.
     @Transactional
-    public void send(User receiver, NotificationType notificationType, String content, String url, String type) {
-        Notification notification = createNotification(receiver, notificationType, content, url);
+    public void commentSend(User receiver, User sender, String content, Long postId, String type) {
+        Notification notification = Notification.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .content(content)
+                .postId(postId)
+                .isRead(false)
+                .build();
+
         String id = String.valueOf(receiver.getId());
 
         notificationRepository.save(notification);
@@ -83,15 +89,59 @@ public class NotificationService {
         );
     }
 
-    private Notification createNotification(User receiver, NotificationType notificationType, String content, String url) {
-        return Notification.builder()
+    @Transactional
+    public void followSend(User receiver, User sender, String type) {
+        Notification notification = Notification.builder()
                 .receiver(receiver)
-                .content(content)
-                .notificationType(notificationType)
-                .url(url)
+                .sender(sender)
                 .isRead(false)
                 .build();
+
+        String id = String.valueOf(receiver.getId());
+
+        notificationRepository.save(notification);
+
+        Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
+        sseEmitters.forEach(
+                (key, emitter) -> {
+                    emitterRepository.saveEventCache(key, notification);
+                    sendToClient(emitter, key, NotificationResponse.from(notification), type);
+                }
+        );
     }
+
+    @Transactional
+    public void wishlistSend(User receiver, User sender, Long postId,String postTitle, String type) {
+        Notification notification = Notification.builder()
+                .receiver(receiver)
+                .sender(sender)
+                .postId(postId)
+                .postTitle(postTitle)
+                .isRead(false)
+                .build();
+
+        String id = String.valueOf(receiver.getId());
+
+        notificationRepository.save(notification);
+
+        Map<String, SseEmitter> sseEmitters = emitterRepository.findAllStartWithById(id);
+        sseEmitters.forEach(
+                (key, emitter) -> {
+                    emitterRepository.saveEventCache(key, notification);
+                    sendToClient(emitter, key, NotificationResponse.from(notification), type);
+                }
+        );
+    }
+
+//    private Notification createNotification(User receiver, NotificationType notificationType, String content, String url) {
+//        return Notification.builder()
+//                .receiver(receiver)
+//                .content(content)
+//                .notificationType(notificationType)
+//                .url(url)
+//                .isRead(false)
+//                .build();
+//    }
 
     @Transactional
     public NotificationsResponse findAllById(Long userId) {

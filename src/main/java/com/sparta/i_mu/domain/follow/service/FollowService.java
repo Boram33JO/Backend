@@ -7,7 +7,6 @@ import com.sparta.i_mu.domain.user.entity.User;
 import com.sparta.i_mu.global.responseResource.ResponseResource;
 import com.sparta.i_mu.domain.follow.repository.FollowReporitory;
 import com.sparta.i_mu.domain.user.repository.UserRepository;
-import com.sparta.i_mu.global.util.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,7 @@ public class FollowService {
                 .build();
 
         followReporitory.save(saveFollow);
-        notificationService.send(followUser, NotificationType.FOLLOW , "유저가 나를 팔로우 했습니다.", "/profile/" + user.getId(), "follow");
+        notificationService.followSend(followUser, user, "follow");
 
         return ResponseResource.message("팔로우 성공", HttpStatus.OK);
     }
