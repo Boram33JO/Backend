@@ -496,6 +496,10 @@ public class UserService {
 
         deleteWishlistsByUser(userId);
         deletedFollowByUser(userId);
-    }
 
+        User user = userRepository.findByIdAndDeletedFalse(userId).orElseThrow(()->
+                new UserNotFoundException("존재하지 않는 유저입니다."));
+
+        userRepository.delete(user);
+    }
 }
