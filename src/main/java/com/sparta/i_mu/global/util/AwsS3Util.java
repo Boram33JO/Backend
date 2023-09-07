@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.sparta.i_mu.global.errorCode.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,9 @@ public class AwsS3Util {
     private String bucket;
 
     public String uploadImage(MultipartFile multipartFile) {
-        String fileName = createFileName(multipartFile.getOriginalFilename());
+
+
+        String fileName = createFileName(multipartFile);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(multipartFile.getSize());
@@ -51,16 +54,26 @@ public class AwsS3Util {
         amazonS3.deleteObject(bucket, deleteImageUrl);
     }
 
-    private String createFileName(String fileName) {
-        return UUID.randomUUID().toString().concat(getFileExtension(fileName));
+    private String createFileName(MultipartFile multipartFile) {
+        return UUID.randomUUID().toString().concat(getFileExtension(multipartFile));
     }
 
-    private String getFileExtension(String fileName) {
-        try {
-            return fileName.substring(fileName.lastIndexOf("."));
-        } catch (StringIndexOutOfBoundsException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 형식의 파일(" + fileName + ") 입니다.");
+    private String getFileExtension(MultipartFile multipartFile) {
+
+        String contentType = multipartFile.getContentType();
+
+        if (contentType == null || !contentType.contains("image")) {
+            throw new IllegalArgumentException(ErrorCode.FILE_NOT_IMAGE.getMessage());
         }
+
+        String fileName = multipartFile.getOriginalFilename();
+
+        if (fileName == null || !fileName.contains(".")) {
+            throw new IllegalArgumentException(ErrorCode.FILE_NOT_EXTENSION.getMessage());
+        }
+
+        return fileName.substring(fileName.lastIndexOf("."));
+
     }
 
 }
