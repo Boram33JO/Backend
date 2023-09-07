@@ -482,7 +482,7 @@ public class UserService {
     private void markUserAsDeleted(User cancelUser) {
         cancelUser.setDeleted(true);
         cancelUser.setDeletedAt(LocalDateTime.now());
-        cancelUser.setNickname();
+        cancelUser.clearNickname();
         userRepository.save(cancelUser);
     }
 

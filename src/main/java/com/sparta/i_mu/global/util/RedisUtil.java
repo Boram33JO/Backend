@@ -52,7 +52,7 @@ public class RedisUtil {
     }
 
     public String getSearchedSong(String keyword){
-        return (String) redisTemplate.opsForHash().get(SEARCH_SONG_KEY , keyword);
+        return (String) redisTemplate.opsForValue().get(SEARCH_SONG_KEY + keyword);
     }
 
     /**

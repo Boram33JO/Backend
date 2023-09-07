@@ -51,7 +51,7 @@ public class SongService {
      * @param keyword
      * @return keyword 에 해당하는 노래 정보
      */
-    public List<SongResponseDto> getSearch(String keyword) {
+    public List<SongResponseDto> getSearch(String keyword) throws SpotifyWebApiException {
 
         log.info("keyword : {}", keyword);
         // 먼저 값이 있다면 redis 에서 가져오기
@@ -89,7 +89,7 @@ public class SongService {
      * @param keyword
      * @return 검색한 노래 리스트
      */
-    private List<SongResponseDto> searchFromSpotify(String keyword) {
+    private List<SongResponseDto> searchFromSpotify(String keyword) throws SpotifyWebApiException {
         List<SongResponseDto> songs;
 
         try {
@@ -116,9 +116,10 @@ public class SongService {
             }
             log.info("첫 번째 노래 제목: {}", tracks[0].getName());
             songs = Arrays.stream(tracks).map(this::convertTrackToSongResponseDto).collect(Collectors.toList());
-        } catch (IOException | SpotifyWebApiException |
-                 ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new IllegalArgumentException("Error: " + e.getMessage());
+        } catch (SpotifyWebApiException se) {
+            throw new SpotifyWebApiException("Spotify Error: " + se.getMessage());
         }
         return songs;
     }
