@@ -275,7 +275,7 @@ public class UserService {
     }
 
     private User findUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 입니다"));
+        return userRepository.findByIdAndDeletedFalse(userId).orElseThrow(() -> new IllegalArgumentException(ErrorCode.USER_NOT_EXIST.getMessage()));
     }
 
     private List<FollowListResponseDto> getFollowListResponseDtoList(Long userId) {

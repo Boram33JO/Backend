@@ -37,5 +37,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndDeletedFalse(String email);
 
-//    Optional<User> findByIdAndDeletedFalse(Long userId);
+    Optional<User> findByIdAndDeletedFalse(Long userId);
 }
