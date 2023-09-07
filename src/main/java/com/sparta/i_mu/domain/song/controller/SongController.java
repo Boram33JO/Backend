@@ -3,6 +3,7 @@ package com.sparta.i_mu.domain.song.controller;
 import com.sparta.i_mu.domain.song.dto.SongByCategoryResponseDto;
 import com.sparta.i_mu.domain.song.dto.SongResponseDto;
 import com.sparta.i_mu.domain.song.service.SongService;
+import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class SongController {
      */
     @GetMapping("/search")
     @Operation(summary = "노래 검색", description = "노래 검색")
-    public List<SongResponseDto> getSearch(@RequestParam String keyword){
+    public List<SongResponseDto> getSearch(@RequestParam String keyword) throws SpotifyWebApiException {
         return songService.getSearch(keyword);
     }
 
