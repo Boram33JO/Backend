@@ -16,6 +16,8 @@ public enum ErrorCode {
     FILE_DECODE_FAIL(4008, HttpStatus.BAD_REQUEST, "파일 이름 디코딩에 실패했습니다."),
     URL_INVALID(4009, HttpStatus.BAD_REQUEST, "잘못된 URL 형식입니다."),
     USER_NOT_EXIST(4009, HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다."),
+    FILE_NOT_IMAGE(4009, HttpStatus.BAD_REQUEST, "이미지 형식만 업로드 가능합니다."),
+    FILE_NOT_EXTENSION(4009, HttpStatus.BAD_REQUEST, "파일 이름이 없거나 확장자가 없습니다."),
     EXTRACT_INVALID(40010, HttpStatus.BAD_REQUEST, "확장자를 추출할 수 없습니다."),
     BLACKLISTED(40011, HttpStatus.UNAUTHORIZED, "블랙리스트에 있는 토큰입니다."),
     REFRESH_TOKEN_INVALID(40012, HttpStatus.BAD_REQUEST, "REFRESH TOKEN 이 유효하지 않습니다."),
