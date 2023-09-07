@@ -381,11 +381,11 @@ public class UserService {
 
             redisUtil.storeBlacklist(userInfo, accessToken, expirationInSeconds);
 
-            // sse 로그아웃 임시 
-//             Optional<User> findUser = userRepository.findByEmail(userInfo);
-//             String id = String.valueOf(findUser.get().getId());
-//             emitterRepository.deleteAllStartWithId(id);
-//             emitterRepository.deleteAllEventCacheStartWithId(id);
+            // sse 삭제
+             Optional<User> findUser = userRepository.findByEmail(userInfo);
+             String id = String.valueOf(findUser.get().getId());
+             emitterRepository.deleteAllStartWithId(id);
+             emitterRepository.deleteAllEventCacheStartWithId(id);
 
 
             return ResponseResource.message("로그아웃 완료했습니다", HttpStatus.OK);
