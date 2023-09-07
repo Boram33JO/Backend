@@ -24,7 +24,7 @@ public class User extends Timestamped {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nickname;
 
     @Column(unique = true)
@@ -66,7 +66,7 @@ public class User extends Timestamped {
         this.password = encodedPassword;
     }
 
-    public void setNickname() {
+    public void clearNickname() {
         this.nickname = null;
     }
 }
