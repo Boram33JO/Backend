@@ -60,7 +60,12 @@ public class EmailController {
     @Operation(summary = "이메일 인증 번호 검증", description = "이메일 인증번호 검증")
     public ResponseResource<?> checkCode_pw(@RequestBody EmailRequestDto emailRequestDto) {
         Boolean check = emailService.verifyEmailCode_pw(emailRequestDto.getEmail(), emailRequestDto.getCode());
-        return ResponseResource.data(check, HttpStatus.OK, "인증이 완료되었습니다.");
+
+        if (check) {
+            return ResponseResource.data(check, HttpStatus.OK, "인증을 성공했습니다.");
+        }
+        return ResponseResource.data(check, HttpStatus.OK, "인증을 실패되었습니다.");
+
     }
 
     // 비밀 번호 찾기 시
