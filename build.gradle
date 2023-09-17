@@ -1,0 +1,106 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.1.2'
+    id 'io.spring.dependency-management' version '1.1.2'
+}
+
+group = 'com.sparta'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+dependencies {
+
+    implementation 'org.springframework.security:spring-security-config:6.0.2'
+    // aws
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // spotify api
+    implementation 'com.github.thelinmichael:spotify-web-api-java:master-SNAPSHOT'
+    // spring web
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // social login
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // refreshToken
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'    // mapper
+    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+    // JWT
+    compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+    // Mysql
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    // Querydsl 추가
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    //kakao
+    implementation 'com.google.code.gson:gson:2.8.7'
+
+    //로그아웃
+//    implementation 'org.springframework.security:spring-security-test'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //email
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //sms
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDirs += [ querydslDir ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
+}
+
+clean.doLast {
+    file(querydslDir).deleteDir()
+}
