@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.i_mu.domain.song.dto.SongByCategoryResponseDto;
 import com.sparta.i_mu.domain.song.dto.SongResponseDto;
 import com.sparta.i_mu.domain.song.entity.Song;
+import com.sparta.i_mu.domain.song.repository.querydsl.CustomSongRepository;
 import com.sparta.i_mu.global.exception.NoContentException;
 import com.sparta.i_mu.global.util.RedisUtil;
 import com.sparta.i_mu.global.util.SpotifyUtil;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -42,6 +44,7 @@ public class SongService {
     private final CategoryRepository categoryRepository;
     private final SongMapper songMapper;
     private final RedisUtil redisUtil;
+    private final CustomSongRepository customSongRepository;
 
     @Value("${default.image.2}")
     private String imageUrl;
@@ -170,6 +173,7 @@ public class SongService {
      *
      * @return
      */
+    @Cacheable(value = "topMostSongCache", cacheManager = "redisCacheManager")
     public List<SongByCategoryResponseDto> getMostByCategoryPostSong() {
 
         List<Long> categoryIds = categoryRepository.findIds();
@@ -177,15 +181,15 @@ public class SongService {
         return categoryIds.stream().sorted()
                 .map(categoryId -> {
                     // 해당 카테고리에서 가장 많이 포스팅된 노래 4곡을 찾습니다.
-                    List<Song> topPostedSongs = songRepository.findByCategoryIdOrderByPostCountDesc(categoryId);
+                    List<Song> topPostedSongs = customSongRepository.findByCategoryIdOrderByPostCountDesc(categoryId);
 
                     List<SongResponseDto> songResponseDtos = topPostedSongs.stream()
                             .map(songMapper::entityToResponseDto)
-                            .limit(4)
+//                            .limit(4)
                             .collect(Collectors.toList());
 
                     return SongByCategoryResponseDto.builder()
-                            .Category(categoryId)
+                            .category(categoryId)
                             .songResponseDtos(songResponseDtos)
                             .build();
                 })

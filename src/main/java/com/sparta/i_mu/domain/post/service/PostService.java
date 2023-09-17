@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -239,6 +240,7 @@ public class PostService {
     }
 
     // 좋아요 순 인기 게시글 내림차순 조회 top5 만 -> queryDsl 적용✅
+    @Cacheable(value = "topPostCache", cacheManager = "redisCacheManager")
     public TopPostResponseDto getPostByTopList() {
         List<PostResponseDto> wishlistTopPosts = getTopPostsByWishlist();
         List<PostResponseDto> viewCountTopPosts = getTopPostsByViewCount();
@@ -248,14 +250,14 @@ public class PostService {
     public List<PostResponseDto> getTopPostsByWishlist() {
        return postRepository.findAllByOrderByWishlistCountDesc() .stream()
                 .map(postMapper::mapToPostResponseDto)
-                .limit(5)
+//                .limit(5)
                 .collect(Collectors.toList());
     }
 
     public List<PostResponseDto> getTopPostsByViewCount() {
         return postRepository.findAllByOrderByViewCountDesc() .stream()
                 .map(postMapper::mapToPostResponseDto)
-                .limit(5)
+//                .limit(5)
                 .collect(Collectors.toList());
     }
     // 서브게시물 페이지

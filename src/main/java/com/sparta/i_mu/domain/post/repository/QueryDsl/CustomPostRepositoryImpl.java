@@ -131,6 +131,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 .where(qPost.deleted.eq(false))
                 .groupBy(qPost) //그룹화 한 후 개수조회
                 .orderBy(qWishlist.count().desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
+                .limit(5)
                 .fetch();
     }
 
@@ -145,6 +146,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 .selectFrom(qPost)
                 .where(qPost.deleted.eq(false))
                 .orderBy(qPost.viewCount.desc(), qPost.createdAt.desc()) //동일한 값은 최신순으로
+                .limit(5)
                 .fetch();
     }
 
